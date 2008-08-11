@@ -3,6 +3,7 @@
 #include <lauxlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 
 int luaopen_oocairo (lua_State *L);
@@ -27,6 +28,20 @@ static const char * const linecap_names[] = {
 };
 static const cairo_line_cap_t linecap_values[] = {
     CAIRO_LINE_CAP_BUTT, CAIRO_LINE_CAP_ROUND, CAIRO_LINE_CAP_SQUARE
+};
+
+static const char * const linejoin_names[] = {
+    "miter", "round", "bevel", 0
+};
+static const cairo_line_cap_t linejoin_values[] = {
+    CAIRO_LINE_JOIN_MITER, CAIRO_LINE_JOIN_ROUND, CAIRO_LINE_JOIN_BEVEL
+};
+
+static const char * const fillrule_names[] = {
+    "winding", "even-odd", 0
+};
+static const cairo_fill_rule_t fillrule_values[] = {
+    CAIRO_FILL_RULE_WINDING, CAIRO_FILL_RULE_EVEN_ODD
 };
 
 #include "obj_surface.c"
