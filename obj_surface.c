@@ -17,6 +17,25 @@ image_surface_create (lua_State *L) {
 }
 
 static int
+surface_create_similar (lua_State *L) {
+    cairo_surface_t **oldobj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    cairo_surface_t **newobj;
+    cairo_content_t content;
+    int width, height;
+
+    content = content_values[luaL_checkoption(L, 2, 0, content_names)];
+    width = luaL_checkint(L, 3);
+    height = luaL_checkint(L, 4);
+
+    newobj = lua_newuserdata(L, sizeof(cairo_surface_t *));
+    *newobj = 0;
+    luaL_getmetatable(L, MT_NAME_SURFACE);
+    lua_setmetatable(L, -2);
+    *newobj = cairo_surface_create_similar(*oldobj, content, width, height);
+    return 1;
+}
+
+static int
 surface_gc (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     cairo_surface_destroy(*obj);

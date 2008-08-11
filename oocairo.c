@@ -44,12 +44,36 @@ static const cairo_fill_rule_t fillrule_values[] = {
     CAIRO_FILL_RULE_WINDING, CAIRO_FILL_RULE_EVEN_ODD
 };
 
+static const char * const operator_names[] = {
+    "clear",
+    "source", "over", "in", "out", "atop",
+    "dest", "dest-over", "dest-in", "dest-out", "dest-atop",
+    "xor", "add", "saturate",
+    0
+};
+static const cairo_operator_t operator_values[] = {
+    CAIRO_OPERATOR_CLEAR,
+    CAIRO_OPERATOR_SOURCE, CAIRO_OPERATOR_OVER, CAIRO_OPERATOR_IN,
+    CAIRO_OPERATOR_OUT, CAIRO_OPERATOR_ATOP,
+    CAIRO_OPERATOR_DEST, CAIRO_OPERATOR_DEST_OVER, CAIRO_OPERATOR_DEST_IN,
+    CAIRO_OPERATOR_DEST_OUT, CAIRO_OPERATOR_DEST_ATOP,
+    CAIRO_OPERATOR_XOR, CAIRO_OPERATOR_ADD, CAIRO_OPERATOR_SATURATE
+};
+
+static const char * const content_names[] = {
+    "color", "alpha", "color-alpha", 0
+};
+static const cairo_content_t content_values[] = {
+    CAIRO_CONTENT_COLOR, CAIRO_CONTENT_ALPHA, CAIRO_CONTENT_COLOR_ALPHA
+};
+
 #include "obj_surface.c"
 #include "obj_context.c"
 
 static const luaL_Reg
 constructor_funcs[] = {
     { "image_surface_create", image_surface_create },
+    { "surface_create_similar", surface_create_similar },
     { "context_create", context_create },
     { 0, 0 }
 };

@@ -133,6 +133,41 @@ cr_get_miter_limit (lua_State *L) {
 }
 
 static int
+cr_get_operator (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    switch (cairo_get_operator(*obj)) {
+        case CAIRO_OPERATOR_CLEAR:     lua_pushliteral(L, "clear");     break;
+        case CAIRO_OPERATOR_SOURCE:    lua_pushliteral(L, "source");    break;
+        case CAIRO_OPERATOR_OVER:      lua_pushliteral(L, "over");      break;
+        case CAIRO_OPERATOR_IN:        lua_pushliteral(L, "in");        break;
+        case CAIRO_OPERATOR_OUT:       lua_pushliteral(L, "out");       break;
+        case CAIRO_OPERATOR_ATOP:      lua_pushliteral(L, "atop");      break;
+        case CAIRO_OPERATOR_DEST:      lua_pushliteral(L, "dest");      break;
+        case CAIRO_OPERATOR_DEST_OVER: lua_pushliteral(L, "dest-over"); break;
+        case CAIRO_OPERATOR_DEST_IN:   lua_pushliteral(L, "dest-in");   break;
+        case CAIRO_OPERATOR_DEST_OUT:  lua_pushliteral(L, "dest-out");  break;
+        case CAIRO_OPERATOR_DEST_ATOP: lua_pushliteral(L, "dest-atop"); break;
+        case CAIRO_OPERATOR_XOR:       lua_pushliteral(L, "xor");       break;
+        case CAIRO_OPERATOR_ADD:       lua_pushliteral(L, "add");       break;
+        case CAIRO_OPERATOR_SATURATE:  lua_pushliteral(L, "saturate");  break;
+        default:                       lua_pushliteral(L, "<invalid>"); break;
+    }
+    return 1;
+}
+
+static int
+cr_get_target (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_surface_t **surface = lua_newuserdata(L, sizeof(cairo_surface_t *));
+    *surface = 0;
+    luaL_getmetatable(L, MT_NAME_SURFACE);
+    lua_setmetatable(L, -2);
+    *surface = cairo_get_target(*obj);
+    cairo_surface_reference(*surface);
+    return 1;
+}
+
+static int
 cr_get_tolerance (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     lua_pushnumber(L, cairo_get_tolerance(*obj));
@@ -276,6 +311,14 @@ cr_set_miter_limit (lua_State *L) {
 }
 
 static int
+cr_set_operator (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_set_operator(*obj,
+            operator_values[luaL_checkoption(L, 2, 0, operator_names)]);
+    return 0;
+}
+
+static int
 cr_set_source_rgb (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_set_source_rgb(*obj, luaL_checknumber(L, 2), luaL_checknumber(L, 3),
@@ -288,6 +331,15 @@ cr_set_source_rgba (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_set_source_rgba(*obj, luaL_checknumber(L, 2), luaL_checknumber(L, 3),
                           luaL_checknumber(L, 4), luaL_checknumber(L, 5));
+    return 0;
+}
+
+static int
+cr_set_source_surface (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_surface_t **surface = luaL_checkudata(L, 2, MT_NAME_SURFACE);
+    cairo_set_source_surface(*obj, *surface, luaL_checknumber(L, 3),
+                             luaL_checknumber(L, 4));
     return 0;
 }
 
@@ -326,6 +378,8 @@ context_methods[] = {
     { "get_line_join", cr_get_line_join },
     { "get_line_width", cr_get_line_width },
     { "get_miter_limit", cr_get_miter_limit },
+    { "get_operator", cr_get_operator },
+    { "get_target", cr_get_target },
     { "get_tolerance", cr_get_tolerance },
     { "in_fill", cr_in_fill },
     { "in_stroke", cr_in_stroke },
@@ -342,8 +396,10 @@ context_methods[] = {
     { "set_line_join", cr_set_line_join },
     { "set_line_width", cr_set_line_width },
     { "set_miter_limit", cr_set_miter_limit },
+    { "set_operator", cr_set_operator },
     { "set_source_rgb", cr_set_source_rgb },
     { "set_source_rgba", cr_set_source_rgba },
+    { "set_source_surface", cr_set_source_surface },
     { "set_tolerance", cr_set_tolerance },
     { "stroke", cr_stroke },
     { "stroke_preserve", cr_stroke_preserve },
