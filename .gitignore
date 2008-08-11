@@ -1,0 +1,5 @@
+.libs
+liblua-oocairo.la
+oocairo.d
+oocairo.lo
+oocairo.o
