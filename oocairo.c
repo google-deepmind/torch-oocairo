@@ -130,6 +130,9 @@ luaopen_oocairo (lua_State *L) {
     lua_pushliteral(L, "_VERSION");
     lua_pushliteral(L, VERSION);
     lua_rawset(L, -3);
+    lua_pushliteral(L, "_CAIRO_VERSION");
+    lua_pushstring(L, cairo_version_string());
+    lua_rawset(L, -3);
     add_funcs_to_table(L, constructor_funcs);
 
     /* Create the metatables for objects of different types. */
