@@ -43,6 +43,9 @@ DEBUG := -g
 
 all: liblua-oocairo.la
 
+test: all
+	echo 'lunit.main({...})' | $(VALGRIND) lua -llunit - test/*.lua
+
 # Dependencies.
 %.d: %.c
 	@echo 'DEP>' $@
@@ -62,4 +65,4 @@ clean:
 	rm -rf liblua-oocairo.la .libs
 	rm -f gmon.out *.bb *.bbg *.da *.gcov
 
-.PHONY: all clean
+.PHONY: all test clean

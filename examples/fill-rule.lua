@@ -27,13 +27,10 @@ local function draw_star (x, y)
     cr:fill()
 end
 
-assert(cr:get_fill_rule() == "winding")     -- check default
+cr:set_fill_rule("winding")     -- this is the default anyway
 draw_star(MARGIN + RADIUS, MARGIN + RADIUS)
 cr:set_fill_rule("even-odd")
-assert(cr:get_fill_rule() == "even-odd")
 draw_star(2 * MARGIN + 3 * RADIUS, MARGIN + RADIUS)
-cr:set_fill_rule("winding")
-assert(cr:get_fill_rule() == "winding")
 
 surface:write_to_png("fill-rule.png")
 

@@ -16,7 +16,6 @@ cr:paint()
 local x, y = MARGIN, IMG_HT - MARGIN
 for _, tolerance in ipairs{ 0.1, 2.5, 10 } do
     cr:set_tolerance(tolerance)
-    assert(cr:get_tolerance() == tolerance)
     cr:move_to(x, y)
     cr:curve_to(x + 0.1*DEMO_WD, y - 2.5*DEMO_WD,
                 x + 0.7*DEMO_WD, y - 1.5*DEMO_WD,

@@ -21,7 +21,6 @@ for _, joinstyle in ipairs{ "miter", "round", "bevel" } do
     cr:line_to(x + DEMO_WD, y)
     cr:set_source_rgb(0, 0, 0)
     cr:set_line_join(joinstyle)
-    assert(cr:get_line_join() == joinstyle)
     cr:set_line_width(LINE_WD)
     cr:stroke_preserve()
     cr:set_source_rgb(1, 0.5, 0.5)
@@ -39,7 +38,6 @@ for _, capstyle in ipairs{ "butt", "round", "square" } do
     cr:line_to(x + DEMO_WD, y)
     cr:set_source_rgb(0, 0, 0)
     cr:set_line_cap(capstyle)
-    assert(cr:get_line_cap() == capstyle)
     cr:set_line_width(LINE_WD)
     cr:stroke_preserve()
     cr:set_source_rgb(1, 0.5, 0.5)
@@ -57,13 +55,6 @@ cr:set_source_rgb(0, 0, 0);
 for _, dashpat in ipairs{ {}, {3}, {3,6,9} } do
     for offset = 0, #dashpat do
         cr:set_dash(dashpat, offset)
-
-        -- Check the values have been set, and the getter can retrieve them.
-        local newpat, newoffset = cr:get_dash()
-        assert(#newpat == #dashpat)
-        for i, v in ipairs(dashpat) do assert(newpat[i] == v) end
-        assert(newoffset == offset)
-
         cr:move_to(x, y)
         cr:line_to(IMG_WD - MARGIN, y)
         cr:stroke()

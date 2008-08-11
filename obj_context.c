@@ -58,6 +58,19 @@ cr_fill_preserve (lua_State *L) {
 }
 
 static int
+cr_get_antialias (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    switch (cairo_get_antialias(*obj)) {
+        case CAIRO_ANTIALIAS_DEFAULT:  lua_pushliteral(L, "default");   break;
+        case CAIRO_ANTIALIAS_NONE:     lua_pushliteral(L, "none");      break;
+        case CAIRO_ANTIALIAS_GRAY:     lua_pushliteral(L, "gray");      break;
+        case CAIRO_ANTIALIAS_SUBPIXEL: lua_pushliteral(L, "subpixel");  break;
+        default:                       lua_pushliteral(L, "<invalid>"); break;
+    }
+    return 1;
+}
+
+static int
 cr_get_dash (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     int cnt, i;
@@ -241,10 +254,18 @@ cr_rectangle (lua_State *L) {
 }
 
 static int
+cr_set_antialias (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_set_antialias(*obj,
+            antialias_values[luaL_checkoption(L, 2, 0, antialias_names)]);
+    return 0;
+}
+
+static int
 cr_set_dash (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     int num_dashes, i;
-    double *dashes = 0, offset;
+    double *dashes = 0, offset, n, dashtotal;
 
     luaL_checktype(L, 2, LUA_TTABLE);
     offset = luaL_checknumber(L, 3);
@@ -253,6 +274,8 @@ cr_set_dash (lua_State *L) {
     if (num_dashes > 0) {
         dashes = malloc(sizeof(double) * num_dashes);
         assert(dashes);
+        dashtotal = 0;
+
         for (i = 0; i < num_dashes; ++i) {
             lua_rawgeti(L, 2, i + 1);
             if (!lua_isnumber(L, -1)) {
@@ -260,8 +283,20 @@ cr_set_dash (lua_State *L) {
                 return luaL_error(L, "bad dash pattern, dash value %d isn't"
                                   " a number", i + 1);
             }
-            dashes[i] = lua_tonumber(L, -1);
+            n = lua_tonumber(L, -1);
+            if (n < 0) {
+                free(dashes);
+                return luaL_error(L, "bad dash pattern, dash value %d is"
+                                  " negative", i + 1);
+            }
+            dashes[i] = n;
+            dashtotal += n;
             lua_pop(L, 1);
+        }
+
+        if (dashtotal == 0) {
+            free(dashes);
+            return luaL_error(L, "bad dash pattern, all values are zero");
         }
     }
 
@@ -299,7 +334,9 @@ cr_set_line_join (lua_State *L) {
 static int
 cr_set_line_width (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_set_line_width(*obj, luaL_checknumber(L, 2));
+    double n = luaL_checknumber(L, 2);
+    luaL_argcheck(L, n >= 0, 2, "line width cannot be negative");
+    cairo_set_line_width(*obj, n);
     return 0;
 }
 
@@ -372,6 +409,7 @@ context_methods[] = {
     { "curve_to", cr_curve_to },
     { "fill", cr_fill },
     { "fill_preserve", cr_fill_preserve },
+    { "get_antialias", cr_get_antialias },
     { "get_dash", cr_get_dash },
     { "get_fill_rule", cr_get_fill_rule },
     { "get_line_cap", cr_get_line_cap },
@@ -390,6 +428,7 @@ context_methods[] = {
     { "paint", cr_paint },
     { "paint_with_alpha", cr_paint_with_alpha },
     { "rectangle", cr_rectangle },
+    { "set_antialias", cr_set_antialias },
     { "set_dash", cr_set_dash },
     { "set_fill_rule", cr_set_fill_rule },
     { "set_line_cap", cr_set_line_cap },

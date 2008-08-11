@@ -24,7 +24,6 @@ local function draw (cr, x, w, h, op)
     second_cr:fill()
 
     first_cr:set_operator(op)
-    assert(first_cr:get_operator() == op)
     first_cr:set_source_surface(second, 0, 0)
     first_cr:paint()
 

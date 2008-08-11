@@ -23,6 +23,14 @@ static const cairo_format_t format_option_values[] = {
     CAIRO_FORMAT_ARGB32, CAIRO_FORMAT_RGB24, CAIRO_FORMAT_A8, CAIRO_FORMAT_A1
 };
 
+static const char * const antialias_names[] = {
+    "default", "none", "gray", "subpixel", 0
+};
+static const cairo_antialias_t antialias_values[] = {
+    CAIRO_ANTIALIAS_DEFAULT, CAIRO_ANTIALIAS_NONE, CAIRO_ANTIALIAS_GRAY,
+    CAIRO_ANTIALIAS_SUBPIXEL
+};
+
 static const char * const linecap_names[] = {
     "butt", "round", "square", 0
 };
