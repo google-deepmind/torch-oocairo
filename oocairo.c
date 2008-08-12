@@ -10,11 +10,8 @@ int luaopen_oocairo (lua_State *L);
 
 #define MT_NAME_CONTEXT ("6404c570-6711-11dd-b66f-00e081225ce5")
 #define MT_NAME_SURFACE ("6d31a064-6711-11dd-bdd8-00e081225ce5")
-/*
-6d83bf34-6711-11dd-b4c2-00e081225ce5
-6dd49a26-6711-11dd-88fd-00e081225ce5
-6e2f4c64-6711-11dd-acfc-00e081225ce5
-*/
+#define MT_NAME_PATH ("6d83bf34-6711-11dd-b4c2-00e081225ce5")
+#define MT_NAME_PATTERN ("6dd49a26-6711-11dd-88fd-00e081225ce5")
 
 static const char * const format_option_names[] = {
     "argb32", "rgb24", "a8", "a1", 0
@@ -75,14 +72,34 @@ static const cairo_content_t content_values[] = {
     CAIRO_CONTENT_COLOR, CAIRO_CONTENT_ALPHA, CAIRO_CONTENT_COLOR_ALPHA
 };
 
-#include "obj_surface.c"
+static const char * const extend_names[] = {
+    "none", "repeat", "reflect", "pad", 0
+};
+static const cairo_extend_t extend_values[] = {
+    CAIRO_EXTEND_NONE, CAIRO_EXTEND_REPEAT, CAIRO_EXTEND_REFLECT,
+    CAIRO_EXTEND_PAD
+};
+
+static const char * const filter_names[] = {
+    "fast", "good", "best", "nearest", "bilinear", "gaussian", 0
+};
+static const cairo_filter_t filter_values[] = {
+    CAIRO_FILTER_FAST, CAIRO_FILTER_GOOD, CAIRO_FILTER_BEST,
+    CAIRO_FILTER_NEAREST, CAIRO_FILTER_BILINEAR, CAIRO_FILTER_GAUSSIAN
+};
+
 #include "obj_context.c"
+#include "obj_path.c"
+#include "obj_pattern.c"
+#include "obj_surface.c"
 
 static const luaL_Reg
 constructor_funcs[] = {
     { "image_surface_create", image_surface_create },
     { "surface_create_similar", surface_create_similar },
     { "context_create", context_create },
+    { "pattern_create_linear", pattern_create_linear },
+    { "pattern_create_radial", pattern_create_radial },
     { 0, 0 }
 };
 
@@ -140,6 +157,10 @@ luaopen_oocairo (lua_State *L) {
                             context_methods);
     create_object_metatable(L, MT_NAME_SURFACE, "cairo surface object",
                             surface_methods);
+    create_object_metatable(L, MT_NAME_PATH, "cairo path object",
+                            path_methods);
+    create_object_metatable(L, MT_NAME_PATTERN, "cairo pattern object",
+                            pattern_methods);
 
     return 1;
 }

@@ -19,6 +19,14 @@ cr_gc (lua_State *L) {
 }
 
 static int
+cr_append_path (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_path_t **path = luaL_checkudata(L, 1, MT_NAME_PATH);
+    cairo_append_path(*obj, *path);
+    return 0;
+}
+
+static int
 cr_arc (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_arc(*obj, luaL_checknumber(L, 2), luaL_checknumber(L, 3),
@@ -28,10 +36,67 @@ cr_arc (lua_State *L) {
 }
 
 static int
+cr_arc_negative (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_arc_negative(*obj, luaL_checknumber(L, 2), luaL_checknumber(L, 3),
+                       luaL_checknumber(L, 4), luaL_checknumber(L, 5),
+                       luaL_checknumber(L, 6));
+    return 0;
+}
+
+static int
+cr_clip (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_clip(*obj);
+    return 0;
+}
+
+static int
+cr_clip_extents (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    double x1, y1, x2, y2;
+    cairo_clip_extents(*obj, &x1, &y1, &x2, &y2);
+    lua_pushnumber(L, x1);
+    lua_pushnumber(L, y1);
+    lua_pushnumber(L, x2);
+    lua_pushnumber(L, y2);
+    return 4;
+}
+
+static int
+cr_clip_preserve (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_clip_preserve(*obj);
+    return 0;
+}
+
+static int
 cr_close_path (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_close_path(*obj);
     return 0;
+}
+
+static int
+cr_copy_path (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_path_t **path = lua_newuserdata(L, sizeof(cairo_path_t *));
+    *path = 0;
+    luaL_getmetatable(L, MT_NAME_PATH);
+    lua_setmetatable(L, -2);
+    *path = cairo_copy_path(*obj);
+    return 1;
+}
+
+static int
+cr_copy_path_flat (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_path_t **path = lua_newuserdata(L, sizeof(cairo_path_t *));
+    *path = 0;
+    luaL_getmetatable(L, MT_NAME_PATH);
+    lua_setmetatable(L, -2);
+    *path = cairo_copy_path_flat(*obj);
+    return 1;
 }
 
 static int
@@ -48,6 +113,18 @@ cr_fill (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_fill(*obj);
     return 0;
+}
+
+static int
+cr_fill_extents (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    double x1, y1, x2, y2;
+    cairo_fill_extents(*obj, &x1, &y1, &x2, &y2);
+    lua_pushnumber(L, x1);
+    lua_pushnumber(L, y1);
+    lua_pushnumber(L, x2);
+    lua_pushnumber(L, y2);
+    return 4;
 }
 
 static int
@@ -68,6 +145,18 @@ cr_get_antialias (lua_State *L) {
         default:                       lua_pushliteral(L, "<invalid>"); break;
     }
     return 1;
+}
+
+static int
+cr_get_current_point (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    double x, y;
+    if (!cairo_has_current_point(*obj))
+        return 0;
+    cairo_get_current_point(*obj, &x, &y);
+    lua_pushnumber(L, x);
+    lua_pushnumber(L, y);
+    return 2;
 }
 
 static int
@@ -188,6 +277,13 @@ cr_get_tolerance (lua_State *L) {
 }
 
 static int
+cr_has_current_point (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    lua_pushboolean(L, cairo_has_current_point(*obj));
+    return 1;
+}
+
+static int
 cr_in_fill (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     lua_pushboolean(L,
@@ -246,10 +342,87 @@ cr_paint_with_alpha (lua_State *L) {
 }
 
 static int
+cr_path_extents (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    double x1, y1, x2, y2;
+    cairo_path_extents(*obj, &x1, &y1, &x2, &y2);
+    lua_pushnumber(L, x1);
+    lua_pushnumber(L, y1);
+    lua_pushnumber(L, x2);
+    lua_pushnumber(L, y2);
+    return 4;
+}
+
+static int
+cr_pop_group (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_pop_group(*obj);
+    return 0;
+}
+
+static int
+cr_pop_group_to_source (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_pop_group_to_source(*obj);
+    return 0;
+}
+
+static int
+cr_push_group (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_push_group(*obj);
+    return 0;
+}
+
+static int
 cr_rectangle (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_rectangle(*obj, luaL_checknumber(L, 2), luaL_checknumber(L, 3),
                     luaL_checknumber(L, 4), luaL_checknumber(L, 5));
+    return 0;
+}
+
+static int
+cr_rel_curve_to (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_rel_curve_to(*obj, luaL_checknumber(L, 2), luaL_checknumber(L, 3),
+                       luaL_checknumber(L, 4), luaL_checknumber(L, 5),
+                       luaL_checknumber(L, 6), luaL_checknumber(L, 7));
+    return 0;
+}
+
+static int
+cr_rel_line_to (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_rel_line_to(*obj, luaL_checknumber(L, 2), luaL_checknumber(L, 3));
+    return 0;
+}
+
+static int
+cr_rel_move_to (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_rel_move_to(*obj, luaL_checknumber(L, 2), luaL_checknumber(L, 3));
+    return 0;
+}
+
+static int
+cr_reset_clip (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_reset_clip(*obj);
+    return 0;
+}
+
+static int
+cr_restore (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_restore(*obj);
+    return 0;
+}
+
+static int
+cr_save (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_save(*obj);
     return 0;
 }
 
@@ -395,21 +568,49 @@ cr_stroke (lua_State *L) {
 }
 
 static int
+cr_stroke_extents (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    double x1, y1, x2, y2;
+    cairo_stroke_extents(*obj, &x1, &y1, &x2, &y2);
+    lua_pushnumber(L, x1);
+    lua_pushnumber(L, y1);
+    lua_pushnumber(L, x2);
+    lua_pushnumber(L, y2);
+    return 4;
+}
+
+static int
 cr_stroke_preserve (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_stroke_preserve(*obj);
     return 0;
 }
 
+static int
+cr_text_path (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_text_path(*obj, luaL_checkstring(L, 2));
+    return 0;
+}
+
 static const luaL_Reg
 context_methods[] = {
     { "__gc", cr_gc },
+    { "append_path", cr_append_path },
     { "arc", cr_arc },
+    { "arc_negative", cr_arc_negative },
+    { "clip", cr_clip },
+    { "clip_extents", cr_clip_extents },
+    { "clip_preserve", cr_clip_preserve },
     { "close_path", cr_close_path },
+    { "copy_path", cr_copy_path },
+    { "copy_path_flat", cr_copy_path_flat },
     { "curve_to", cr_curve_to },
     { "fill", cr_fill },
+    { "fill_extents", cr_fill_extents },
     { "fill_preserve", cr_fill_preserve },
     { "get_antialias", cr_get_antialias },
+    { "get_current_point", cr_get_current_point },
     { "get_dash", cr_get_dash },
     { "get_fill_rule", cr_get_fill_rule },
     { "get_line_cap", cr_get_line_cap },
@@ -419,6 +620,7 @@ context_methods[] = {
     { "get_operator", cr_get_operator },
     { "get_target", cr_get_target },
     { "get_tolerance", cr_get_tolerance },
+    { "has_current_point", cr_has_current_point },
     { "in_fill", cr_in_fill },
     { "in_stroke", cr_in_stroke },
     { "line_to", cr_line_to },
@@ -427,7 +629,17 @@ context_methods[] = {
     { "new_sub_path", cr_new_sub_path },
     { "paint", cr_paint },
     { "paint_with_alpha", cr_paint_with_alpha },
+    { "path_extents", cr_path_extents },
+    { "pop_group", cr_pop_group },
+    { "pop_group_to_source", cr_pop_group_to_source },
+    { "push_group", cr_push_group },
     { "rectangle", cr_rectangle },
+    { "rel_curve_to", cr_rel_curve_to },
+    { "rel_line_to", cr_rel_line_to },
+    { "rel_move_to", cr_rel_move_to },
+    { "reset_clip", cr_reset_clip },
+    { "restore", cr_restore },
+    { "save", cr_save },
     { "set_antialias", cr_set_antialias },
     { "set_dash", cr_set_dash },
     { "set_fill_rule", cr_set_fill_rule },
@@ -441,7 +653,9 @@ context_methods[] = {
     { "set_source_surface", cr_set_source_surface },
     { "set_tolerance", cr_set_tolerance },
     { "stroke", cr_stroke },
+    { "stroke_extents", cr_stroke_extents },
     { "stroke_preserve", cr_stroke_preserve },
+    { "text_path", cr_text_path },
     { 0, 0 }
 };
 

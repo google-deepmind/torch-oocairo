@@ -107,6 +107,17 @@ function test_operator ()
     end
 end
 
+function test_save_restore ()
+    cr:save()
+    cr:set_line_width(3)
+    cr:save()
+    cr:set_line_width(4)
+    cr:restore()
+    assert_equal(3, cr:get_line_width())
+    cr:restore()
+    assert_equal(2, cr:get_line_width())
+end
+
 function test_source_rgb ()
     cr:set_source_rgb(0.1, 0.2, 0.3)
     assert_error("not enough args", function () cr:set_source_rgb(0.1, 0.2) end)
