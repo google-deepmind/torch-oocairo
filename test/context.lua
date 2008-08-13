@@ -4,6 +4,13 @@ local Cairo = require "oocairo"
 
 module("test.context", lunit.testcase, package.seeall)
 
+local PI = 2 * math.asin(1)
+local EPSILON = 0.000001
+
+local function assert_about_equal (expected, got, msg)
+    assert(got > (expected - EPSILON) and got < (expected + EPSILON), msg)
+end
+
 function setup ()
     surface = Cairo.image_surface_create("rgb24", 23, 45)
     cr = Cairo.context_create(surface)
@@ -140,6 +147,19 @@ function test_source_rgba ()
                  function () cr:set_source_rgba(0, 0, 0, "x") end)
 end
 
+function test_source ()
+    local src = Cairo.pattern_create_rgb(0.25, 0.5, 0.75)
+    cr:set_source(src)
+    local gotsrc = cr:get_source()
+    assert_userdata(gotsrc)
+    assert_equal("cairo pattern object", gotsrc._NAME)
+    assert_equal("solid", gotsrc:get_type())
+    local r, g, b = gotsrc:get_rgba()
+    assert_equal(0.25, r)
+    assert_equal(0.5, g)
+    assert_equal(0.75, b)
+end
+
 function test_target ()
     local targ = cr:get_target()
     assert_userdata(targ)
@@ -153,6 +173,58 @@ function test_tolerance ()
         cr:set_tolerance(v)
         assert_equal(v, cr:get_tolerance())
     end
+end
+
+function test_transform ()
+    cr:translate(10, 20)
+    local x, y = cr:user_to_device(3, 4)
+    assert_equal(13, x)
+    assert_equal(24, y)
+
+    cr:scale(10, 20)
+    x, y = cr:user_to_device(3, 4)
+    assert_equal(40, x)
+    assert_equal(100, y)
+    x, y = cr:user_to_device_distance(3, 4)
+    assert_equal(30, x)
+    assert_equal(80, y)
+    x, y = cr:device_to_user(40, 100)
+    assert_equal(3, x)
+    assert_equal(4, y)
+    x, y = cr:device_to_user_distance(30, 80)
+    assert_equal(3, x)
+    assert_equal(4, y)
+
+    cr:identity_matrix()
+    x, y = cr:user_to_device(3, 4)
+    assert_equal(3, x)
+    assert_equal(4, y)
+
+    cr:identity_matrix()
+    cr:rotate(PI / 2)       -- 90 degrees
+    x, y = cr:user_to_device(3, 4)
+    assert_about_equal(-4, x)
+    assert_about_equal(3, y)
+
+    cr:identity_matrix()
+    local m = cr:get_matrix()
+    assert_table(m)
+
+    m[5] = 10       -- equivalent to translate(10,20)
+    m[6] = 20
+    cr:set_matrix(m)
+    x, y = cr:user_to_device(3, 4)
+    assert_equal(13, x)
+    assert_equal(24, y)
+
+    cr:identity_matrix()
+    cr:translate(10, 20)
+    m = Cairo.matrix_create()
+    m:scale(10, 20)
+    cr:transform(m)
+    x, y = cr:user_to_device(3, 4)
+    assert_equal(40, x)
+    assert_equal(100, y)
 end
 
 -- vi:ts=4 sw=4 expandtab

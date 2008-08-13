@@ -9,9 +9,10 @@
 int luaopen_oocairo (lua_State *L);
 
 #define MT_NAME_CONTEXT ("6404c570-6711-11dd-b66f-00e081225ce5")
-#define MT_NAME_SURFACE ("6d31a064-6711-11dd-bdd8-00e081225ce5")
-#define MT_NAME_PATH ("6d83bf34-6711-11dd-b4c2-00e081225ce5")
+#define MT_NAME_MATRIX  ("6e2f4c64-6711-11dd-acfc-00e081225ce5")
+#define MT_NAME_PATH    ("6d83bf34-6711-11dd-b4c2-00e081225ce5")
 #define MT_NAME_PATTERN ("6dd49a26-6711-11dd-88fd-00e081225ce5")
+#define MT_NAME_SURFACE ("6d31a064-6711-11dd-bdd8-00e081225ce5")
 
 static const char * const format_option_names[] = {
     "argb32", "rgb24", "a8", "a1", 0
@@ -88,18 +89,58 @@ static const cairo_filter_t filter_values[] = {
     CAIRO_FILTER_NEAREST, CAIRO_FILTER_BILINEAR, CAIRO_FILTER_GAUSSIAN
 };
 
+static void
+to_lua_matrix (lua_State *L, cairo_matrix_t *mat, int pos) {
+    double *matnums;
+    int i;
+    matnums = (double *) mat;
+    for (i = 0; i < 6; ++i) {
+        lua_pushnumber(L, matnums[i]);
+        lua_rawseti(L, pos, i + 1);
+    }
+}
+
+static void
+create_lua_matrix (lua_State *L, cairo_matrix_t *mat) {
+    lua_createtable(L, 6, 0);
+    to_lua_matrix(L, mat, lua_gettop(L));
+    luaL_getmetatable(L, MT_NAME_MATRIX);
+    lua_setmetatable(L, -2);
+}
+
+static void
+from_lua_matrix (lua_State *L, cairo_matrix_t *mat, int pos) {
+    double *matnums;
+    int i;
+    luaL_checktype(L, pos, LUA_TTABLE);
+    matnums = (double *) mat;
+    for (i = 0; i < 6; ++i) {
+        lua_rawgeti(L, pos, i + 1);
+        if (!lua_isnumber(L, -1))
+            luaL_error(L, "value %d in matrix isn't a number", i + 1);
+        matnums[i] = lua_tonumber(L, -1);
+        lua_pop(L, 1);
+    }
+}
+
 #include "obj_context.c"
+#include "obj_matrix.c"
 #include "obj_path.c"
 #include "obj_pattern.c"
 #include "obj_surface.c"
 
 static const luaL_Reg
 constructor_funcs[] = {
-    { "image_surface_create", image_surface_create },
-    { "surface_create_similar", surface_create_similar },
     { "context_create", context_create },
+    { "image_surface_create", image_surface_create },
+    { "image_surface_create_from_png", image_surface_create_from_png },
+    { "matrix_create", cairmat_create },
+    { "pattern_create_for_surface", pattern_create_for_surface },
     { "pattern_create_linear", pattern_create_linear },
     { "pattern_create_radial", pattern_create_radial },
+    { "pattern_create_rgb", pattern_create_rgb },
+    { "pattern_create_rgba", pattern_create_rgba },
+    { "surface_create_similar", surface_create_similar },
     { 0, 0 }
 };
 
@@ -140,7 +181,7 @@ luaopen_oocairo (lua_State *L) {
 #endif
 
     /* Create the table to return from 'require' */
-    lua_createtable(L, 0, 3);
+    lua_newtable(L);
     lua_pushliteral(L, "_NAME");
     lua_pushliteral(L, "cairo");
     lua_rawset(L, -3);
@@ -155,12 +196,14 @@ luaopen_oocairo (lua_State *L) {
     /* Create the metatables for objects of different types. */
     create_object_metatable(L, MT_NAME_CONTEXT, "cairo context object",
                             context_methods);
-    create_object_metatable(L, MT_NAME_SURFACE, "cairo surface object",
-                            surface_methods);
+    create_object_metatable(L, MT_NAME_MATRIX, "cairo matrix object",
+                            cairmat_methods);
     create_object_metatable(L, MT_NAME_PATH, "cairo path object",
                             path_methods);
     create_object_metatable(L, MT_NAME_PATTERN, "cairo pattern object",
                             pattern_methods);
+    create_object_metatable(L, MT_NAME_SURFACE, "cairo surface object",
+                            surface_methods);
 
     return 1;
 }

@@ -109,6 +109,26 @@ cr_curve_to (lua_State *L) {
 }
 
 static int
+cr_device_to_user (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    double x = luaL_checknumber(L, 2), y = luaL_checknumber(L, 3);
+    cairo_device_to_user(*obj, &x, &y);
+    lua_pushnumber(L, x);
+    lua_pushnumber(L, y);
+    return 2;
+}
+
+static int
+cr_device_to_user_distance (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    double x = luaL_checknumber(L, 2), y = luaL_checknumber(L, 3);
+    cairo_device_to_user_distance(*obj, &x, &y);
+    lua_pushnumber(L, x);
+    lua_pushnumber(L, y);
+    return 2;
+}
+
+static int
 cr_fill (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_fill(*obj);
@@ -142,7 +162,7 @@ cr_get_antialias (lua_State *L) {
         case CAIRO_ANTIALIAS_NONE:     lua_pushliteral(L, "none");      break;
         case CAIRO_ANTIALIAS_GRAY:     lua_pushliteral(L, "gray");      break;
         case CAIRO_ANTIALIAS_SUBPIXEL: lua_pushliteral(L, "subpixel");  break;
-        default:                       lua_pushliteral(L, "<invalid>"); break;
+        default:                       lua_pushliteral(L, "<invalid>");
     }
     return 1;
 }
@@ -191,8 +211,20 @@ cr_get_fill_rule (lua_State *L) {
     switch (cairo_get_fill_rule(*obj)) {
         case CAIRO_FILL_RULE_WINDING:  lua_pushliteral(L, "winding");   break;
         case CAIRO_FILL_RULE_EVEN_ODD: lua_pushliteral(L, "even-odd");  break;
-        default:                       lua_pushliteral(L, "<invalid>"); break;
+        default:                       lua_pushliteral(L, "<invalid>");
     }
+    return 1;
+}
+
+static int
+cr_get_group_target (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_surface_t **surface = lua_newuserdata(L, sizeof(cairo_surface_t *));
+    *surface = 0;
+    luaL_getmetatable(L, MT_NAME_SURFACE);
+    lua_setmetatable(L, -2);
+    *surface = cairo_get_group_target(*obj);
+    cairo_surface_reference(*surface);
     return 1;
 }
 
@@ -203,7 +235,7 @@ cr_get_line_cap (lua_State *L) {
         case CAIRO_LINE_CAP_BUTT:   lua_pushliteral(L, "butt");      break;
         case CAIRO_LINE_CAP_ROUND:  lua_pushliteral(L, "round");     break;
         case CAIRO_LINE_CAP_SQUARE: lua_pushliteral(L, "square");    break;
-        default:                    lua_pushliteral(L, "<invalid>"); break;
+        default:                    lua_pushliteral(L, "<invalid>");
     }
     return 1;
 }
@@ -215,7 +247,7 @@ cr_get_line_join (lua_State *L) {
         case CAIRO_LINE_JOIN_MITER: lua_pushliteral(L, "miter");     break;
         case CAIRO_LINE_JOIN_ROUND: lua_pushliteral(L, "round");     break;
         case CAIRO_LINE_JOIN_BEVEL: lua_pushliteral(L, "bevel");     break;
-        default:                    lua_pushliteral(L, "<invalid>"); break;
+        default:                    lua_pushliteral(L, "<invalid>");
     }
     return 1;
 }
@@ -224,6 +256,15 @@ static int
 cr_get_line_width (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     lua_pushnumber(L, cairo_get_line_width(*obj));
+    return 1;
+}
+
+static int
+cr_get_matrix (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_matrix_t mat;
+    cairo_get_matrix(*obj, &mat);
+    create_lua_matrix(L, &mat);
     return 1;
 }
 
@@ -252,8 +293,20 @@ cr_get_operator (lua_State *L) {
         case CAIRO_OPERATOR_XOR:       lua_pushliteral(L, "xor");       break;
         case CAIRO_OPERATOR_ADD:       lua_pushliteral(L, "add");       break;
         case CAIRO_OPERATOR_SATURATE:  lua_pushliteral(L, "saturate");  break;
-        default:                       lua_pushliteral(L, "<invalid>"); break;
+        default:                       lua_pushliteral(L, "<invalid>");
     }
+    return 1;
+}
+
+static int
+cr_get_source (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_pattern_t **pat = lua_newuserdata(L, sizeof(cairo_pattern_t *));
+    *pat = 0;
+    luaL_getmetatable(L, MT_NAME_PATTERN);
+    lua_setmetatable(L, -2);
+    *pat = cairo_get_source(*obj);
+    cairo_pattern_reference(*pat);
     return 1;
 }
 
@@ -281,6 +334,13 @@ cr_has_current_point (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     lua_pushboolean(L, cairo_has_current_point(*obj));
     return 1;
+}
+
+static int
+cr_identity_matrix (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_identity_matrix(*obj);
+    return 0;
 }
 
 static int
@@ -375,6 +435,14 @@ cr_push_group (lua_State *L) {
 }
 
 static int
+cr_push_group_with_content (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_push_group_with_content(*obj,
+            content_values[luaL_checkoption(L, 2, 0, content_names)]);
+    return 0;
+}
+
+static int
 cr_rectangle (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_rectangle(*obj, luaL_checknumber(L, 2), luaL_checknumber(L, 3),
@@ -420,9 +488,23 @@ cr_restore (lua_State *L) {
 }
 
 static int
+cr_rotate (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_rotate(*obj, luaL_checknumber(L, 2));
+    return 0;
+}
+
+static int
 cr_save (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_save(*obj);
+    return 0;
+}
+
+static int
+cr_scale (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_scale(*obj, luaL_checknumber(L, 2), luaL_checknumber(L, 3));
     return 0;
 }
 
@@ -514,6 +596,15 @@ cr_set_line_width (lua_State *L) {
 }
 
 static int
+cr_set_matrix (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_matrix_t mat;
+    from_lua_matrix(L, &mat, 2);
+    cairo_set_matrix(*obj, &mat);
+    return 0;
+}
+
+static int
 cr_set_miter_limit (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_set_miter_limit(*obj, luaL_checknumber(L, 2));
@@ -525,6 +616,14 @@ cr_set_operator (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_set_operator(*obj,
             operator_values[luaL_checkoption(L, 2, 0, operator_names)]);
+    return 0;
+}
+
+static int
+cr_set_source (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_pattern_t **src = luaL_checkudata(L, 2, MT_NAME_PATTERN);
+    cairo_set_source(*obj, *src);
     return 0;
 }
 
@@ -593,6 +692,42 @@ cr_text_path (lua_State *L) {
     return 0;
 }
 
+static int
+cr_transform (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_matrix_t mat;
+    from_lua_matrix(L, &mat, 2);
+    cairo_transform(*obj, &mat);
+    return 0;
+}
+
+static int
+cr_translate (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_translate(*obj, luaL_checknumber(L, 2), luaL_checknumber(L, 3));
+    return 0;
+}
+
+static int
+cr_user_to_device (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    double x = luaL_checknumber(L, 2), y = luaL_checknumber(L, 3);
+    cairo_user_to_device(*obj, &x, &y);
+    lua_pushnumber(L, x);
+    lua_pushnumber(L, y);
+    return 2;
+}
+
+static int
+cr_user_to_device_distance (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    double x = luaL_checknumber(L, 2), y = luaL_checknumber(L, 3);
+    cairo_user_to_device_distance(*obj, &x, &y);
+    lua_pushnumber(L, x);
+    lua_pushnumber(L, y);
+    return 2;
+}
+
 static const luaL_Reg
 context_methods[] = {
     { "__gc", cr_gc },
@@ -606,6 +741,8 @@ context_methods[] = {
     { "copy_path", cr_copy_path },
     { "copy_path_flat", cr_copy_path_flat },
     { "curve_to", cr_curve_to },
+    { "device_to_user", cr_device_to_user },
+    { "device_to_user_distance", cr_device_to_user_distance },
     { "fill", cr_fill },
     { "fill_extents", cr_fill_extents },
     { "fill_preserve", cr_fill_preserve },
@@ -613,14 +750,18 @@ context_methods[] = {
     { "get_current_point", cr_get_current_point },
     { "get_dash", cr_get_dash },
     { "get_fill_rule", cr_get_fill_rule },
+    { "get_group_target", cr_get_group_target },
     { "get_line_cap", cr_get_line_cap },
     { "get_line_join", cr_get_line_join },
     { "get_line_width", cr_get_line_width },
+    { "get_matrix", cr_get_matrix },
     { "get_miter_limit", cr_get_miter_limit },
     { "get_operator", cr_get_operator },
+    { "get_source", cr_get_source },
     { "get_target", cr_get_target },
     { "get_tolerance", cr_get_tolerance },
     { "has_current_point", cr_has_current_point },
+    { "identity_matrix", cr_identity_matrix },
     { "in_fill", cr_in_fill },
     { "in_stroke", cr_in_stroke },
     { "line_to", cr_line_to },
@@ -633,21 +774,26 @@ context_methods[] = {
     { "pop_group", cr_pop_group },
     { "pop_group_to_source", cr_pop_group_to_source },
     { "push_group", cr_push_group },
+    { "push_group_with_content", cr_push_group_with_content },
     { "rectangle", cr_rectangle },
     { "rel_curve_to", cr_rel_curve_to },
     { "rel_line_to", cr_rel_line_to },
     { "rel_move_to", cr_rel_move_to },
     { "reset_clip", cr_reset_clip },
     { "restore", cr_restore },
+    { "rotate", cr_rotate },
     { "save", cr_save },
+    { "scale", cr_scale },
     { "set_antialias", cr_set_antialias },
     { "set_dash", cr_set_dash },
     { "set_fill_rule", cr_set_fill_rule },
     { "set_line_cap", cr_set_line_cap },
     { "set_line_join", cr_set_line_join },
     { "set_line_width", cr_set_line_width },
+    { "set_matrix", cr_set_matrix },
     { "set_miter_limit", cr_set_miter_limit },
     { "set_operator", cr_set_operator },
+    { "set_source", cr_set_source },
     { "set_source_rgb", cr_set_source_rgb },
     { "set_source_rgba", cr_set_source_rgba },
     { "set_source_surface", cr_set_source_surface },
@@ -656,6 +802,10 @@ context_methods[] = {
     { "stroke_extents", cr_stroke_extents },
     { "stroke_preserve", cr_stroke_preserve },
     { "text_path", cr_text_path },
+    { "transform", cr_transform },
+    { "translate", cr_translate },
+    { "user_to_device", cr_user_to_device },
+    { "user_to_device_distance", cr_user_to_device_distance },
     { 0, 0 }
 };
 

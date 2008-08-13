@@ -19,6 +19,25 @@ image_surface_create (lua_State *L) {
 }
 
 static int
+image_surface_create_from_png (lua_State *L) {
+    const char *filename = luaL_checkstring(L, 1);
+    cairo_surface_t **obj;
+    obj = lua_newuserdata(L, sizeof(cairo_surface_t *));
+    *obj = 0;
+    luaL_getmetatable(L, MT_NAME_SURFACE);
+    lua_setmetatable(L, -2);
+    *obj = cairo_image_surface_create_from_png(filename);
+    switch (cairo_surface_status(*obj)) {
+        case CAIRO_STATUS_FILE_NOT_FOUND:
+            return luaL_error(L, "PNG file '%s' not found", filename);
+        case CAIRO_STATUS_READ_ERROR:
+            return luaL_error(L, "error reading PNG file '%s'", filename);
+        default:;
+    }
+    return 1;
+}
+
+static int
 surface_create_similar (lua_State *L) {
     cairo_surface_t **oldobj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     cairo_surface_t **newobj;
@@ -99,6 +118,29 @@ surface_get_fallback_resolution (lua_State *L) {
 }
 
 static int
+surface_get_format (lua_State *L) {
+    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    /* TODO - throw exception if this is not an image surface */
+    switch (cairo_image_surface_get_format(*obj)) {
+        case CAIRO_FORMAT_ARGB32: lua_pushliteral(L, "argb32"); break;
+        case CAIRO_FORMAT_RGB24:  lua_pushliteral(L, "rgb24");  break;
+        case CAIRO_FORMAT_A8:     lua_pushliteral(L, "a8");     break;
+        case CAIRO_FORMAT_A1:     lua_pushliteral(L, "a1");     break;
+        default:                  lua_pushliteral(L, "<invalid>");
+    }
+    return 1;
+}
+
+static int
+surface_get_size (lua_State *L) {
+    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    /* TODO - throw exception if this is not an image surface */
+    lua_pushnumber(L, cairo_image_surface_get_width(*obj));
+    lua_pushnumber(L, cairo_image_surface_get_height(*obj));
+    return 2;
+}
+
+static int
 surface_get_type (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     const char *s;
@@ -117,7 +159,7 @@ surface_get_type (lua_State *L) {
         case CAIRO_SURFACE_TYPE_OS2:            s = "os2";            break;
         case CAIRO_SURFACE_TYPE_WIN32_PRINTING: s = "win32-printing"; break;
         case CAIRO_SURFACE_TYPE_QUARTZ_IMAGE:   s = "quartz-image";   break;
-        default:                                s = "<invalid>";      break;
+        default:                                s = "<invalid>";
     }
     lua_pushstring(L, s);
     return 1;
@@ -161,6 +203,8 @@ surface_methods[] = {
     { "get_content", surface_get_content },
     { "get_device_offset", surface_get_device_offset },
     { "get_fallback_resolution", surface_get_fallback_resolution },
+    { "get_format", surface_get_format },
+    { "get_size", surface_get_size },
     { "get_type", surface_get_type },
     { "set_device_offset", surface_set_device_offset },
     { "set_fallback_resolution", surface_set_fallback_resolution },
