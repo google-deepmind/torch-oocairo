@@ -21,7 +21,7 @@ cr_gc (lua_State *L) {
 static int
 cr_append_path (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_path_t **path = luaL_checkudata(L, 1, MT_NAME_PATH);
+    cairo_path_t **path = luaL_checkudata(L, 2, MT_NAME_PATH);
     cairo_append_path(*obj, *path);
     return 0;
 }
@@ -155,6 +155,15 @@ cr_fill_preserve (lua_State *L) {
 }
 
 static int
+cr_font_extents (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_font_extents_t extents;
+    cairo_font_extents(*obj, &extents);
+    create_lua_font_extents(L, &extents);
+    return 1;
+}
+
+static int
 cr_get_antialias (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     switch (cairo_get_antialias(*obj)) {
@@ -213,6 +222,27 @@ cr_get_fill_rule (lua_State *L) {
         case CAIRO_FILL_RULE_EVEN_ODD: lua_pushliteral(L, "even-odd");  break;
         default:                       lua_pushliteral(L, "<invalid>");
     }
+    return 1;
+}
+
+static int
+cr_get_font_face (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_font_face_t **face = lua_newuserdata(L, sizeof(cairo_font_face_t *));
+    *face = 0;
+    luaL_getmetatable(L, MT_NAME_FONTFACE);
+    lua_setmetatable(L, -2);
+    *face = cairo_get_font_face(*obj);
+    cairo_font_face_reference(*face);
+    return 1;
+}
+
+static int
+cr_get_font_matrix (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_matrix_t mat;
+    cairo_get_font_matrix(*obj, &mat);
+    create_lua_matrix(L, &mat);
     return 1;
 }
 
@@ -326,6 +356,28 @@ static int
 cr_get_tolerance (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     lua_pushnumber(L, cairo_get_tolerance(*obj));
+    return 1;
+}
+
+static int
+cr_glyph_extents (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_glyph_t *glyphs;
+    int num_glyphs;
+    cairo_text_extents_t extents;
+    from_lua_glyph_array(L, &glyphs, &num_glyphs, 2);
+    cairo_glyph_extents(*obj, glyphs, num_glyphs, &extents);
+    create_lua_text_extents(L, &extents);
+    return 1;
+}
+
+static int
+cr_glyph_path (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_glyph_t *glyphs;
+    int num_glyphs;
+    from_lua_glyph_array(L, &glyphs, &num_glyphs, 2);
+    cairo_glyph_path(*obj, glyphs, num_glyphs);
     return 1;
 }
 
@@ -509,6 +561,17 @@ cr_scale (lua_State *L) {
 }
 
 static int
+cr_select_font_face (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_select_font_face(*obj, luaL_checkstring(L, 2),
+            font_slant_values[luaL_checkoption(L, 3, "normal",
+                                               font_slant_names)],
+            font_weight_values[luaL_checkoption(L, 4, "normal",
+                                                font_weight_names)]);
+    return 0;
+}
+
+static int
 cr_set_antialias (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_set_antialias(*obj,
@@ -567,6 +630,22 @@ cr_set_fill_rule (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_set_fill_rule(*obj,
             fillrule_values[luaL_checkoption(L, 2, 0, fillrule_names)]);
+    return 0;
+}
+
+static int
+cr_set_font_matrix (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_matrix_t mat;
+    from_lua_matrix(L, &mat, 2);
+    cairo_set_font_matrix(*obj, &mat);
+    return 0;
+}
+
+static int
+cr_set_font_size (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_set_font_size(*obj, luaL_checknumber(L, 2));
     return 0;
 }
 
@@ -660,6 +739,24 @@ cr_set_tolerance (lua_State *L) {
 }
 
 static int
+cr_show_glyphs (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_glyph_t *glyphs;
+    int num_glyphs;
+    from_lua_glyph_array(L, &glyphs, &num_glyphs, 2);
+    cairo_show_glyphs(*obj, glyphs, num_glyphs);
+    free(glyphs);
+    return 0;
+}
+
+static int
+cr_show_text (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_show_text(*obj, luaL_checkstring(L, 2));
+    return 0;
+}
+
+static int
 cr_stroke (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_stroke(*obj);
@@ -683,6 +780,15 @@ cr_stroke_preserve (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_stroke_preserve(*obj);
     return 0;
+}
+
+static int
+cr_text_extents (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_text_extents_t extents;
+    cairo_text_extents(*obj, luaL_checkstring(L, 2), &extents);
+    create_lua_text_extents(L, &extents);
+    return 1;
 }
 
 static int
@@ -731,6 +837,7 @@ cr_user_to_device_distance (lua_State *L) {
 static const luaL_Reg
 context_methods[] = {
     { "__gc", cr_gc },
+/* TODO - test append_path */
     { "append_path", cr_append_path },
     { "arc", cr_arc },
     { "arc_negative", cr_arc_negative },
@@ -746,10 +853,14 @@ context_methods[] = {
     { "fill", cr_fill },
     { "fill_extents", cr_fill_extents },
     { "fill_preserve", cr_fill_preserve },
+    { "font_extents", cr_font_extents },
     { "get_antialias", cr_get_antialias },
     { "get_current_point", cr_get_current_point },
     { "get_dash", cr_get_dash },
     { "get_fill_rule", cr_get_fill_rule },
+    { "get_font_face", cr_get_font_face },
+    { "get_font_matrix", cr_get_font_matrix },
+/* TODO - test get_group_target */
     { "get_group_target", cr_get_group_target },
     { "get_line_cap", cr_get_line_cap },
     { "get_line_join", cr_get_line_join },
@@ -760,6 +871,8 @@ context_methods[] = {
     { "get_source", cr_get_source },
     { "get_target", cr_get_target },
     { "get_tolerance", cr_get_tolerance },
+    { "glyph_extents", cr_glyph_extents },
+    { "glyph_path", cr_glyph_path },
     { "has_current_point", cr_has_current_point },
     { "identity_matrix", cr_identity_matrix },
     { "in_fill", cr_in_fill },
@@ -771,9 +884,11 @@ context_methods[] = {
     { "paint", cr_paint },
     { "paint_with_alpha", cr_paint_with_alpha },
     { "path_extents", cr_path_extents },
+/* TODO - test pop_group */
     { "pop_group", cr_pop_group },
     { "pop_group_to_source", cr_pop_group_to_source },
     { "push_group", cr_push_group },
+/* TODO - test push_group_with_content */
     { "push_group_with_content", cr_push_group_with_content },
     { "rectangle", cr_rectangle },
     { "rel_curve_to", cr_rel_curve_to },
@@ -784,9 +899,12 @@ context_methods[] = {
     { "rotate", cr_rotate },
     { "save", cr_save },
     { "scale", cr_scale },
+    { "select_font_face", cr_select_font_face },
     { "set_antialias", cr_set_antialias },
     { "set_dash", cr_set_dash },
     { "set_fill_rule", cr_set_fill_rule },
+    { "set_font_matrix", cr_set_font_matrix },
+    { "set_font_size", cr_set_font_size },
     { "set_line_cap", cr_set_line_cap },
     { "set_line_join", cr_set_line_join },
     { "set_line_width", cr_set_line_width },
@@ -798,9 +916,12 @@ context_methods[] = {
     { "set_source_rgba", cr_set_source_rgba },
     { "set_source_surface", cr_set_source_surface },
     { "set_tolerance", cr_set_tolerance },
+    { "show_glyphs", cr_show_glyphs },
+    { "show_text", cr_show_text },
     { "stroke", cr_stroke },
     { "stroke_extents", cr_stroke_extents },
     { "stroke_preserve", cr_stroke_preserve },
+    { "text_extents", cr_text_extents },
     { "text_path", cr_text_path },
     { "transform", cr_transform },
     { "translate", cr_translate },

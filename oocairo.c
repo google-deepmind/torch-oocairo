@@ -6,13 +6,18 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#if CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 6, 0)
+#error "This Lua binding requires Cairo version 1.6 or better."
+#endif
+
 int luaopen_oocairo (lua_State *L);
 
-#define MT_NAME_CONTEXT ("6404c570-6711-11dd-b66f-00e081225ce5")
-#define MT_NAME_MATRIX  ("6e2f4c64-6711-11dd-acfc-00e081225ce5")
-#define MT_NAME_PATH    ("6d83bf34-6711-11dd-b4c2-00e081225ce5")
-#define MT_NAME_PATTERN ("6dd49a26-6711-11dd-88fd-00e081225ce5")
-#define MT_NAME_SURFACE ("6d31a064-6711-11dd-bdd8-00e081225ce5")
+#define MT_NAME_CONTEXT  ("6404c570-6711-11dd-b66f-00e081225ce5")
+#define MT_NAME_FONTFACE ("ee272774-6a1e-11dd-86de-00e081225ce5")
+#define MT_NAME_MATRIX   ("6e2f4c64-6711-11dd-acfc-00e081225ce5")
+#define MT_NAME_PATH     ("6d83bf34-6711-11dd-b4c2-00e081225ce5")
+#define MT_NAME_PATTERN  ("6dd49a26-6711-11dd-88fd-00e081225ce5")
+#define MT_NAME_SURFACE  ("6d31a064-6711-11dd-bdd8-00e081225ce5")
 
 static const char * const format_option_names[] = {
     "argb32", "rgb24", "a8", "a1", 0
@@ -89,6 +94,35 @@ static const cairo_filter_t filter_values[] = {
     CAIRO_FILTER_NEAREST, CAIRO_FILTER_BILINEAR, CAIRO_FILTER_GAUSSIAN
 };
 
+static const char * const font_slant_names[] = {
+    "normal", "italic", "oblique", 0
+};
+static const cairo_font_slant_t font_slant_values[] = {
+    CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_SLANT_ITALIC, CAIRO_FONT_SLANT_OBLIQUE
+};
+
+static const char * const font_weight_names[] = {
+    "normal", "bold", 0
+};
+static const cairo_font_weight_t font_weight_values[] = {
+  CAIRO_FONT_WEIGHT_NORMAL, CAIRO_FONT_WEIGHT_BOLD
+};
+
+static const char * const font_type_names[] = {
+    "toy", "ft", "win32", "quartz",
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
+    "user",
+#endif
+    0
+};
+static const cairo_font_type_t font_type_values[] = {
+    CAIRO_FONT_TYPE_TOY, CAIRO_FONT_TYPE_FT,
+    CAIRO_FONT_TYPE_WIN32, CAIRO_FONT_TYPE_QUARTZ,
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
+    CAIRO_FONT_TYPE_USER,
+#endif
+};
+
 static void
 to_lua_matrix (lua_State *L, cairo_matrix_t *mat, int pos) {
     double *matnums;
@@ -123,7 +157,106 @@ from_lua_matrix (lua_State *L, cairo_matrix_t *mat, int pos) {
     }
 }
 
+static void
+create_lua_font_extents (lua_State *L, cairo_font_extents_t *extents) {
+    lua_createtable(L, 0, 5);
+    lua_pushliteral(L, "ascent");
+    lua_pushnumber(L, extents->ascent);
+    lua_rawset(L, -3);
+    lua_pushliteral(L, "descent");
+    lua_pushnumber(L, extents->descent);
+    lua_rawset(L, -3);
+    lua_pushliteral(L, "height");
+    lua_pushnumber(L, extents->height);
+    lua_rawset(L, -3);
+    lua_pushliteral(L, "max_x_advance");
+    lua_pushnumber(L, extents->max_x_advance);
+    lua_rawset(L, -3);
+    lua_pushliteral(L, "max_y_advance");
+    lua_pushnumber(L, extents->max_y_advance);
+    lua_rawset(L, -3);
+}
+
+static void
+create_lua_text_extents (lua_State *L, cairo_text_extents_t *extents) {
+    lua_createtable(L, 0, 6);
+    lua_pushliteral(L, "x_bearing");
+    lua_pushnumber(L, extents->x_bearing);
+    lua_rawset(L, -3);
+    lua_pushliteral(L, "y_bearing");
+    lua_pushnumber(L, extents->y_bearing);
+    lua_rawset(L, -3);
+    lua_pushliteral(L, "width");
+    lua_pushnumber(L, extents->width);
+    lua_rawset(L, -3);
+    lua_pushliteral(L, "height");
+    lua_pushnumber(L, extents->height);
+    lua_rawset(L, -3);
+    lua_pushliteral(L, "x_advance");
+    lua_pushnumber(L, extents->x_advance);
+    lua_rawset(L, -3);
+    lua_pushliteral(L, "y_advance");
+    lua_pushnumber(L, extents->y_advance);
+    lua_rawset(L, -3);
+}
+
+static void
+from_lua_glyph_array (lua_State *L, cairo_glyph_t **glyphs, int *num_glyphs,
+                      int pos)
+{
+    int i;
+    double n;
+
+    luaL_checktype(L, pos, LUA_TTABLE);
+    *num_glyphs = lua_objlen(L, pos);
+    if (*num_glyphs == 0) {
+        *glyphs = 0;
+        return;
+    }
+    *glyphs = malloc(sizeof(cairo_glyph_t) * *num_glyphs);
+    assert(*glyphs);
+
+    for (i = 0; i < *num_glyphs; ++i) {
+        lua_rawgeti(L, pos, i + 1);
+        if (!lua_istable(L, -1)) {
+            free(*glyphs);
+            luaL_error(L, "glyph %d is not a table", i + 1);
+        }
+        else if (lua_objlen(L, -1) != 3) {
+            free(*glyphs);
+            luaL_error(L, "glyph %d should contain exactly 3 numbers", i + 1);
+        }
+        lua_rawgeti(L, -1, 1);
+        if (!lua_isnumber(L, -1)) {
+            free(*glyphs);
+            luaL_error(L, "index of glyph %d should be a number", i + 1);
+        }
+        n = lua_tonumber(L, -1);
+        if (n < 0) {
+            free(*glyphs);
+            luaL_error(L, "index number of glyph %d is negative", i + 1);
+        }
+        (*glyphs)[i].index = (unsigned long) n;
+        lua_pop(L, 1);
+        lua_rawgeti(L, -1, 2);
+        if (!lua_isnumber(L, -1)) {
+            free(*glyphs);
+            luaL_error(L, "x position for glyph %d should be a number", i + 1);
+        }
+        (*glyphs)[i].x = lua_tonumber(L, -1);
+        lua_pop(L, 1);
+        lua_rawgeti(L, -1, 3);
+        if (!lua_isnumber(L, -1)) {
+            free(*glyphs);
+            luaL_error(L, "y position for glyph %d should be a number", i + 1);
+        }
+        (*glyphs)[i].y = lua_tonumber(L, -1);
+        lua_pop(L, 2);
+    }
+}
+
 #include "obj_context.c"
+#include "obj_font_face.c"
 #include "obj_matrix.c"
 #include "obj_path.c"
 #include "obj_pattern.c"
@@ -196,6 +329,8 @@ luaopen_oocairo (lua_State *L) {
     /* Create the metatables for objects of different types. */
     create_object_metatable(L, MT_NAME_CONTEXT, "cairo context object",
                             context_methods);
+    create_object_metatable(L, MT_NAME_FONTFACE, "cairo font face object",
+                            fontface_methods);
     create_object_metatable(L, MT_NAME_MATRIX, "cairo matrix object",
                             cairmat_methods);
     create_object_metatable(L, MT_NAME_PATH, "cairo path object",
