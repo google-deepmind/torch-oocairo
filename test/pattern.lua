@@ -40,7 +40,7 @@ function test_surface ()
     local gotsurface = pat:get_surface()
     assert_userdata(gotsurface)
     assert_equal("cairo surface object", gotsurface._NAME)
-    local wd, ht = gotsurface:get_size()
+    local wd, ht = gotsurface:get_width(), gotsurface:get_height()
     assert_equal(23, wd)
     assert_equal(45, ht)
 end

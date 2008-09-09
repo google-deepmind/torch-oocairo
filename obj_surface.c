@@ -242,12 +242,11 @@ surface_get_format (lua_State *L) {
 }
 
 static int
-surface_get_size (lua_State *L) {
+surface_get_height (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     /* TODO - throw exception if this is not an image surface */
-    lua_pushnumber(L, cairo_image_surface_get_width(*obj));
     lua_pushnumber(L, cairo_image_surface_get_height(*obj));
-    return 2;
+    return 1;
 }
 
 static int
@@ -272,6 +271,14 @@ surface_get_type (lua_State *L) {
         default:                                s = "<invalid>";
     }
     lua_pushstring(L, s);
+    return 1;
+}
+
+static int
+surface_get_width (lua_State *L) {
+    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    /* TODO - throw exception if this is not an image surface */
+    lua_pushnumber(L, cairo_image_surface_get_width(*obj));
     return 1;
 }
 
@@ -314,8 +321,9 @@ surface_methods[] = {
     { "get_device_offset", surface_get_device_offset },
     { "get_fallback_resolution", surface_get_fallback_resolution },
     { "get_format", surface_get_format },
-    { "get_size", surface_get_size },
+    { "get_height", surface_get_height },
     { "get_type", surface_get_type },
+    { "get_width", surface_get_width },
     { "set_device_offset", surface_set_device_offset },
     { "set_fallback_resolution", surface_set_fallback_resolution },
     { "show_page", surface_show_page },

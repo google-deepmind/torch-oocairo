@@ -15,7 +15,7 @@ function test_image_surface_create ()
                      "got surface object for " .. format)
         assert_equal(format, surface:get_format())
         assert_equal(content, surface:get_content(), "content for " .. format)
-        local wd, ht = surface:get_size()
+        local wd, ht = surface:get_width(), surface:get_height()
         assert_equal(23, wd, "width for " .. format)
         assert_equal(45, ht, "height for " .. format)
     end
