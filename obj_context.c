@@ -426,6 +426,23 @@ cr_move_to (lua_State *L) {
 }
 
 static int
+cr_mask (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_pattern_t **pat = luaL_checkudata(L, 2, MT_NAME_PATTERN);
+    cairo_mask(*obj, *pat);
+    return 0;
+}
+
+static int
+cr_mask_surface (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_surface_t **surf = luaL_checkudata(L, 2, MT_NAME_SURFACE);
+    cairo_mask_surface(*obj, *surf, luaL_checknumber(L, 3),
+                       luaL_checknumber(L, 4));
+    return 0;
+}
+
+static int
 cr_new_path (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_new_path(*obj);
@@ -879,6 +896,8 @@ context_methods[] = {
     { "in_stroke", cr_in_stroke },
     { "line_to", cr_line_to },
     { "move_to", cr_move_to },
+    { "mask", cr_mask },
+    { "mask_surface", cr_mask_surface },
     { "new_path", cr_new_path },
     { "new_sub_path", cr_new_sub_path },
     { "paint", cr_paint },

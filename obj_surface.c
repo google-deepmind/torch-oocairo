@@ -37,6 +37,116 @@ image_surface_create_from_png (lua_State *L) {
     return 1;
 }
 
+struct ReadInfoLuaStream {
+    lua_State *L;
+    int fhpos;
+    const char *errmsg;
+};
+
+static cairo_status_t
+read_chunk_from_fh (void *closure, unsigned char *buf, unsigned int lentoread)
+{
+    struct ReadInfoLuaStream *readinfo = closure;
+    const char *s;
+    size_t len;
+
+    lua_State *L = readinfo->L;
+    lua_getfield(L, readinfo->fhpos, "read");
+    lua_pushvalue(L, readinfo->fhpos);
+    lua_pushnumber(L, lentoread);
+    if (lua_pcall(L, 2, 1, 0)) {
+        if (lua_isstring(L, -1))
+            readinfo->errmsg = lua_tostring(L, -1);
+        return CAIRO_STATUS_READ_ERROR;
+    }
+
+    s = lua_tolstring(L, -1, &len);
+    if (!s) {
+        readinfo->errmsg = "'read' method on file handle didn't return string";
+        return CAIRO_STATUS_READ_ERROR;
+    }
+    if (len != lentoread) {
+        readinfo->errmsg = "'read' method on file handle returned wrong amount"
+                           " of data";
+        return CAIRO_STATUS_READ_ERROR;
+    }
+
+    memcpy(buf, s, len);
+    lua_pop(L, 1);
+    return CAIRO_STATUS_SUCCESS;
+}
+
+static int
+image_surface_create_from_png_stream (lua_State *L) {
+    struct ReadInfoLuaStream readinfo;
+    cairo_surface_t **obj;
+    obj = lua_newuserdata(L, sizeof(cairo_surface_t *));
+    *obj = 0;
+    luaL_getmetatable(L, MT_NAME_SURFACE);
+    lua_setmetatable(L, -2);
+
+    readinfo.L = L;
+    readinfo.fhpos = 1;
+    readinfo.errmsg = 0;
+    *obj = cairo_image_surface_create_from_png_stream(read_chunk_from_fh,
+                                                      &readinfo);
+    if (!*obj) {
+        lua_pushliteral(L, "error reading PNG file from Lua file handle");
+        if (readinfo.errmsg) {
+            lua_pushliteral(L, ": ");
+            lua_pushstring(L, readinfo.errmsg);
+            lua_concat(L, 3);
+        }
+        return lua_error(L);
+    }
+    return 1;
+}
+
+struct ReadInfoBuffer {
+    const unsigned char *data;
+    size_t pos, len;
+    int not_enough_data;
+};
+
+static cairo_status_t
+read_chunk_from_buf (void *closure, unsigned char *buf, unsigned int lentoread)
+{
+    struct ReadInfoBuffer *readinfo = closure;
+    size_t bytesleft = readinfo->len - readinfo->pos;
+
+    if (bytesleft < lentoread)
+        return CAIRO_STATUS_READ_ERROR; /* not enough data left in buffer */
+
+    memcpy(buf, readinfo->data + readinfo->pos, lentoread);
+    readinfo->pos += lentoread;
+    return CAIRO_STATUS_SUCCESS;
+}
+
+static int
+image_surface_create_from_png_string (lua_State *L) {
+    struct ReadInfoBuffer readinfo;
+    cairo_surface_t **obj;
+    obj = lua_newuserdata(L, sizeof(cairo_surface_t *));
+    *obj = 0;
+    luaL_getmetatable(L, MT_NAME_SURFACE);
+    lua_setmetatable(L, -2);
+
+    readinfo.data = (unsigned char *) luaL_checklstring(L, 1, &readinfo.len);
+    readinfo.pos = 0;
+    readinfo.not_enough_data = 0;
+    *obj = cairo_image_surface_create_from_png_stream(read_chunk_from_buf,
+                                                      &readinfo);
+    if (!*obj) {
+        lua_pushliteral(L, "error reading PNG file from Lua string");
+        if (readinfo.not_enough_data) {
+            lua_pushliteral(L, ": end of string reached");
+            lua_concat(L, 2);
+        }
+        return lua_error(L);
+    }
+    return 1;
+}
+
 static int
 surface_create_similar (lua_State *L) {
     cairo_surface_t **oldobj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
