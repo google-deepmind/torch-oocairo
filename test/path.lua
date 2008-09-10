@@ -111,6 +111,9 @@ function test_each ()
     cr:curve_to(5, 6, 7, 8, 9, 10)
     cr:close_path()
     cr:move_to(11, 12)
+    cr:rel_line_to(5, 6)
+    cr:rel_move_to(7, 8)
+    cr:rel_curve_to(1, 2, 3, 4, 5, 6)
 
     local path = cr:copy_path()
     assert_userdata(path)
@@ -128,8 +131,14 @@ function test_each ()
     check_path_iter(cmd, pt, "close-path")
     i, cmd, pt = iter(s, i)
     check_path_iter(cmd, pt, "move-to", 11, 12)
-    local last = { iter(s, i) }
-    assert_equal(0, #last)
+    i, cmd, pt = iter(s, i)
+    check_path_iter(cmd, pt, "line-to", 16, 18)
+    i, cmd, pt = iter(s, i)
+    check_path_iter(cmd, pt, "move-to", 23, 26)
+    i, cmd, pt = iter(s, i)
+    check_path_iter(cmd, pt, "curve-to", 24, 28, 26, 30, 28, 32)
+    i, cmd, pt = iter(s, i)
+    assert_nil(i); assert_nil(cmd); assert_nil(pt)
 end
 
 function test_copy_path_flat ()
@@ -143,6 +152,31 @@ function test_copy_path_flat ()
     for _, cmd in path:each() do
         assert(cmd ~= "curve-to")
     end
+end
+
+function test_append_path ()
+    cr:line_to(11, 12)
+    cr:line_to(13, 14)
+    local path = cr:copy_path()
+
+    cr:new_path()
+    cr:move_to(1, 2)
+    cr:line_to(3, 4)
+    cr:append_path(path)
+
+    path = cr:copy_path()
+    local iter, s, i = path:each()
+    local cmd, pt
+    i, cmd, pt = iter(s, i)
+    check_path_iter(cmd, pt, "move-to", 1, 2)
+    i, cmd, pt = iter(s, i)
+    check_path_iter(cmd, pt, "line-to", 3, 4)
+    i, cmd, pt = iter(s, i)
+    check_path_iter(cmd, pt, "move-to", 11, 12)
+    i, cmd, pt = iter(s, i)
+    check_path_iter(cmd, pt, "line-to", 13, 14)
+    i = iter(s, i)
+    assert_nil(i)
 end
 
 -- vi:ts=4 sw=4 expandtab

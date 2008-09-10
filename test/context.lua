@@ -166,6 +166,20 @@ function test_target ()
     assert_equal("cairo surface object", targ._NAME)
 end
 
+function test_group_target ()
+    cr:push_group()
+    local targ = cr:get_group_target()
+    assert_userdata(targ)
+    assert_equal("cairo surface object", targ._NAME)
+end
+
+function test_pop_group ()
+    cr:push_group()
+    local pat = cr:pop_group()
+    assert_userdata(pat)
+    assert_equal("cairo pattern object", pat._NAME)
+end
+
 function test_tolerance ()
     assert_error("bad type", function () cr:set_tolerance("foo") end)
     assert_equal(0.1, cr:get_tolerance(), "default intact after error")

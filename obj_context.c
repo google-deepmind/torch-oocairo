@@ -485,8 +485,12 @@ cr_path_extents (lua_State *L) {
 static int
 cr_pop_group (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_pop_group(*obj);
-    return 0;
+    cairo_pattern_t **pattern = lua_newuserdata(L, sizeof(cairo_pattern_t *));
+    *pattern = 0;
+    luaL_getmetatable(L, MT_NAME_PATTERN);
+    lua_setmetatable(L, -2);
+    *pattern = cairo_pop_group(*obj);
+    return 1;
 }
 
 static int
@@ -499,15 +503,10 @@ cr_pop_group_to_source (lua_State *L) {
 static int
 cr_push_group (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_push_group(*obj);
-    return 0;
-}
-
-static int
-cr_push_group_with_content (lua_State *L) {
-    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_push_group_with_content(*obj,
-            content_values[luaL_checkoption(L, 2, 0, content_names)]);
+    cairo_content_t content = CAIRO_CONTENT_COLOR_ALPHA;
+    if (!lua_isnoneornil(L, 2))
+        content = content_values[luaL_checkoption(L, 2, 0, content_names)];
+    cairo_push_group_with_content(*obj, content);
     return 0;
 }
 
@@ -854,7 +853,6 @@ cr_user_to_device_distance (lua_State *L) {
 static const luaL_Reg
 context_methods[] = {
     { "__gc", cr_gc },
-/* TODO - test append_path */
     { "append_path", cr_append_path },
     { "arc", cr_arc },
     { "arc_negative", cr_arc_negative },
@@ -877,7 +875,6 @@ context_methods[] = {
     { "get_fill_rule", cr_get_fill_rule },
     { "get_font_face", cr_get_font_face },
     { "get_font_matrix", cr_get_font_matrix },
-/* TODO - test get_group_target */
     { "get_group_target", cr_get_group_target },
     { "get_line_cap", cr_get_line_cap },
     { "get_line_join", cr_get_line_join },
@@ -903,12 +900,9 @@ context_methods[] = {
     { "paint", cr_paint },
     { "paint_with_alpha", cr_paint_with_alpha },
     { "path_extents", cr_path_extents },
-/* TODO - test pop_group */
     { "pop_group", cr_pop_group },
     { "pop_group_to_source", cr_pop_group_to_source },
     { "push_group", cr_push_group },
-/* TODO - test push_group_with_content */
-    { "push_group_with_content", cr_push_group_with_content },
     { "rectangle", cr_rectangle },
     { "rel_curve_to", cr_rel_curve_to },
     { "rel_line_to", cr_rel_line_to },

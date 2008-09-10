@@ -28,6 +28,17 @@ for _, v in ipairs{ {200,1,0,0}, {150,0,1,0}, {100,0,0,1}, {50,0,0,0} } do
     cr:set_source_rgb(r, g, b)
     cr:fill()
 end
+
+local function draw_text_on_surface (surface, y, text)
+    local tmpcr = Cairo.context_create(surface)
+    tmpcr:move_to(20, y)
+    tmpcr:set_source_rgb(0, 0, 0)
+    tmpcr:set_font_size(40)
+    tmpcr:show_text(text)
+end
+draw_text_on_surface(cr:get_target(), IMG_HT / 2 - 70, "get_target")
+draw_text_on_surface(cr:get_group_target(), IMG_HT / 2 + 80, "get_group_target")
+
 cr:pop_group_to_source()
 cr:paint_with_alpha(0.5)
 
