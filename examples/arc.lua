@@ -39,6 +39,10 @@ end
 cr:set_source_rgb(0, 0, 0)
 cr:fill()
 
-surface:write_to_png("arc.png")
+-- As a test of different ways to write the output, this particular example
+-- program writes the finished PNG file through a Lua filehandle.
+local fh = assert(io.open("arc.png", "wb"))
+surface:write_to_png_stream(fh)
+fh:close()
 
 -- vi:ts=4 sw=4 expandtab

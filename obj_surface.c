@@ -394,8 +394,85 @@ static int
 surface_write_to_png (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     const char *filename = luaL_checkstring(L, 2);
-    cairo_surface_write_to_png(*obj, filename);
+    if (cairo_surface_write_to_png(*obj, filename) != CAIRO_STATUS_SUCCESS)
+        return luaL_error(L, "error writing surface to PNG file '%s'",
+                          filename);
     return 0;
+}
+
+struct WriteInfoLuaStream {
+    lua_State *L;
+    int fhpos;
+    const char *errmsg;
+};
+
+static cairo_status_t
+write_chunk_to_fh (void *closure, const unsigned char *buf,
+                   unsigned int lentowrite)
+{
+    struct WriteInfoLuaStream *writeinfo = closure;
+
+    lua_State *L = writeinfo->L;
+    lua_getfield(L, writeinfo->fhpos, "write");
+    lua_pushvalue(L, writeinfo->fhpos);
+    lua_pushlstring(L, (const char *) buf, lentowrite);
+    if (lua_pcall(L, 2, 0, 0)) {
+        if (lua_isstring(L, -1))
+            writeinfo->errmsg = lua_tostring(L, -1);
+        return CAIRO_STATUS_WRITE_ERROR;
+    }
+
+    return CAIRO_STATUS_SUCCESS;
+}
+
+static int
+surface_write_to_png_stream (lua_State *L) {
+    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    struct WriteInfoLuaStream writeinfo;
+
+    writeinfo.L = L;
+    writeinfo.fhpos = 2;
+    writeinfo.errmsg = 0;
+
+    if (cairo_surface_write_to_png_stream(*obj, write_chunk_to_fh, &writeinfo)
+            != CAIRO_STATUS_SUCCESS)
+    {
+        lua_pushliteral(L, "error writing PNG file to Lua file handle");
+        if (writeinfo.errmsg) {
+            lua_pushliteral(L, ": ");
+            lua_pushstring(L, writeinfo.errmsg);
+            lua_concat(L, 3);
+        }
+        return lua_error(L);
+    }
+
+    return 0;
+}
+
+static cairo_status_t
+write_chunk_to_luabuf (void *closure, const unsigned char *buf,
+                       unsigned int lentowrite)
+{
+    luaL_Buffer *b = closure;
+    luaL_addlstring(b, (const char *) buf, lentowrite);
+    return CAIRO_STATUS_SUCCESS;
+}
+
+static int
+surface_write_to_png_string (lua_State *L) {
+    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    luaL_Buffer b;
+    luaL_buffinit(L, &b);
+
+    if (cairo_surface_write_to_png_stream(*obj, write_chunk_to_luabuf, &b)
+            != CAIRO_STATUS_SUCCESS)
+    {
+        luaL_pushresult(&b);    /* tidy stack, result ignored */
+        luaL_error(L, "error writing PNG file to Lua string");
+    }
+
+    luaL_pushresult(&b);
+    return 1;
 }
 
 static const luaL_Reg
@@ -416,6 +493,8 @@ surface_methods[] = {
     { "set_size", surface_set_size },
     { "show_page", surface_show_page },
     { "write_to_png", surface_write_to_png },
+    { "write_to_png_stream", surface_write_to_png_stream },
+    { "write_to_png_string", surface_write_to_png_string },
     { 0, 0 }
 };
 

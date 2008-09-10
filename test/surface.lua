@@ -112,4 +112,22 @@ function test_not_pdf_surface ()
                  function () surface:set_size(40, 50) end)
 end
 
+function test_write_to_png_stream ()
+    local surface = Cairo.image_surface_create("rgb24", 23, 45)
+    local filename = tmpname()
+    local fh = assert(io.open(filename, "wb"))
+    surface:write_to_png_stream(fh)
+    fh:close()
+    fh = assert(io.open(filename, "rb"))
+    local data = fh:read("*a")
+    fh:close()
+    assert_match("^\137PNG\13\10", data)
+end
+
+function test_write_to_png_string ()
+    local surface = Cairo.image_surface_create("rgb24", 23, 45)
+    local data = surface:write_to_png_string()
+    assert_match("^\137PNG\13\10", data)
+end
+
 -- vi:ts=4 sw=4 expandtab
