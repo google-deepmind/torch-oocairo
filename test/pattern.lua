@@ -144,4 +144,18 @@ function test_not_gradient_pattern ()
                  function () pat:add_color_stop_rgba(0, 0.1, 0.2, 0.3, 0.4) end)
 end
 
+function test_equality ()
+    -- Different userdatas, same Cairo object.
+    local surface = Cairo.image_surface_create("rgb24", 23, 45)
+    local pattern1 = Cairo.pattern_create_rgb(0.25, 0.5, 0.75)
+    local cr = Cairo.context_create(surface)
+    cr:set_source(pattern1)
+    local pattern2 = cr:get_source()
+    assert_true(pattern1 == pattern2)
+
+    -- Different userdatas, different Cairo objects.
+    local pattern3 = Cairo.pattern_create_rgb(0.25, 0.5, 0.75)
+    assert_false(pattern1 == pattern3)
+end
+
 -- vi:ts=4 sw=4 expandtab

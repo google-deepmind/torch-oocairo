@@ -130,4 +130,18 @@ function test_write_to_png_string ()
     assert_match("^\137PNG\13\10", data)
 end
 
+function test_equality ()
+    -- Create two userdatas containing the same pointer value (different
+    -- objects in Lua, but the same objects in C, so should be equal).
+    local surface1 = Cairo.image_surface_create("rgb24", 23, 45)
+    local cr = Cairo.context_create(surface1)
+    local surface2 = cr:get_target()
+    assert_true(surface1 == surface2)
+
+    -- Create a new, completely separate object, which should be distinct
+    -- from any other.
+    local surface3 = Cairo.image_surface_create("rgb24", 23, 45)
+    assert_false(surface1 == surface3)
+end
+
 -- vi:ts=4 sw=4 expandtab

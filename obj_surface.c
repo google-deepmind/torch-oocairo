@@ -227,6 +227,14 @@ surface_create_similar (lua_State *L) {
 }
 
 static int
+surface_eq (lua_State *L) {
+    cairo_surface_t **obj1 = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    cairo_surface_t **obj2 = luaL_checkudata(L, 2, MT_NAME_SURFACE);
+    lua_pushboolean(L, *obj1 == *obj2);
+    return 1;
+}
+
+static int
 surface_gc (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     cairo_surface_destroy(*obj);
@@ -477,6 +485,7 @@ surface_write_to_png_string (lua_State *L) {
 
 static const luaL_Reg
 surface_methods[] = {
+    { "__eq", surface_eq },
     { "__gc", surface_gc },
     { "copy_page", surface_copy_page },
     { "finish", surface_finish },

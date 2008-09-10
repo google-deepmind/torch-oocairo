@@ -65,6 +65,14 @@ pattern_create_radial (lua_State *L) {
 }
 
 static int
+pattern_eq (lua_State *L) {
+    cairo_pattern_t **obj1 = luaL_checkudata(L, 1, MT_NAME_PATTERN);
+    cairo_pattern_t **obj2 = luaL_checkudata(L, 2, MT_NAME_PATTERN);
+    lua_pushboolean(L, *obj1 == *obj2);
+    return 1;
+}
+
+static int
 pattern_gc (lua_State *L) {
     cairo_pattern_t **obj = luaL_checkudata(L, 1, MT_NAME_PATTERN);
     cairo_pattern_destroy(*obj);
@@ -260,6 +268,7 @@ pattern_set_matrix (lua_State *L) {
 
 static const luaL_Reg
 pattern_methods[] = {
+    { "__eq", pattern_eq },
     { "__gc", pattern_gc },
     { "add_color_stop_rgb", pattern_add_color_stop_rgb },
     { "add_color_stop_rgba", pattern_add_color_stop_rgba },
