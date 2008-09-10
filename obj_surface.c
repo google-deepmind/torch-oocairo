@@ -148,6 +148,28 @@ image_surface_create_from_png_string (lua_State *L) {
 }
 
 static int
+pdf_surface_create (lua_State *L) {
+    const char *filename;
+    lua_Number width, height;
+    cairo_surface_t **obj;
+
+    filename = luaL_checkstring(L, 1);
+    width = luaL_checknumber(L, 2);
+    height = luaL_checknumber(L, 3);
+    luaL_argcheck(L, width >= 0, 2, "image width cannot be negative");
+    luaL_argcheck(L, height >= 0, 3, "image height cannot be negative");
+
+    obj = lua_newuserdata(L, sizeof(cairo_surface_t *));
+    *obj = 0;
+    luaL_getmetatable(L, MT_NAME_SURFACE);
+    lua_setmetatable(L, -2);
+    *obj = cairo_pdf_surface_create(filename, width, height);
+    if (cairo_surface_status(*obj) != CAIRO_STATUS_SUCCESS)
+        return luaL_error(L, "error creating PDF surface");
+    return 1;
+}
+
+static int
 svg_get_versions (lua_State *L) {
     const cairo_svg_version_t *versions;
     int num_versions, i;
@@ -164,12 +186,12 @@ svg_get_versions (lua_State *L) {
 static int
 svg_surface_create (lua_State *L) {
     const char *filename;
-    int width, height;
+    lua_Number width, height;
     cairo_surface_t **obj;
 
     filename = luaL_checkstring(L, 1);
-    width = luaL_checkint(L, 2);
-    height = luaL_checkint(L, 3);
+    width = luaL_checknumber(L, 2);
+    height = luaL_checknumber(L, 3);
     luaL_argcheck(L, width >= 0, 2, "image width cannot be negative");
     luaL_argcheck(L, height >= 0, 3, "image height cannot be negative");
 
@@ -352,6 +374,16 @@ surface_set_fallback_resolution (lua_State *L) {
 }
 
 static int
+surface_set_size (lua_State *L) {
+    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    if (cairo_surface_get_type(*obj) != CAIRO_SURFACE_TYPE_PDF)
+        return luaL_error(L, "method 'set_size' only works on PDF surfaces");
+    cairo_pdf_surface_set_size(*obj, luaL_checknumber(L, 2),
+                               luaL_checknumber(L, 3));
+    return 0;
+}
+
+static int
 surface_show_page (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     cairo_surface_show_page(*obj);
@@ -381,6 +413,7 @@ surface_methods[] = {
     { "get_width", surface_get_width },
     { "set_device_offset", surface_set_device_offset },
     { "set_fallback_resolution", surface_set_fallback_resolution },
+    { "set_size", surface_set_size },
     { "show_page", surface_show_page },
     { "write_to_png", surface_write_to_png },
     { 0, 0 }

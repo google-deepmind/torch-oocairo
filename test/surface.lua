@@ -4,6 +4,8 @@ local Cairo = require "oocairo"
 
 module("test.surface", lunit.testcase, package.seeall)
 
+teardown = clean_up_temp_files
+
 function test_image_surface_create ()
     for format, content in pairs({
         rgb24 = "color", argb32 = "color-alpha",
@@ -13,6 +15,7 @@ function test_image_surface_create ()
         assert_userdata(surface, "got userdata for " .. format)
         assert_equal("cairo surface object", surface._NAME,
                      "got surface object for " .. format)
+        assert_equal("image", surface:get_type())
         assert_equal(format, surface:get_format())
         assert_equal(content, surface:get_content(), "content for " .. format)
         local wd, ht = surface:get_width(), surface:get_height()
@@ -93,9 +96,20 @@ function test_fallback_resolution ()
     end
 end
 
-function test_type ()
-    local surface = Cairo.image_surface_create("rgb24", 23, 45)
-    assert_equal("image", surface:get_type())
+function test_not_image_surface ()
+    local surface = Cairo.svg_surface_create(tmpname(), 300, 200)
+    assert_error("get_width on non-image surface",
+                 function () surface:get_width() end)
+    assert_error("get_height on non-image surface",
+                 function () surface:get_height() end)
+    assert_error("get_format on non-image surface",
+                 function () surface:get_format() end)
+end
+
+function test_not_pdf_surface ()
+    local surface = Cairo.image_surface_create("rgb24", 30, 20)
+    assert_error("set_size on non-PDF surface",
+                 function () surface:set_size(40, 50) end)
 end
 
 -- vi:ts=4 sw=4 expandtab

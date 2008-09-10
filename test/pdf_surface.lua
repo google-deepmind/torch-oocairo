@@ -2,18 +2,9 @@ require "runlocal"
 require "lunit"
 local Cairo = require "oocairo"
 
-module("test.svg_surface", lunit.testcase, package.seeall)
+module("test.pdf_surface", lunit.testcase, package.seeall)
 
 teardown = clean_up_temp_files
-
-function test_svg_versions ()
-    local versions = Cairo.svg_get_versions()
-    assert_table(versions)
-    for k, v in pairs(versions) do
-        assert_number(k)
-        assert_string(v)
-    end
-end
 
 -- Arbitrary drawing just to make sure there's something in the SVG file.
 local function draw_stuff (surface)
@@ -27,16 +18,16 @@ end
 
 function test_create ()
     local filename_normal = tmpname()
-    local surface = Cairo.svg_surface_create(filename_normal, 300, 200)
+    local surface = Cairo.pdf_surface_create(filename_normal, 300, 200)
     assert_userdata(surface)
     assert_equal("cairo surface object", surface._NAME)
-    assert_equal("svg", surface:get_type())
+    assert_equal("pdf", surface:get_type())
 
     draw_stuff(surface)
     surface:finish()
     local fh = assert(io.open(filename_normal, "rb"))
-    local svg = fh:read("*a")
-    assert_match("<svg", svg)
+    local pdf = fh:read("*a")
+    assert_match("^%%PDF", pdf)
 end
 
 -- vi:ts=4 sw=4 expandtab
