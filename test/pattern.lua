@@ -136,4 +136,12 @@ function test_filter ()
     end
 end
 
+function test_not_gradient_pattern ()
+    local pat = Cairo.pattern_create_rgb(0.25, 0.5, 0.75)
+    assert_error("add_color_stop_rgb on non-gradient pattern",
+                 function () pat:add_color_stop_rgb(0, 0.1, 0.2, 0.3) end)
+    assert_error("add_color_stop_rgba on non-gradient pattern",
+                 function () pat:add_color_stop_rgba(0, 0.1, 0.2, 0.3, 0.4) end)
+end
+
 -- vi:ts=4 sw=4 expandtab

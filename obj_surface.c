@@ -148,6 +148,42 @@ image_surface_create_from_png_string (lua_State *L) {
 }
 
 static int
+svg_get_versions (lua_State *L) {
+    const cairo_svg_version_t *versions;
+    int num_versions, i;
+    cairo_svg_get_versions(&versions, &num_versions);
+
+    lua_createtable(L, num_versions, 0);
+    for (i = 0; i < num_versions; ++i) {
+        lua_pushstring(L, cairo_svg_version_to_string(versions[i]));
+        lua_rawseti(L, -2, i + 1);
+    }
+    return 1;
+}
+
+static int
+svg_surface_create (lua_State *L) {
+    const char *filename;
+    int width, height;
+    cairo_surface_t **obj;
+
+    filename = luaL_checkstring(L, 1);
+    width = luaL_checkint(L, 2);
+    height = luaL_checkint(L, 3);
+    luaL_argcheck(L, width >= 0, 2, "image width cannot be negative");
+    luaL_argcheck(L, height >= 0, 3, "image height cannot be negative");
+
+    obj = lua_newuserdata(L, sizeof(cairo_surface_t *));
+    *obj = 0;
+    luaL_getmetatable(L, MT_NAME_SURFACE);
+    lua_setmetatable(L, -2);
+    *obj = cairo_svg_surface_create(filename, width, height);
+    if (cairo_surface_status(*obj) != CAIRO_STATUS_SUCCESS)
+        return luaL_error(L, "error creating SVG surface");
+    return 1;
+}
+
+static int
 surface_create_similar (lua_State *L) {
     cairo_surface_t **oldobj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     cairo_surface_t **newobj;
@@ -180,6 +216,20 @@ static int
 surface_copy_page (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     cairo_surface_copy_page(*obj);
+    return 0;
+}
+
+static int
+surface_finish (lua_State *L) {
+    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    cairo_surface_finish(*obj);
+    return 0;
+}
+
+static int
+surface_flush (lua_State *L) {
+    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    cairo_surface_flush(*obj);
     return 0;
 }
 
@@ -230,7 +280,8 @@ surface_get_fallback_resolution (lua_State *L) {
 static int
 surface_get_format (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
-    /* TODO - throw exception if this is not an image surface */
+    if (cairo_surface_get_type(*obj) != CAIRO_SURFACE_TYPE_IMAGE)
+        return luaL_error(L, "method 'get_format' only works on image surfaces");
     switch (cairo_image_surface_get_format(*obj)) {
         case CAIRO_FORMAT_ARGB32: lua_pushliteral(L, "argb32"); break;
         case CAIRO_FORMAT_RGB24:  lua_pushliteral(L, "rgb24");  break;
@@ -244,7 +295,8 @@ surface_get_format (lua_State *L) {
 static int
 surface_get_height (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
-    /* TODO - throw exception if this is not an image surface */
+    if (cairo_surface_get_type(*obj) != CAIRO_SURFACE_TYPE_IMAGE)
+        return luaL_error(L, "method 'get_height' only works on image surfaces");
     lua_pushnumber(L, cairo_image_surface_get_height(*obj));
     return 1;
 }
@@ -277,7 +329,8 @@ surface_get_type (lua_State *L) {
 static int
 surface_get_width (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
-    /* TODO - throw exception if this is not an image surface */
+    if (cairo_surface_get_type(*obj) != CAIRO_SURFACE_TYPE_IMAGE)
+        return luaL_error(L, "method 'get_width' only works on image surfaces");
     lua_pushnumber(L, cairo_image_surface_get_width(*obj));
     return 1;
 }
@@ -317,6 +370,8 @@ static const luaL_Reg
 surface_methods[] = {
     { "__gc", surface_gc },
     { "copy_page", surface_copy_page },
+    { "finish", surface_finish },
+    { "flush", surface_flush },
     { "get_content", surface_get_content },
     { "get_device_offset", surface_get_device_offset },
     { "get_fallback_resolution", surface_get_fallback_resolution },

@@ -1,4 +1,5 @@
 #include <cairo.h>
+#include <cairo-svg.h>
 #include <lua.h>
 #include <lauxlib.h>
 #include <string.h>
@@ -278,6 +279,8 @@ constructor_funcs[] = {
     { "pattern_create_rgb", pattern_create_rgb },
     { "pattern_create_rgba", pattern_create_rgba },
     { "surface_create_similar", surface_create_similar },
+    { "svg_surface_create", svg_surface_create },
+    { "svg_get_versions", svg_get_versions },
     { 0, 0 }
 };
 

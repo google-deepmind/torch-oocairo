@@ -75,7 +75,10 @@ pattern_gc (lua_State *L) {
 static int
 pattern_add_color_stop_rgb (lua_State *L) {
     cairo_pattern_t **obj = luaL_checkudata(L, 1, MT_NAME_PATTERN);
-    /* TODO - exception if this is not a gradient pattern */
+    cairo_pattern_type_t type = cairo_pattern_get_type(*obj);
+    if (type != CAIRO_PATTERN_TYPE_LINEAR && type != CAIRO_PATTERN_TYPE_RADIAL)
+        return luaL_error(L, "add_color_stop_rgb() only works on gradient"
+                          " patterns");
     cairo_pattern_add_color_stop_rgb(*obj, luaL_checknumber(L, 2),
         luaL_checknumber(L, 3), luaL_checknumber(L, 4), luaL_checknumber(L, 5));
     return 0;
@@ -84,7 +87,10 @@ pattern_add_color_stop_rgb (lua_State *L) {
 static int
 pattern_add_color_stop_rgba (lua_State *L) {
     cairo_pattern_t **obj = luaL_checkudata(L, 1, MT_NAME_PATTERN);
-    /* TODO - exception if this is not a gradient pattern */
+    cairo_pattern_type_t type = cairo_pattern_get_type(*obj);
+    if (type != CAIRO_PATTERN_TYPE_LINEAR && type != CAIRO_PATTERN_TYPE_RADIAL)
+        return luaL_error(L, "add_color_stop_rgba() only works on gradient"
+                          " patterns");
     cairo_pattern_add_color_stop_rgba(*obj, luaL_checknumber(L, 2),
         luaL_checknumber(L, 3), luaL_checknumber(L, 4), luaL_checknumber(L, 5),
         luaL_checknumber(L, 6));
