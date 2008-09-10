@@ -49,11 +49,11 @@ cr:arc(IMG_WD / 2, IMG_HT / 2, IMG_WD / 2 - CIRCLE_LINE_WD / 2, 0, 2*PI)
 --cr:set_source_rgb(0, 0, 0) cr:fill()
 
 -- Fill in the circle with a pattern of smaller circles.
-cr:set_source(wood_pattern(), 0, 0)
+cr:set_source(wood_pattern())
 cr:fill_preserve()
 
 -- Stroke the outline of the big circle with a cross-hatch pattern.
-cr:set_source_surface(cross_hatch_pattern(), 0, 0)
+cr:set_source(cross_hatch_pattern())
 cr:get_source():set_extend("repeat")
 cr:set_line_width(CIRCLE_LINE_WD)
 cr:stroke()

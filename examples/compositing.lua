@@ -24,10 +24,10 @@ local function draw (cr, x, w, h, op)
     second_cr:fill()
 
     first_cr:set_operator(op)
-    first_cr:set_source_surface(second, 0, 0)
+    first_cr:set_source(second, 0, 0)
     first_cr:paint()
 
-    cr:set_source_surface(first, 0, 0)
+    cr:set_source(first, 0, 0)
     cr:paint()
 end
 

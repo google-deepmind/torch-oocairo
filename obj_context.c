@@ -428,18 +428,37 @@ cr_move_to (lua_State *L) {
 static int
 cr_mask (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_pattern_t **pat = luaL_checkudata(L, 2, MT_NAME_PATTERN);
-    cairo_mask(*obj, *pat);
-    return 0;
-}
+    void *p;
+    cairo_pattern_t **pattern;
+    cairo_surface_t **surface;
 
-static int
-cr_mask_surface (lua_State *L) {
-    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_surface_t **surf = luaL_checkudata(L, 2, MT_NAME_SURFACE);
-    cairo_mask_surface(*obj, *surf, luaL_checknumber(L, 3),
-                       luaL_checknumber(L, 4));
-    return 0;
+    /* This is needed to make sure the stack positions for the optional
+     * arguments stay nil after we start pushing other things on. */
+    lua_settop(L, 4);
+
+    if ((p = lua_touserdata(L, 2))) {
+        if (lua_getmetatable(L, 2)) {
+            lua_getfield(L, LUA_REGISTRYINDEX, MT_NAME_PATTERN);
+            if (lua_rawequal(L, -1, -2)) {
+                pattern = p;
+                cairo_mask(*obj, *pattern);
+                return 0;
+            }
+            lua_pop(L, 1);
+
+            lua_getfield(L, LUA_REGISTRYINDEX, MT_NAME_SURFACE);
+            if (lua_rawequal(L, -1, -2)) {
+                surface = p;
+                cairo_mask_surface(*obj, *surface,
+                                   luaL_optnumber(L, 3, 0),
+                                   luaL_optnumber(L, 4, 0));
+                return 0;
+            }
+            lua_pop(L, 2);
+        }
+    }
+
+    return luaL_typerror(L, 2, "Cairo pattern or surface object");
 }
 
 static int
@@ -717,9 +736,37 @@ cr_set_operator (lua_State *L) {
 static int
 cr_set_source (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_pattern_t **src = luaL_checkudata(L, 2, MT_NAME_PATTERN);
-    cairo_set_source(*obj, *src);
-    return 0;
+    void *p;
+    cairo_pattern_t **pattern;
+    cairo_surface_t **surface;
+
+    /* This is needed to make sure the stack positions for the optional
+     * arguments stay nil after we start pushing other things on. */
+    lua_settop(L, 4);
+
+    if ((p = lua_touserdata(L, 2))) {
+        if (lua_getmetatable(L, 2)) {
+            lua_getfield(L, LUA_REGISTRYINDEX, MT_NAME_PATTERN);
+            if (lua_rawequal(L, -1, -2)) {
+                pattern = p;
+                cairo_set_source(*obj, *pattern);
+                return 0;
+            }
+            lua_pop(L, 1);
+
+            lua_getfield(L, LUA_REGISTRYINDEX, MT_NAME_SURFACE);
+            if (lua_rawequal(L, -1, -2)) {
+                surface = p;
+                cairo_set_source_surface(*obj, *surface,
+                                         luaL_optnumber(L, 3, 0),
+                                         luaL_optnumber(L, 4, 0));
+                return 0;
+            }
+            lua_pop(L, 2);
+        }
+    }
+
+    return luaL_typerror(L, 2, "Cairo pattern or surface object");
 }
 
 static int
@@ -735,15 +782,6 @@ cr_set_source_rgba (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_set_source_rgba(*obj, luaL_checknumber(L, 2), luaL_checknumber(L, 3),
                           luaL_checknumber(L, 4), luaL_checknumber(L, 5));
-    return 0;
-}
-
-static int
-cr_set_source_surface (lua_State *L) {
-    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_surface_t **surface = luaL_checkudata(L, 2, MT_NAME_SURFACE);
-    cairo_set_source_surface(*obj, *surface, luaL_checknumber(L, 3),
-                             luaL_checknumber(L, 4));
     return 0;
 }
 
@@ -894,7 +932,6 @@ context_methods[] = {
     { "line_to", cr_line_to },
     { "move_to", cr_move_to },
     { "mask", cr_mask },
-    { "mask_surface", cr_mask_surface },
     { "new_path", cr_new_path },
     { "new_sub_path", cr_new_sub_path },
     { "paint", cr_paint },
@@ -927,7 +964,6 @@ context_methods[] = {
     { "set_source", cr_set_source },
     { "set_source_rgb", cr_set_source_rgb },
     { "set_source_rgba", cr_set_source_rgba },
-    { "set_source_surface", cr_set_source_surface },
     { "set_tolerance", cr_set_tolerance },
     { "show_glyphs", cr_show_glyphs },
     { "show_text", cr_show_text },

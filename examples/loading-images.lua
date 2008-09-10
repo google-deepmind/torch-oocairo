@@ -37,7 +37,7 @@ for i, func in ipairs{ load_pic_from_filename,
                        load_pic_from_file_handle,
                        load_pic_from_string }
 do
-    cr:set_source_surface(func(), MARGIN * i + PIC_WD * (i - 1), MARGIN)
+    cr:set_source(func(), MARGIN * i + PIC_WD * (i - 1), MARGIN)
     cr:paint()
 end
 

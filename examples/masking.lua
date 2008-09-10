@@ -73,21 +73,21 @@ local snowpic   = load_jpeg("examples/images/snow.jpg")
 
 -- Show the snowy scene at the bottom of the picture, faded out at the top,
 -- using a linear gradient as the mask.
-cr:set_source_surface(snowpic, 0, IMG_HT - snowpic:get_height())
+cr:set_source(snowpic, 0, IMG_HT - snowpic:get_height())
 cr:mask(make_snow_gradient())
 
 -- Show the flowers in a faded circle, with the image scaled to half size,
 -- by maskign with a radial gradient.
 cr:scale(0.5, 0.5)
-cr:set_source_surface(flowerpic, 0, 0)
+cr:set_source(flowerpic, 0, 0)
 cr:identity_matrix()
 cr:mask(make_flower_gradient(flowerpic:get_height() / 4))
 
 -- Show the bronze statue in a sharply defined cut-out shape, by drawing the
 -- shape onto a blank transparent surface first, and then using that surface
 -- as the mask.
-cr:set_source_surface(bronzepic, 180, 30)
-cr:mask_surface(make_statue_mask(200), 200, 0)
+cr:set_source(bronzepic, 180, 30)
+cr:mask(make_statue_mask(200), 200, 0)
 
 surface:write_to_png("masking.png")
 
