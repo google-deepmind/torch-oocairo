@@ -1,65 +1,45 @@
 static int
 pattern_create_rgb (lua_State *L) {
-    cairo_pattern_t **obj;
+    cairo_pattern_t **obj = create_pattern_userdata(L);
     double r = luaL_checknumber(L, 1), g = luaL_checknumber(L, 2),
            b = luaL_checknumber(L, 3);
-    obj = lua_newuserdata(L, sizeof(cairo_pattern_t *));
-    *obj = 0;
-    luaL_getmetatable(L, MT_NAME_PATTERN);
-    lua_setmetatable(L, -2);
     *obj = cairo_pattern_create_rgb(r, g, b);
     return 1;
 }
 
 static int
 pattern_create_rgba (lua_State *L) {
-    cairo_pattern_t **obj;
+    cairo_pattern_t **obj = create_pattern_userdata(L);
     double r = luaL_checknumber(L, 1), g = luaL_checknumber(L, 2),
            b = luaL_checknumber(L, 3), a = luaL_checknumber(L, 4);
-    obj = lua_newuserdata(L, sizeof(cairo_pattern_t *));
-    *obj = 0;
-    luaL_getmetatable(L, MT_NAME_PATTERN);
-    lua_setmetatable(L, -2);
     *obj = cairo_pattern_create_rgba(r, g, b, a);
     return 1;
 }
 
 static int
 pattern_create_for_surface (lua_State *L) {
-    cairo_pattern_t **obj;
     cairo_surface_t **surface = luaL_checkudata(L, 1, MT_NAME_SURFACE);
-    obj = lua_newuserdata(L, sizeof(cairo_pattern_t *));
-    *obj = 0;
-    luaL_getmetatable(L, MT_NAME_PATTERN);
-    lua_setmetatable(L, -2);
+    cairo_pattern_t **obj = create_pattern_userdata(L);
     *obj = cairo_pattern_create_for_surface(*surface);
     return 1;
 }
 
 static int
 pattern_create_linear (lua_State *L) {
-    cairo_pattern_t **obj;
+    cairo_pattern_t **obj = create_pattern_userdata(L);
     double x0 = luaL_checknumber(L, 1), y0 = luaL_checknumber(L, 2),
            x1 = luaL_checknumber(L, 3), y1 = luaL_checknumber(L, 4);
-    obj = lua_newuserdata(L, sizeof(cairo_pattern_t *));
-    *obj = 0;
-    luaL_getmetatable(L, MT_NAME_PATTERN);
-    lua_setmetatable(L, -2);
     *obj = cairo_pattern_create_linear(x0, y0, x1, y1);
     return 1;
 }
 
 static int
 pattern_create_radial (lua_State *L) {
-    cairo_pattern_t **obj;
+    cairo_pattern_t **obj = create_pattern_userdata(L);
     double cx0 = luaL_checknumber(L, 1), cy0 = luaL_checknumber(L, 2),
            radius0 = luaL_checknumber(L, 3),
            cx1 = luaL_checknumber(L, 4), cy1 = luaL_checknumber(L, 5),
            radius1 = luaL_checknumber(L, 6);
-    obj = lua_newuserdata(L, sizeof(cairo_pattern_t *));
-    *obj = 0;
-    luaL_getmetatable(L, MT_NAME_PATTERN);
-    lua_setmetatable(L, -2);
     *obj = cairo_pattern_create_radial(cx0, cy0, radius0, cx1, cy1, radius1);
     return 1;
 }

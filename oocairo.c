@@ -279,6 +279,15 @@ init_surface_userdata (lua_State *L, SurfaceUserdata *ud) {
     ud->errmsg_free = 0;
 }
 
+static cairo_pattern_t **
+create_pattern_userdata (lua_State *L) {
+    cairo_pattern_t **obj = lua_newuserdata(L, sizeof(cairo_pattern_t *));
+    *obj = 0;
+    luaL_getmetatable(L, MT_NAME_PATTERN);
+    lua_setmetatable(L, -2);
+    return obj;
+}
+
 static SurfaceUserdata *
 create_surface_userdata (lua_State *L) {
     SurfaceUserdata *ud = lua_newuserdata(L, sizeof(SurfaceUserdata));

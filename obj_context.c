@@ -328,12 +328,9 @@ cr_get_operator (lua_State *L) {
 static int
 cr_get_source (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_pattern_t **pat = lua_newuserdata(L, sizeof(cairo_pattern_t *));
-    *pat = 0;
-    luaL_getmetatable(L, MT_NAME_PATTERN);
-    lua_setmetatable(L, -2);
-    *pat = cairo_get_source(*obj);
-    cairo_pattern_reference(*pat);
+    cairo_pattern_t **pattern = create_pattern_userdata(L);
+    *pattern = cairo_get_source(*obj);
+    cairo_pattern_reference(*pattern);
     return 1;
 }
 
@@ -498,10 +495,7 @@ cr_path_extents (lua_State *L) {
 static int
 cr_pop_group (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_pattern_t **pattern = lua_newuserdata(L, sizeof(cairo_pattern_t *));
-    *pattern = 0;
-    luaL_getmetatable(L, MT_NAME_PATTERN);
-    lua_setmetatable(L, -2);
+    cairo_pattern_t **pattern = create_pattern_userdata(L);
     *pattern = cairo_pop_group(*obj);
     return 1;
 }
