@@ -127,6 +127,14 @@ function test_not_pdf_surface ()
                  function () surface:set_size(40, 50) end)
 end
 
+function test_not_ps_surface ()
+    local surface = Cairo.image_surface_create("rgb24", 30, 20)
+    assert_error("get_eps on non-PS surface",
+                 function () surface:get_eps() end)
+    assert_error("set_eps on non-PS surface",
+                 function () surface:set_eps(true) end)
+end
+
 local function check_wood_image_surface (surface)
     check_image_surface(surface, "load PNG from filename")
     assert_equal(WOOD_WIDTH, surface:get_width())

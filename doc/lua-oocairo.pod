@@ -69,6 +69,10 @@ lua-oocairo - Lua API for the Cairo vector graphics library
 
 =item pdf_surface_create (file/filename, width, height)
 
+=item ps_get_levels ()
+
+=item ps_surface_create (file/filename, width, height)
+
 =item surface_create_similar (surface, content, width, height)
 
 =item svg_get_versions ()

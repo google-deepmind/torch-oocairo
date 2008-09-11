@@ -134,6 +134,20 @@ pdf_surface_create (lua_State *L) {
 }
 
 static int
+ps_get_levels (lua_State *L) {
+    const cairo_ps_level_t *levels;
+    int num_levels, i;
+    cairo_ps_get_levels(&levels, &num_levels);
+
+    lua_createtable(L, num_levels, 0);
+    for (i = 0; i < num_levels; ++i) {
+        lua_pushstring(L, cairo_ps_level_to_string(levels[i]));
+        lua_rawseti(L, -2, i + 1);
+    }
+    return 1;
+}
+
+static int
 svg_get_versions (lua_State *L) {
     const cairo_svg_version_t *versions;
     int num_versions, i;
@@ -144,6 +158,49 @@ svg_get_versions (lua_State *L) {
         lua_pushstring(L, cairo_svg_version_to_string(versions[i]));
         lua_rawseti(L, -2, i + 1);
     }
+    return 1;
+}
+
+static int
+ps_surface_create (lua_State *L) {
+    double width, height;
+    SurfaceUserdata *surface;
+    int filetype;
+
+    width = luaL_checknumber(L, 2);
+    height = luaL_checknumber(L, 3);
+    luaL_argcheck(L, width >= 0, 2, "image width cannot be negative");
+    luaL_argcheck(L, height >= 0, 3, "image height cannot be negative");
+
+    surface = create_surface_userdata(L);
+
+    filetype = lua_type(L, 1);
+    if (filetype == LUA_TSTRING || filetype == LUA_TNUMBER) {
+        const char *filename = lua_tostring(L, 1);
+        surface->surface = cairo_ps_surface_create(filename, width, height);
+        if (cairo_surface_status(surface->surface) != CAIRO_STATUS_SUCCESS)
+            return luaL_error(L, "error creating PostScript surface");
+    }
+    else if (filetype == LUA_TUSERDATA || filetype == LUA_TTABLE) {
+        lua_pushvalue(L, 1);
+        surface->fhref = luaL_ref(L, LUA_REGISTRYINDEX);
+
+        surface->surface = cairo_ps_surface_create_for_stream(
+                                    write_chunk_to_fh, surface, width, height);
+        if (cairo_surface_status(surface->surface) != CAIRO_STATUS_SUCCESS) {
+            lua_pushliteral(L, "error writing PostScript file to Lua"
+                            " file handle");
+            if (surface->errmsg) {
+                lua_pushliteral(L, ": ");
+                lua_pushstring(L, surface->errmsg);
+                lua_concat(L, 3);
+            }
+            return lua_error(L);
+        }
+    }
+    else
+        return luaL_typerror(L, 1, "filename or file handle object");
+
     return 1;
 }
 
@@ -274,6 +331,16 @@ surface_get_device_offset (lua_State *L) {
 }
 
 static int
+surface_get_eps (lua_State *L) {
+    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    if (cairo_surface_get_type(*obj) != CAIRO_SURFACE_TYPE_PS)
+        return luaL_error(L, "method 'get_eps' only works on PostScript"
+                          " surfaces");
+    lua_pushboolean(L, cairo_ps_surface_get_eps(*obj));
+    return 1;
+}
+
+static int
 surface_get_fallback_resolution (lua_State *L) {
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
@@ -355,6 +422,16 @@ surface_set_device_offset (lua_State *L) {
 }
 
 static int
+surface_set_eps (lua_State *L) {
+    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    if (cairo_surface_get_type(*obj) != CAIRO_SURFACE_TYPE_PS)
+        return luaL_error(L, "method 'set_eps' only works on PostScript"
+                          " surfaces");
+    cairo_ps_surface_set_eps(*obj, lua_toboolean(L, 2));
+    return 0;
+}
+
+static int
 surface_set_fallback_resolution (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     cairo_surface_set_fallback_resolution(*obj, luaL_checknumber(L, 2),
@@ -365,10 +442,15 @@ surface_set_fallback_resolution (lua_State *L) {
 static int
 surface_set_size (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
-    if (cairo_surface_get_type(*obj) != CAIRO_SURFACE_TYPE_PDF)
-        return luaL_error(L, "method 'set_size' only works on PDF surfaces");
-    cairo_pdf_surface_set_size(*obj, luaL_checknumber(L, 2),
-                               luaL_checknumber(L, 3));
+    cairo_surface_type_t type = cairo_surface_get_type(*obj);
+    double width = luaL_checknumber(L, 2), height = luaL_checknumber(L, 3);
+    if (type == CAIRO_SURFACE_TYPE_PDF)
+        cairo_pdf_surface_set_size(*obj, width, height);
+    else if (type == CAIRO_SURFACE_TYPE_PS)
+        cairo_ps_surface_set_size(*obj, width, height);
+    else
+        return luaL_error(L, "method 'set_size' only works on PostScript and"
+                          " PDF surfaces");
     return 0;
 }
 
@@ -426,12 +508,14 @@ surface_methods[] = {
     { "flush", surface_flush },
     { "get_content", surface_get_content },
     { "get_device_offset", surface_get_device_offset },
+    { "get_eps", surface_get_eps },
     { "get_fallback_resolution", surface_get_fallback_resolution },
     { "get_format", surface_get_format },
     { "get_height", surface_get_height },
     { "get_type", surface_get_type },
     { "get_width", surface_get_width },
     { "set_device_offset", surface_set_device_offset },
+    { "set_eps", surface_set_eps },
     { "set_fallback_resolution", surface_set_fallback_resolution },
     { "set_size", surface_set_size },
     { "show_page", surface_show_page },

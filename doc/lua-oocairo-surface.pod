@@ -22,6 +22,8 @@ same Cairo objects will compare as equal.
 
 =item surf:get_device_offset ()
 
+=item surf:get_eps ()
+
 =item surf:get_fallback_resolution ()
 
 =item surf:get_format ()
@@ -33,6 +35,8 @@ same Cairo objects will compare as equal.
 =item surf:get_width ()
 
 =item surf:set_device_offset (x, y)
+
+=item surf:set_eps (eps)
 
 =item surf:set_fallback_resolution (x, y)
 
