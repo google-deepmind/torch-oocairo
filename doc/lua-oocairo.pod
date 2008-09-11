@@ -53,8 +53,7 @@ lua-oocairo - Lua API for the Cairo vector graphics library
 
 =item image_surface_create (format, width, height)
 
-=item image_surface_create_from_png (filename)
-=item image_surface_create_from_png (file)
+=item image_surface_create_from_png (file/filename)
 
 =item matrix_create ()
 
@@ -68,13 +67,13 @@ lua-oocairo - Lua API for the Cairo vector graphics library
 
 =item pattern_create_rgba (r, g, b, a)
 
-=item pdf_surface_create (filename, width, height)
+=item pdf_surface_create (file/filename, width, height)
 
 =item surface_create_similar (surface, content, width, height)
 
 =item svg_get_versions ()
 
-=item svg_surface_create (filename, width, height)
+=item svg_surface_create (file/filename, width, height)
 
 =back
 

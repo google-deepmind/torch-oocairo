@@ -2,7 +2,7 @@ static int
 image_surface_create (lua_State *L) {
     cairo_format_t fmt;
     int width, height;
-    cairo_surface_t **obj;
+    SurfaceUserdata *surface;
 
     fmt = format_option_values[luaL_checkoption(L, 1, 0, format_option_names)];
     width = luaL_checkint(L, 2);
@@ -10,11 +10,8 @@ image_surface_create (lua_State *L) {
     height = luaL_checkint(L, 3);
     luaL_argcheck(L, height >= 0, 3, "image height cannot be negative");
 
-    obj = lua_newuserdata(L, sizeof(cairo_surface_t *));
-    *obj = 0;
-    luaL_getmetatable(L, MT_NAME_SURFACE);
-    lua_setmetatable(L, -2);
-    *obj = cairo_image_surface_create(fmt, width, height);
+    surface = create_surface_userdata(L);
+    surface->surface = cairo_image_surface_create(fmt, width, height);
     return 1;
 }
 
@@ -59,16 +56,12 @@ read_chunk_from_fh (void *closure, unsigned char *buf, unsigned int lentoread)
 
 static int
 image_surface_create_from_png (lua_State *L) {
-    cairo_surface_t **obj;
-    obj = lua_newuserdata(L, sizeof(cairo_surface_t *));
-    *obj = 0;
-    luaL_getmetatable(L, MT_NAME_SURFACE);
-    lua_setmetatable(L, -2);
+    SurfaceUserdata *surface = create_surface_userdata(L);
 
     if (lua_isstring(L, 1)) {
         const char *filename = luaL_checkstring(L, 1);
-        *obj = cairo_image_surface_create_from_png(filename);
-        switch (cairo_surface_status(*obj)) {
+        surface->surface = cairo_image_surface_create_from_png(filename);
+        switch (cairo_surface_status(surface->surface)) {
             case CAIRO_STATUS_FILE_NOT_FOUND:
                 return luaL_error(L, "PNG file '%s' not found", filename);
             case CAIRO_STATUS_READ_ERROR:
@@ -82,9 +75,9 @@ image_surface_create_from_png (lua_State *L) {
         info.L = L;
         info.fhpos = 1;
         info.errmsg = 0;
-        *obj = cairo_image_surface_create_from_png_stream(read_chunk_from_fh,
-                                                          &info);
-        if (!*obj) {
+        surface->surface = cairo_image_surface_create_from_png_stream(
+                                    read_chunk_from_fh, &info);
+        if (!surface->surface) {
             lua_pushliteral(L, "error reading PNG file from Lua file handle");
             if (info.errmsg) {
                 lua_pushliteral(L, ": ");
@@ -100,23 +93,43 @@ image_surface_create_from_png (lua_State *L) {
 
 static int
 pdf_surface_create (lua_State *L) {
-    const char *filename;
-    lua_Number width, height;
-    cairo_surface_t **obj;
+    double width, height;
+    SurfaceUserdata *surface;
+    int filetype;
 
-    filename = luaL_checkstring(L, 1);
     width = luaL_checknumber(L, 2);
     height = luaL_checknumber(L, 3);
     luaL_argcheck(L, width >= 0, 2, "image width cannot be negative");
     luaL_argcheck(L, height >= 0, 3, "image height cannot be negative");
 
-    obj = lua_newuserdata(L, sizeof(cairo_surface_t *));
-    *obj = 0;
-    luaL_getmetatable(L, MT_NAME_SURFACE);
-    lua_setmetatable(L, -2);
-    *obj = cairo_pdf_surface_create(filename, width, height);
-    if (cairo_surface_status(*obj) != CAIRO_STATUS_SUCCESS)
-        return luaL_error(L, "error creating PDF surface");
+    surface = create_surface_userdata(L);
+
+    filetype = lua_type(L, 1);
+    if (filetype == LUA_TSTRING || filetype == LUA_TNUMBER) {
+        const char *filename = lua_tostring(L, 1);
+        surface->surface = cairo_pdf_surface_create(filename, width, height);
+        if (cairo_surface_status(surface->surface) != CAIRO_STATUS_SUCCESS)
+            return luaL_error(L, "error creating PDF surface");
+    }
+    else if (filetype == LUA_TUSERDATA || filetype == LUA_TTABLE) {
+        lua_pushvalue(L, 1);
+        surface->fhref = luaL_ref(L, LUA_REGISTRYINDEX);
+
+        surface->surface = cairo_pdf_surface_create_for_stream(
+                                    write_chunk_to_fh, surface, width, height);
+        if (cairo_surface_status(surface->surface) != CAIRO_STATUS_SUCCESS) {
+            lua_pushliteral(L, "error writing PDF file to Lua file handle");
+            if (surface->errmsg) {
+                lua_pushliteral(L, ": ");
+                lua_pushstring(L, surface->errmsg);
+                lua_concat(L, 3);
+            }
+            return lua_error(L);
+        }
+    }
+    else
+        return luaL_typerror(L, 1, "filename or file handle object");
+
     return 1;
 }
 
@@ -136,32 +149,52 @@ svg_get_versions (lua_State *L) {
 
 static int
 svg_surface_create (lua_State *L) {
-    const char *filename;
-    lua_Number width, height;
-    cairo_surface_t **obj;
+    double width, height;
+    SurfaceUserdata *surface;
+    int filetype;
 
-    filename = luaL_checkstring(L, 1);
     width = luaL_checknumber(L, 2);
     height = luaL_checknumber(L, 3);
     luaL_argcheck(L, width >= 0, 2, "image width cannot be negative");
     luaL_argcheck(L, height >= 0, 3, "image height cannot be negative");
 
-    obj = lua_newuserdata(L, sizeof(cairo_surface_t *));
-    *obj = 0;
-    luaL_getmetatable(L, MT_NAME_SURFACE);
-    lua_setmetatable(L, -2);
-    *obj = cairo_svg_surface_create(filename, width, height);
-    if (cairo_surface_status(*obj) != CAIRO_STATUS_SUCCESS)
-        return luaL_error(L, "error creating SVG surface");
+    surface = create_surface_userdata(L);
+
+    filetype = lua_type(L, 1);
+    if (filetype == LUA_TSTRING || filetype == LUA_TNUMBER) {
+        const char *filename = lua_tostring(L, 1);
+        surface->surface = cairo_svg_surface_create(filename, width, height);
+        if (cairo_surface_status(surface->surface) != CAIRO_STATUS_SUCCESS)
+            return luaL_error(L, "error creating SVG surface");
+    }
+    else if (filetype == LUA_TUSERDATA || filetype == LUA_TTABLE) {
+        lua_pushvalue(L, 1);
+        surface->fhref = luaL_ref(L, LUA_REGISTRYINDEX);
+
+        surface->surface = cairo_svg_surface_create_for_stream(
+                                    write_chunk_to_fh, surface, width, height);
+        if (cairo_surface_status(surface->surface) != CAIRO_STATUS_SUCCESS) {
+            lua_pushliteral(L, "error writing SVG file to Lua file handle");
+            if (surface->errmsg) {
+                lua_pushliteral(L, ": ");
+                lua_pushstring(L, surface->errmsg);
+                lua_concat(L, 3);
+            }
+            return lua_error(L);
+        }
+    }
+    else
+        return luaL_typerror(L, 1, "filename or file handle object");
+
     return 1;
 }
 
 static int
 surface_create_similar (lua_State *L) {
     cairo_surface_t **oldobj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
-    cairo_surface_t **newobj;
     cairo_content_t content;
     int width, height;
+    SurfaceUserdata *surface;
 
     content = content_values[luaL_checkoption(L, 2, 0, content_names)];
     width = luaL_checkint(L, 3);
@@ -169,11 +202,9 @@ surface_create_similar (lua_State *L) {
     height = luaL_checkint(L, 4);
     luaL_argcheck(L, height >= 0, 4, "image height cannot be negative");
 
-    newobj = lua_newuserdata(L, sizeof(cairo_surface_t *));
-    *newobj = 0;
-    luaL_getmetatable(L, MT_NAME_SURFACE);
-    lua_setmetatable(L, -2);
-    *newobj = cairo_surface_create_similar(*oldobj, content, width, height);
+    surface = create_surface_userdata(L);
+    surface->surface = cairo_surface_create_similar(*oldobj, content,
+                                                    width, height);
     return 1;
 }
 
@@ -187,9 +218,8 @@ surface_eq (lua_State *L) {
 
 static int
 surface_gc (lua_State *L) {
-    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
-    cairo_surface_destroy(*obj);
-    *obj = 0;
+    SurfaceUserdata *ud = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    free_surface_userdata(ud);
     return 0;
 }
 
@@ -349,45 +379,22 @@ surface_show_page (lua_State *L) {
     return 0;
 }
 
-struct WriteInfoLuaStream {
-    lua_State *L;
-    int fhpos;
-    const char *errmsg;
-};
-
-static cairo_status_t
-write_chunk_to_fh (void *closure, const unsigned char *buf,
-                   unsigned int lentowrite)
-{
-    struct WriteInfoLuaStream *info = closure;
-
-    lua_State *L = info->L;
-    lua_getfield(L, info->fhpos, "write");
-    lua_pushvalue(L, info->fhpos);
-    lua_pushlstring(L, (const char *) buf, lentowrite);
-    if (lua_pcall(L, 2, 0, 0)) {
-        if (lua_isstring(L, -1))
-            info->errmsg = lua_tostring(L, -1);
-        return CAIRO_STATUS_WRITE_ERROR;
-    }
-
-    return CAIRO_STATUS_SUCCESS;
-}
-
 static int
 surface_write_to_png (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
-    if (lua_isstring(L, 2)) {
+    int filetype = lua_type(L, 2);
+
+    if (filetype == LUA_TSTRING || filetype == LUA_TNUMBER) {
         const char *filename = lua_tostring(L, 2);
         if (cairo_surface_write_to_png(*obj, filename) != CAIRO_STATUS_SUCCESS)
             return luaL_error(L, "error writing surface to PNG file '%s'",
                               filename);
     }
-    else {
-        struct WriteInfoLuaStream info;
-        info.L = L;
-        info.fhpos = 2;
-        info.errmsg = 0;
+    else if (filetype == LUA_TUSERDATA || filetype == LUA_TTABLE) {
+        SurfaceUserdata info;
+        init_surface_userdata(L, &info);
+        lua_pushvalue(L, 2);
+        info.fhref = luaL_ref(L, LUA_REGISTRYINDEX);
 
         if (cairo_surface_write_to_png_stream(*obj, write_chunk_to_fh, &info)
                 != CAIRO_STATUS_SUCCESS)
@@ -398,9 +405,14 @@ surface_write_to_png (lua_State *L) {
                 lua_pushstring(L, info.errmsg);
                 lua_concat(L, 3);
             }
+            free_surface_userdata(&info);
             return lua_error(L);
         }
+
+        free_surface_userdata(&info);
     }
+    else
+        return luaL_typerror(L, 1, "filename or file handle object");
 
     return 0;
 }

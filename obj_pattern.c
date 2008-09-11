@@ -216,15 +216,14 @@ pattern_get_rgba (lua_State *L) {
 static int
 pattern_get_surface (lua_State *L) {
     cairo_pattern_t **obj = luaL_checkudata(L, 1, MT_NAME_PATTERN);
-    cairo_surface_t *surface, **surfobj;
+    cairo_surface_t *surface;
+    SurfaceUserdata *surfobj;
     if (cairo_pattern_get_surface(*obj, &surface)
             == CAIRO_STATUS_PATTERN_TYPE_MISMATCH)
         luaL_error(L, "pattern is not a surface pattern");
+    surfobj = create_surface_userdata(L);
     cairo_surface_reference(surface);
-    surfobj = lua_newuserdata(L, sizeof(cairo_surface_t *));
-    *surfobj = surface;
-    luaL_getmetatable(L, MT_NAME_SURFACE);
-    lua_setmetatable(L, -2);
+    surfobj->surface = surface;
     return 1;
 }
 

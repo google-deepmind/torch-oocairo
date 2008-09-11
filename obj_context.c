@@ -249,12 +249,9 @@ cr_get_font_matrix (lua_State *L) {
 static int
 cr_get_group_target (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_surface_t **surface = lua_newuserdata(L, sizeof(cairo_surface_t *));
-    *surface = 0;
-    luaL_getmetatable(L, MT_NAME_SURFACE);
-    lua_setmetatable(L, -2);
-    *surface = cairo_get_group_target(*obj);
-    cairo_surface_reference(*surface);
+    SurfaceUserdata *surface = create_surface_userdata(L);
+    surface->surface = cairo_get_group_target(*obj);
+    cairo_surface_reference(surface->surface);
     return 1;
 }
 
@@ -343,12 +340,9 @@ cr_get_source (lua_State *L) {
 static int
 cr_get_target (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_surface_t **surface = lua_newuserdata(L, sizeof(cairo_surface_t *));
-    *surface = 0;
-    luaL_getmetatable(L, MT_NAME_SURFACE);
-    lua_setmetatable(L, -2);
-    *surface = cairo_get_target(*obj);
-    cairo_surface_reference(*surface);
+    SurfaceUserdata *surface = create_surface_userdata(L);
+    surface->surface = cairo_get_target(*obj);
+    cairo_surface_reference(surface->surface);
     return 1;
 }
 

@@ -138,6 +138,15 @@ function test_create_from_png ()
     check_wood_image_surface(surface)
 end
 
+function test_create_from_png_error ()
+    assert_error("trying to load PNG file which doesn't exist", function ()
+        Cairo.image_surface_create_from_png("nonexistent-file.png")
+    end)
+    assert_error("wrong type instead of file/filename", function ()
+        Cairo.image_surface_create_from_png(false)
+    end)
+end
+
 function test_create_from_png_stream ()
     local fh = assert(io.open(WOOD_FILENAME, "rb"))
     local surface = Cairo.image_surface_create_from_png(fh)

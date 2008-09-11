@@ -257,6 +257,92 @@ from_lua_glyph_array (lua_State *L, cairo_glyph_t **glyphs, int *num_glyphs,
     }
 }
 
+typedef struct SurfaceUserdata_ {
+    /* This has to be first, because most users of this ignore the rest and
+     * just treat a pointer to this structure as if it was a pointer to the
+     * surface pointer. */
+    cairo_surface_t *surface;
+    /* This stuff is only used for surfaces which are continuously written
+     * to a file handle during their lifetime. */
+    lua_State *L;
+    int fhref;
+    const char *errmsg;
+    int errmsg_free;        /* true if errmsg must be freed */
+} SurfaceUserdata;
+
+static void
+init_surface_userdata (lua_State *L, SurfaceUserdata *ud) {
+    ud->surface = 0;
+    ud->L = L;
+    ud->fhref = LUA_NOREF;
+    ud->errmsg = 0;
+    ud->errmsg_free = 0;
+}
+
+static SurfaceUserdata *
+create_surface_userdata (lua_State *L) {
+    SurfaceUserdata *ud = lua_newuserdata(L, sizeof(SurfaceUserdata));
+    init_surface_userdata(L, ud);
+    luaL_getmetatable(L, MT_NAME_SURFACE);
+    lua_setmetatable(L, -2);
+    return ud;
+}
+
+static void
+free_surface_userdata (SurfaceUserdata *ud) {
+    if (ud->surface) {
+        cairo_surface_destroy(ud->surface);
+        ud->surface = 0;
+    }
+    if (ud->fhref != LUA_NOREF) {
+        luaL_unref(ud->L, LUA_REGISTRYINDEX, ud->fhref);
+        ud->fhref = LUA_NOREF;
+    }
+    if (ud->errmsg) {
+        if (ud->errmsg_free)
+            free((char *) ud->errmsg);
+        ud->errmsg = 0;
+        ud->errmsg_free = 0;
+    }
+}
+
+static char *
+my_strdup (const char *s) {
+    char *copy = malloc(strlen(s) + 1);
+    assert(copy);
+    strcpy(copy, s);
+    return copy;
+}
+
+static cairo_status_t
+write_chunk_to_fh (void *closure, const unsigned char *buf,
+                   unsigned int lentowrite)
+{
+    SurfaceUserdata *info = closure;
+    lua_State *L = info->L;
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, info->fhref);
+    lua_getfield(L, -1, "write");
+    if (lua_isnil(L, -1)) {
+        info->errmsg = "file handle does not have 'write' method";
+        lua_pop(L, 2);
+        return CAIRO_STATUS_WRITE_ERROR;
+    }
+    lua_pushvalue(L, -2);
+    lua_pushlstring(L, (const char *) buf, lentowrite);
+    if (lua_pcall(L, 2, 0, 0)) {
+        if (lua_isstring(L, -1)) {
+            info->errmsg = my_strdup(lua_tostring(L, -1));
+            info->errmsg_free = 1;
+        }
+        lua_pop(L, 1);
+        return CAIRO_STATUS_WRITE_ERROR;
+    }
+
+    lua_pop(L, 1);
+    return CAIRO_STATUS_SUCCESS;
+}
+
 #include "obj_context.c"
 #include "obj_font_face.c"
 #include "obj_matrix.c"

@@ -25,18 +25,42 @@ local function draw_stuff (surface)
     cr:stroke()
 end
 
-function test_create ()
-    local filename_normal = tmpname()
-    local surface = Cairo.svg_surface_create(filename_normal, 300, 200)
+local function check_svg_surface (surface)
     assert_userdata(surface)
     assert_equal("cairo surface object", surface._NAME)
     assert_equal("svg", surface:get_type())
+end
 
+local function check_file_contains_svg (filename)
+    local fh = assert(io.open(filename, "rb"))
+    local data = fh:read("*a")
+    fh:close()
+    assert_match("<svg", data)
+end
+
+function test_create ()
+    local filename = tmpname()
+    local surface = Cairo.svg_surface_create(filename, 300, 200)
+    check_svg_surface(surface)
     draw_stuff(surface)
     surface:finish()
-    local fh = assert(io.open(filename_normal, "rb"))
-    local svg = fh:read("*a")
-    assert_match("<svg", svg)
+    check_file_contains_svg(filename)
+end
+
+function test_create_stream ()
+    local filename = tmpname()
+    local fh = assert(io.open(filename, "wb"))
+    local surface = Cairo.svg_surface_create(fh, 300, 200)
+    check_svg_surface(surface)
+    draw_stuff(surface)
+    surface:finish()
+    fh:close()
+    check_file_contains_svg(filename)
+end
+
+function test_create_bad ()
+    assert_error("wrong type instead of file/filename",
+                 function () Cairo.svg_surface_create(true, 300, 200) end)
 end
 
 -- vi:ts=4 sw=4 expandtab
