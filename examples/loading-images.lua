@@ -18,7 +18,7 @@ end
 
 function load_pic_from_file_handle ()
     local fh = assert(io.open(PIC_FILENAME, "rb"))
-    local surface = Cairo.image_surface_create_from_png_stream(fh)
+    local surface = Cairo.image_surface_create_from_png(fh)
     fh:close()
     return surface
 end

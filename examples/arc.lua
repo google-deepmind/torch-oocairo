@@ -42,7 +42,7 @@ cr:fill()
 -- As a test of different ways to write the output, this particular example
 -- program writes the finished PNG file through a Lua filehandle.
 local fh = assert(io.open("arc.png", "wb"))
-surface:write_to_png_stream(fh)
+surface:write_to_png(fh)
 fh:close()
 
 -- vi:ts=4 sw=4 expandtab

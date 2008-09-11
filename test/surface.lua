@@ -6,16 +6,22 @@ module("test.surface", lunit.testcase, package.seeall)
 
 teardown = clean_up_temp_files
 
+local WOOD_FILENAME = "examples/images/wood1.png"
+local WOOD_WIDTH, WOOD_HEIGHT = 96, 96
+
+local function check_image_surface (surface, desc)
+    assert_userdata(surface, desc .. ", userdata")
+    assert_equal("cairo surface object", surface._NAME, desc .. ", mt name")
+    assert_equal("image", surface:get_type(), desc .. ", type")
+end
+
 function test_image_surface_create ()
     for format, content in pairs({
         rgb24 = "color", argb32 = "color-alpha",
         a8 = "alpha", a1 = "alpha"
     }) do
         local surface = Cairo.image_surface_create(format, 23, 45)
-        assert_userdata(surface, "got userdata for " .. format)
-        assert_equal("cairo surface object", surface._NAME,
-                     "got surface object for " .. format)
-        assert_equal("image", surface:get_type())
+        check_image_surface(surface, "format " .. format)
         assert_equal(format, surface:get_format())
         assert_equal(content, surface:get_content(), "content for " .. format)
         local wd, ht = surface:get_width(), surface:get_height()
@@ -112,11 +118,27 @@ function test_not_pdf_surface ()
                  function () surface:set_size(40, 50) end)
 end
 
+function test_create_from_png ()
+    local surface = Cairo.image_surface_create_from_png(WOOD_FILENAME)
+    check_image_surface(surface, "load PNG from filename")
+    assert_equal(WOOD_WIDTH, surface:get_width())
+    assert_equal(WOOD_HEIGHT, surface:get_height())
+end
+
+function test_create_from_png_stream ()
+    local fh = assert(io.open(WOOD_FILENAME, "rb"))
+    local surface = Cairo.image_surface_create_from_png(fh)
+    fh:close()
+    check_image_surface(surface, "load PNG from filename")
+    assert_equal(WOOD_WIDTH, surface:get_width())
+    assert_equal(WOOD_HEIGHT, surface:get_height())
+end
+
 function test_write_to_png_stream ()
     local surface = Cairo.image_surface_create("rgb24", 23, 45)
     local filename = tmpname()
     local fh = assert(io.open(filename, "wb"))
-    surface:write_to_png_stream(fh)
+    surface:write_to_png(fh)
     fh:close()
     fh = assert(io.open(filename, "rb"))
     local data = fh:read("*a")

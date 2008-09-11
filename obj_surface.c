@@ -18,25 +18,6 @@ image_surface_create (lua_State *L) {
     return 1;
 }
 
-static int
-image_surface_create_from_png (lua_State *L) {
-    const char *filename = luaL_checkstring(L, 1);
-    cairo_surface_t **obj;
-    obj = lua_newuserdata(L, sizeof(cairo_surface_t *));
-    *obj = 0;
-    luaL_getmetatable(L, MT_NAME_SURFACE);
-    lua_setmetatable(L, -2);
-    *obj = cairo_image_surface_create_from_png(filename);
-    switch (cairo_surface_status(*obj)) {
-        case CAIRO_STATUS_FILE_NOT_FOUND:
-            return luaL_error(L, "PNG file '%s' not found", filename);
-        case CAIRO_STATUS_READ_ERROR:
-            return luaL_error(L, "error reading PNG file '%s'", filename);
-        default:;
-    }
-    return 1;
-}
-
 struct ReadInfoLuaStream {
     lua_State *L;
     int fhpos;
@@ -46,27 +27,27 @@ struct ReadInfoLuaStream {
 static cairo_status_t
 read_chunk_from_fh (void *closure, unsigned char *buf, unsigned int lentoread)
 {
-    struct ReadInfoLuaStream *readinfo = closure;
+    struct ReadInfoLuaStream *info = closure;
     const char *s;
     size_t len;
 
-    lua_State *L = readinfo->L;
-    lua_getfield(L, readinfo->fhpos, "read");
-    lua_pushvalue(L, readinfo->fhpos);
+    lua_State *L = info->L;
+    lua_getfield(L, info->fhpos, "read");
+    lua_pushvalue(L, info->fhpos);
     lua_pushnumber(L, lentoread);
     if (lua_pcall(L, 2, 1, 0)) {
         if (lua_isstring(L, -1))
-            readinfo->errmsg = lua_tostring(L, -1);
+            info->errmsg = lua_tostring(L, -1);
         return CAIRO_STATUS_READ_ERROR;
     }
 
     s = lua_tolstring(L, -1, &len);
     if (!s) {
-        readinfo->errmsg = "'read' method on file handle didn't return string";
+        info->errmsg = "'read' method on file handle didn't return string";
         return CAIRO_STATUS_READ_ERROR;
     }
     if (len != lentoread) {
-        readinfo->errmsg = "'read' method on file handle returned wrong amount"
+        info->errmsg = "'read' method on file handle returned wrong amount"
                            " of data";
         return CAIRO_STATUS_READ_ERROR;
     }
@@ -77,28 +58,43 @@ read_chunk_from_fh (void *closure, unsigned char *buf, unsigned int lentoread)
 }
 
 static int
-image_surface_create_from_png_stream (lua_State *L) {
-    struct ReadInfoLuaStream readinfo;
+image_surface_create_from_png (lua_State *L) {
     cairo_surface_t **obj;
     obj = lua_newuserdata(L, sizeof(cairo_surface_t *));
     *obj = 0;
     luaL_getmetatable(L, MT_NAME_SURFACE);
     lua_setmetatable(L, -2);
 
-    readinfo.L = L;
-    readinfo.fhpos = 1;
-    readinfo.errmsg = 0;
-    *obj = cairo_image_surface_create_from_png_stream(read_chunk_from_fh,
-                                                      &readinfo);
-    if (!*obj) {
-        lua_pushliteral(L, "error reading PNG file from Lua file handle");
-        if (readinfo.errmsg) {
-            lua_pushliteral(L, ": ");
-            lua_pushstring(L, readinfo.errmsg);
-            lua_concat(L, 3);
+    if (lua_isstring(L, 1)) {
+        const char *filename = luaL_checkstring(L, 1);
+        *obj = cairo_image_surface_create_from_png(filename);
+        switch (cairo_surface_status(*obj)) {
+            case CAIRO_STATUS_FILE_NOT_FOUND:
+                return luaL_error(L, "PNG file '%s' not found", filename);
+            case CAIRO_STATUS_READ_ERROR:
+                return luaL_error(L, "error reading PNG file '%s'", filename);
+            default:;
         }
-        return lua_error(L);
     }
+    else {
+        struct ReadInfoLuaStream info;
+
+        info.L = L;
+        info.fhpos = 1;
+        info.errmsg = 0;
+        *obj = cairo_image_surface_create_from_png_stream(read_chunk_from_fh,
+                                                          &info);
+        if (!*obj) {
+            lua_pushliteral(L, "error reading PNG file from Lua file handle");
+            if (info.errmsg) {
+                lua_pushliteral(L, ": ");
+                lua_pushstring(L, info.errmsg);
+                lua_concat(L, 3);
+            }
+            return lua_error(L);
+        }
+    }
+
     return 1;
 }
 
@@ -398,16 +394,6 @@ surface_show_page (lua_State *L) {
     return 0;
 }
 
-static int
-surface_write_to_png (lua_State *L) {
-    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
-    const char *filename = luaL_checkstring(L, 2);
-    if (cairo_surface_write_to_png(*obj, filename) != CAIRO_STATUS_SUCCESS)
-        return luaL_error(L, "error writing surface to PNG file '%s'",
-                          filename);
-    return 0;
-}
-
 struct WriteInfoLuaStream {
     lua_State *L;
     int fhpos;
@@ -418,15 +404,15 @@ static cairo_status_t
 write_chunk_to_fh (void *closure, const unsigned char *buf,
                    unsigned int lentowrite)
 {
-    struct WriteInfoLuaStream *writeinfo = closure;
+    struct WriteInfoLuaStream *info = closure;
 
-    lua_State *L = writeinfo->L;
-    lua_getfield(L, writeinfo->fhpos, "write");
-    lua_pushvalue(L, writeinfo->fhpos);
+    lua_State *L = info->L;
+    lua_getfield(L, info->fhpos, "write");
+    lua_pushvalue(L, info->fhpos);
     lua_pushlstring(L, (const char *) buf, lentowrite);
     if (lua_pcall(L, 2, 0, 0)) {
         if (lua_isstring(L, -1))
-            writeinfo->errmsg = lua_tostring(L, -1);
+            info->errmsg = lua_tostring(L, -1);
         return CAIRO_STATUS_WRITE_ERROR;
     }
 
@@ -434,24 +420,31 @@ write_chunk_to_fh (void *closure, const unsigned char *buf,
 }
 
 static int
-surface_write_to_png_stream (lua_State *L) {
+surface_write_to_png (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
-    struct WriteInfoLuaStream writeinfo;
+    if (lua_isstring(L, 2)) {
+        const char *filename = lua_tostring(L, 2);
+        if (cairo_surface_write_to_png(*obj, filename) != CAIRO_STATUS_SUCCESS)
+            return luaL_error(L, "error writing surface to PNG file '%s'",
+                              filename);
+    }
+    else {
+        struct WriteInfoLuaStream info;
+        info.L = L;
+        info.fhpos = 2;
+        info.errmsg = 0;
 
-    writeinfo.L = L;
-    writeinfo.fhpos = 2;
-    writeinfo.errmsg = 0;
-
-    if (cairo_surface_write_to_png_stream(*obj, write_chunk_to_fh, &writeinfo)
-            != CAIRO_STATUS_SUCCESS)
-    {
-        lua_pushliteral(L, "error writing PNG file to Lua file handle");
-        if (writeinfo.errmsg) {
-            lua_pushliteral(L, ": ");
-            lua_pushstring(L, writeinfo.errmsg);
-            lua_concat(L, 3);
+        if (cairo_surface_write_to_png_stream(*obj, write_chunk_to_fh, &info)
+                != CAIRO_STATUS_SUCCESS)
+        {
+            lua_pushliteral(L, "error writing PNG file to Lua file handle");
+            if (info.errmsg) {
+                lua_pushliteral(L, ": ");
+                lua_pushstring(L, info.errmsg);
+                lua_concat(L, 3);
+            }
+            return lua_error(L);
         }
-        return lua_error(L);
     }
 
     return 0;
@@ -510,7 +503,6 @@ surface_methods[] = {
     { "set_size", surface_set_size },
     { "show_page", surface_show_page },
     { "write_to_png", surface_write_to_png },
-    { "write_to_png_stream", surface_write_to_png_stream },
     { "write_to_png_string", surface_write_to_png_string },
     { 0, 0 }
 };
