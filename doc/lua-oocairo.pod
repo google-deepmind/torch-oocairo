@@ -56,8 +56,6 @@ lua-oocairo - Lua API for the Cairo vector graphics library
 =item image_surface_create_from_png (filename)
 =item image_surface_create_from_png (file)
 
-=item image_surface_create_from_png_string (string)
-
 =item matrix_create ()
 
 =item pattern_create_for_surface (surface)

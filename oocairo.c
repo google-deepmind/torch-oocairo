@@ -269,8 +269,6 @@ constructor_funcs[] = {
     { "context_create", context_create },
     { "image_surface_create", image_surface_create },
     { "image_surface_create_from_png", image_surface_create_from_png },
-    { "image_surface_create_from_png_string",
-      image_surface_create_from_png_string },
     { "matrix_create", cairmat_create },
     { "pattern_create_for_surface", pattern_create_for_surface },
     { "pattern_create_linear", pattern_create_linear },

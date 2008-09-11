@@ -32,13 +32,6 @@ draw_star(MARGIN + RADIUS, MARGIN + RADIUS)
 cr:set_fill_rule("even-odd")
 draw_star(2 * MARGIN + 3 * RADIUS, MARGIN + RADIUS)
 
--- As a test of different ways to write the output, this particular example
--- program writes the finished PNG file into a string, before writing that
--- data out into an actual file.  The same technique could be used in
--- conjunction with the 'gd' module to convert the output into a JPEG or GIF.
-local data = surface:write_to_png_string()
-local fh = assert(io.open("fill-rule.png", "wb"))
-fh:write(data)
-fh:close()
+surface:write_to_png("fill-rule.png")
 
 -- vi:ts=4 sw=4 expandtab

@@ -43,8 +43,6 @@ same Cairo objects will compare as equal.
 =item surf:write_to_png (filename)
 =item surf:write_to_png (file)
 
-=item surf:write_to_png_string ()
-
 =back
 
 =for comment

@@ -98,51 +98,6 @@ image_surface_create_from_png (lua_State *L) {
     return 1;
 }
 
-struct ReadInfoBuffer {
-    const unsigned char *data;
-    size_t pos, len;
-    int not_enough_data;
-};
-
-static cairo_status_t
-read_chunk_from_buf (void *closure, unsigned char *buf, unsigned int lentoread)
-{
-    struct ReadInfoBuffer *readinfo = closure;
-    size_t bytesleft = readinfo->len - readinfo->pos;
-
-    if (bytesleft < lentoread)
-        return CAIRO_STATUS_READ_ERROR; /* not enough data left in buffer */
-
-    memcpy(buf, readinfo->data + readinfo->pos, lentoread);
-    readinfo->pos += lentoread;
-    return CAIRO_STATUS_SUCCESS;
-}
-
-static int
-image_surface_create_from_png_string (lua_State *L) {
-    struct ReadInfoBuffer readinfo;
-    cairo_surface_t **obj;
-    obj = lua_newuserdata(L, sizeof(cairo_surface_t *));
-    *obj = 0;
-    luaL_getmetatable(L, MT_NAME_SURFACE);
-    lua_setmetatable(L, -2);
-
-    readinfo.data = (unsigned char *) luaL_checklstring(L, 1, &readinfo.len);
-    readinfo.pos = 0;
-    readinfo.not_enough_data = 0;
-    *obj = cairo_image_surface_create_from_png_stream(read_chunk_from_buf,
-                                                      &readinfo);
-    if (!*obj) {
-        lua_pushliteral(L, "error reading PNG file from Lua string");
-        if (readinfo.not_enough_data) {
-            lua_pushliteral(L, ": end of string reached");
-            lua_concat(L, 2);
-        }
-        return lua_error(L);
-    }
-    return 1;
-}
-
 static int
 pdf_surface_create (lua_State *L) {
     const char *filename;
@@ -450,40 +405,6 @@ surface_write_to_png (lua_State *L) {
     return 0;
 }
 
-struct WrietInfoBuffer {
-    lua_State *L;
-    luaL_Buffer b;
-};
-
-static cairo_status_t
-write_chunk_to_luabuf (void *closure, const unsigned char *buf,
-                       unsigned int lentowrite)
-{
-    struct WrietInfoBuffer *info = closure;
-    luaL_checkstack(info->L, 1, "not enough memory for PNG string");
-    luaL_addlstring(&info->b, (const char *) buf, lentowrite);
-    return CAIRO_STATUS_SUCCESS;
-}
-
-static int
-surface_write_to_png_string (lua_State *L) {
-    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
-    struct WrietInfoBuffer info;
-
-    info.L = L;
-    luaL_buffinit(L, &info.b);
-
-    if (cairo_surface_write_to_png_stream(*obj, write_chunk_to_luabuf, &info)
-            != CAIRO_STATUS_SUCCESS)
-    {
-        luaL_pushresult(&info.b);   /* tidy stack, result ignored */
-        luaL_error(L, "error writing PNG file to Lua string");
-    }
-
-    luaL_pushresult(&info.b);
-    return 1;
-}
-
 static const luaL_Reg
 surface_methods[] = {
     { "__eq", surface_eq },
@@ -503,7 +424,6 @@ surface_methods[] = {
     { "set_size", surface_set_size },
     { "show_page", surface_show_page },
     { "write_to_png", surface_write_to_png },
-    { "write_to_png_string", surface_write_to_png_string },
     { 0, 0 }
 };
 

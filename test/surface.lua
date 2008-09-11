@@ -4,6 +4,15 @@ local Cairo = require "oocairo"
 
 module("test.surface", lunit.testcase, package.seeall)
 
+-- Some tests use this, but it isn't essential, so they will be skipped if
+-- the 'memoryfile' module isn't installed.
+local MemFile
+do
+    local ok
+    ok, mod = pcall(require, "memoryfile")
+    if ok then MemFile = mod end
+end
+
 teardown = clean_up_temp_files
 
 local WOOD_FILENAME = "examples/images/wood1.png"
@@ -118,20 +127,51 @@ function test_not_pdf_surface ()
                  function () surface:set_size(40, 50) end)
 end
 
-function test_create_from_png ()
-    local surface = Cairo.image_surface_create_from_png(WOOD_FILENAME)
+local function check_wood_image_surface (surface)
     check_image_surface(surface, "load PNG from filename")
     assert_equal(WOOD_WIDTH, surface:get_width())
     assert_equal(WOOD_HEIGHT, surface:get_height())
+end
+
+function test_create_from_png ()
+    local surface = Cairo.image_surface_create_from_png(WOOD_FILENAME)
+    check_wood_image_surface(surface)
 end
 
 function test_create_from_png_stream ()
     local fh = assert(io.open(WOOD_FILENAME, "rb"))
     local surface = Cairo.image_surface_create_from_png(fh)
     fh:close()
-    check_image_surface(surface, "load PNG from filename")
-    assert_equal(WOOD_WIDTH, surface:get_width())
-    assert_equal(WOOD_HEIGHT, surface:get_height())
+    check_wood_image_surface(surface)
+end
+
+if MemFile then
+    function test_create_from_png_string ()
+        local fh = assert(io.open(WOOD_FILENAME, "rb"))
+        local data = fh:read("*a")
+        fh:close()
+        fh = MemFile.open(data)
+        local surface = Cairo.image_surface_create_from_png(fh)
+        fh:close()
+        check_wood_image_surface(surface)
+    end
+end
+
+local function check_data_is_png (data)
+    assert_match("^\137PNG\13\10", data)
+end
+local function check_file_contains_png (filename)
+    local fh = assert(io.open(filename, "rb"))
+    local data = fh:read("*a")
+    fh:close()
+    check_data_is_png(data)
+end
+
+function test_write_to_png ()
+    local surface = Cairo.image_surface_create("rgb24", 23, 45)
+    local filename = tmpname()
+    surface:write_to_png(filename)
+    check_file_contains_png(filename)
 end
 
 function test_write_to_png_stream ()
@@ -140,16 +180,17 @@ function test_write_to_png_stream ()
     local fh = assert(io.open(filename, "wb"))
     surface:write_to_png(fh)
     fh:close()
-    fh = assert(io.open(filename, "rb"))
-    local data = fh:read("*a")
-    fh:close()
-    assert_match("^\137PNG\13\10", data)
+    check_file_contains_png(filename)
 end
 
-function test_write_to_png_string ()
-    local surface = Cairo.image_surface_create("rgb24", 23, 45)
-    local data = surface:write_to_png_string()
-    assert_match("^\137PNG\13\10", data)
+if MemFile then
+    function test_write_to_png_string ()
+        local surface = Cairo.image_surface_create("rgb24", 23, 45)
+        local fh = MemFile.open()
+        surface:write_to_png(fh)
+        check_data_is_png(tostring(fh))
+        fh:close()
+    end
 end
 
 function test_equality ()

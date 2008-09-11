@@ -1,6 +1,10 @@
 require "runlocal"
 local Cairo = require "oocairo"
 
+-- This module is required for loading images from data stored in a string.
+-- It's available from LuaForge: http://luaforge.net/projects/memoryfile/
+local MemFile = require "memoryfile"
+
 local IMG_WD, IMG_HT = 400, 300
 local PI = 2 * math.asin(1)
 
@@ -17,7 +21,10 @@ end
 function load_jpeg (filename)
     local img = assert(gd.createFromJpeg(filename),
                        "error loading JPEG: " .. filename)
-    return Cairo.image_surface_create_from_png_string(img:pngStr())
+    local fh = MemFile.open(img:pngStr())
+    local surface = Cairo.image_surface_create_from_png(fh)
+    fh:close()      -- not strictly necessary, but frees memory earlier
+    return surface
 end
 
 function make_snow_gradient ()

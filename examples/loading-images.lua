@@ -23,11 +23,16 @@ function load_pic_from_file_handle ()
     return surface
 end
 
+-- This one only works if the 'memoryfile' module is installed.
 function load_pic_from_string ()
-    local fh = assert(io.open(PIC_FILENAME, "rb"))
-    local picdata = fh:read("*a")
-    fh:close()
-    return Cairo.image_surface_create_from_png_string(picdata)
+    local ok, MemFile = pcall(require, "memoryfile")
+    if ok then
+        local fh = assert(io.open(PIC_FILENAME, "rb"))
+        local picdata = fh:read("*a")
+        fh:close()
+        fh = MemFile.open(picdata)
+        return Cairo.image_surface_create_from_png(fh)
+    end
 end
 
 local surface = Cairo.image_surface_create("rgb24", IMG_WD, IMG_HT)
@@ -37,8 +42,11 @@ for i, func in ipairs{ load_pic_from_filename,
                        load_pic_from_file_handle,
                        load_pic_from_string }
 do
-    cr:set_source(func(), MARGIN * i + PIC_WD * (i - 1), MARGIN)
-    cr:paint()
+    local surface = func()
+    if surface then
+        cr:set_source(surface, MARGIN * i + PIC_WD * (i - 1), MARGIN)
+        cr:paint()
+    end
 end
 
 surface:write_to_png("loading-images.png")
