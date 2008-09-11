@@ -1,0 +1,28 @@
+=head1 Name
+
+lua-oocairo-matrix - Transformation matrix table
+
+=head1 Introduction
+
+=head1 Methods
+
+=over
+
+=item mat:invert ()
+
+=item mat1:multiply (mat2)
+
+=item mat:rotate (ang)
+
+=item mat:scale (sx, sy)
+
+=item mat:transform_distance (x, y)
+
+=item mat:transform_point (x, y)
+
+=item mat:translate (x, y)
+
+=back
+
+=for comment
+vi:ts=4 sw=4 expandtab

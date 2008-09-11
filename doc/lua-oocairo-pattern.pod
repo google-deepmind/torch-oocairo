@@ -1,0 +1,46 @@
+=head1 Name
+
+lua-oocairo-pattern - Cairo pattern objects
+
+=head1 Introduction
+
+Pattern objects can be compared with the C<==> operator.  This will compare
+the identity of the objects, so different Lua objects which refer to the
+same Cairo objects will compare as equal.
+
+=head1 Methods
+
+=over
+
+=item pat:add_color_stop_rgb (offset, r, g, b)
+
+=item pat:add_color_stop_rgba (offset, r, g, b, a)
+
+=item pat:get_color_stops ()
+
+=item pat:get_extend ()
+
+=item pat:get_filter ()
+
+=item pat:get_linear_points ()
+
+=item pat:get_matrix ()
+
+=item pat:get_radial_circles ()
+
+=item pat:get_rgba ()
+
+=item pat:get_surface ()
+
+=item pat:get_type ()
+
+=item pat:set_extend (extendtype)
+
+=item pat:set_filter (filtertype)
+
+=item pat:set_matrix (matrix)
+
+=back
+
+=for comment
+vi:ts=4 sw=4 expandtab

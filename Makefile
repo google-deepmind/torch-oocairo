@@ -15,6 +15,7 @@ LIBDIR = $(PREFIX)/lib
 
 OBJECTS = oocairo.lo
 SOURCES := $(OBJECTS:.lo=.c)
+MANPAGES = doc/lua-oocairo-context.3 doc/lua-oocairo-fontface.3 doc/lua-oocairo-matrix.3 doc/lua-oocairo-path.3 doc/lua-oocairo-pattern.3 doc/lua-oocairo-surface.3 doc/lua-oocairo.3
 
 LIBTOOL := libtool --quiet
 
@@ -41,7 +42,7 @@ DEBUG := -g
 #DEBUG := $(DEBUG) -pg
 #DEBUG := $(DEBUG) -fprofile-arcs -ftest-coverage
 
-all: liblua-oocairo.la
+all: liblua-oocairo.la $(MANPAGES)
 
 test: all
 	echo 'lunit.main({...})' | $(VALGRIND) lua -llunit - test/*.lua
@@ -60,9 +61,36 @@ liblua-oocairo.la: oocairo.lo
 	@echo 'LD>' $@
 	@$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) $(DEBUG) -o $@ $< -rpath $(LIBDIR)
 
+doc/lua-%.3: doc/lua-%.pod Changes
+	sed 's/E<copy>/(c)/g' <$< | sed 's/E<ndash>/-/g' | \
+	    pod2man --center="Lua OO Cairo binding" \
+	            --name="$(shell echo $< | sed 's/^doc\///' | sed 's/\.pod$$//' | tr a-z A-Z)" --section=3 \
+	            --release="$(VERSION)" --date="$(RELEASEDATE)" >$@
+
+install: all
+	mkdir -p $(LUA_CPATH)
+	install --mode=644 .libs/liblua-oocairo.so.0.0.0 $(LUA_CPATH)/oocairo.so
+	mkdir -p $(PREFIX)/share/man/man3
+	for manpage in $(MANPAGES); do \
+	    gzip -c $$manpage >$(PREFIX)/share/man/man3/$$(echo $$manpage | sed -e 's/^doc\///').gz; \
+	done
+
+checktmp:
+	@if [ -e tmp ]; then \
+	    echo "Can't proceed if file 'tmp' exists"; \
+	    false; \
+	fi
+dist: all checktmp
+	mkdir -p tmp/$(DISTNAME)
+	tar cf - --files-from MANIFEST | (cd tmp/$(DISTNAME) && tar xf -)
+	cd tmp && tar cf - $(DISTNAME) | gzip -9 >../$(DISTNAME).tar.gz
+	cd tmp && tar cf - $(DISTNAME) | bzip2 -9 >../$(DISTNAME).tar.bz2
+	rm -rf tmp
+
 clean:
 	rm -f *.o *.lo *.d core
 	rm -rf liblua-oocairo.la .libs
 	rm -f gmon.out *.bb *.bbg *.da *.gcov
+	rm -f $(MANPAGES)
 
-.PHONY: all test clean
+.PHONY: all checktmp dist install test clean

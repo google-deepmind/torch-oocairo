@@ -1,0 +1,52 @@
+=head1 Name
+
+lua-oocairo-surface - Cairo surface objects
+
+=head1 Introduction
+
+Surface objects can be compared with the C<==> operator.  This will compare
+the identity of the objects, so different Lua objects which refer to the
+same Cairo objects will compare as equal.
+
+=head1 Methods
+
+=over
+
+=item surf:copy_page ()
+
+=item surf:finish ()
+
+=item surf:flush ()
+
+=item surf:get_content ()
+
+=item surf:get_device_offset ()
+
+=item surf:get_fallback_resolution ()
+
+=item surf:get_format ()
+
+=item surf:get_height ()
+
+=item surf:get_type ()
+
+=item surf:get_width ()
+
+=item surf:set_device_offset (x, y)
+
+=item surf:set_fallback_resolution (x, y)
+
+=item surf:set_size (width, height)
+
+=item surf:show_page ()
+
+=item surf:write_to_png (filename)
+
+=item surf:write_to_png_stream (file)
+
+=item surf:write_to_png_string ()
+
+=back
+
+=for comment
+vi:ts=4 sw=4 expandtab

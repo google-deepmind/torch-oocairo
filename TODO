@@ -1,0 +1,59 @@
+Simplify stream API: overload so that same functions accept either filename
+or file handle (and userdata or table which has a 'read' or 'write' method),
+and ditch the string versions altogether (use memoryfile or equivalent instead).
+
+These functions aren't bound at all yet:
+cairo_copy_clip_rectangle_list
+cairo_font_options_copy
+cairo_font_options_create
+cairo_font_options_equal
+cairo_font_options_get_antialias
+cairo_font_options_get_hint_metrics
+cairo_font_options_get_hint_style
+cairo_font_options_get_subpixel_order
+cairo_font_options_hash
+cairo_font_options_merge
+cairo_font_options_set_antialias
+cairo_font_options_set_hint_metrics
+cairo_font_options_set_hint_style
+cairo_font_options_set_subpixel_order
+cairo_format_stride_for_width
+cairo_ft_font_face_create_for_ft_face
+cairo_ft_font_face_create_for_pattern
+cairo_ft_font_options_substitute
+cairo_get_font_face
+cairo_get_font_options
+cairo_get_scaled_font
+cairo_image_surface_create_for_data
+cairo_image_surface_get_data
+cairo_image_surface_get_stride
+cairo_scaled_font_create
+cairo_scaled_font_extents
+cairo_scaled_font_get_ctm
+cairo_scaled_font_get_font_face
+cairo_scaled_font_get_font_matrix
+cairo_scaled_font_get_font_options
+cairo_scaled_font_get_type
+cairo_scaled_font_glyph_extents
+cairo_scaled_font_text_extents
+cairo_set_font_face
+cairo_set_font_options
+cairo_set_scaled_font
+cairo_surface_get_font_options
+cairo_surface_mark_dirty
+cairo_surface_mark_dirty_rectangle
+cairo_svg_surface_create_for_stream
+cairo_svg_surface_restrict_to_version
+
+Interact with bindings for:
+Gtk+
+FontConfig
+FreeType
+Pango
+Win32 font API
+
+Surface types not supported:
+PostScript
+Win32
+Quartz
+XLib

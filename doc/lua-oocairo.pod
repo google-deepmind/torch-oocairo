@@ -1,0 +1,93 @@
+=head1 Name
+
+lua-oocairo - Lua API for the Cairo vector graphics library
+
+=head1 Introduction
+
+=head1 Simple Example
+
+
+=for syntax-highlight lua
+
+    -- Load the module (it doesn't create a global variable,
+    -- so you have to assign it to something).
+    local Cairo = require "oocairo"
+
+    -- Create a bitmap ‘image surface’ for drawing on.
+    local surface = Cairo.image_surface_create("rgb24", 200, 200)
+    local cr = Cairo.context_create(surface)
+
+    -- Fill whole image with white.
+    cr:set_source_rgb(1, 1, 1)
+    cr:paint()
+
+    -- Define an arbitrary shape, then fill it in purple.
+    cr:move_to(0, 0)
+    cr:line_to(190, 100)
+    cr:line_to(100, 185)
+    cr:line_to(200, 200)
+    cr:line_to(30, 130)
+    cr:close_path()
+    cr:set_source_rgb(0.8, 0.4, 1)
+    cr:fill()
+
+    -- Another shape, this time both filled and with a line
+    -- drawn along it's edge.
+    cr:move_to(180, 30)
+    cr:line_to(100, 20)
+    cr:line_to(80, 120)
+    cr:set_source_rgb(0.5, 0.7, 0.3)
+    cr:fill_preserve()
+    cr:set_source_rgb(0, 0, 0)
+    cr:set_line_width(3)
+    cr:stroke()
+
+    -- Write the output to a file.
+    surface:write_to_png("simple-example.png")
+
+=head1 Top-level functions
+
+=over
+
+=item context_create (surface)
+
+=item image_surface_create (format, width, height)
+
+=item image_surface_create_from_png (filename)
+
+=item image_surface_create_from_png_stream (file)
+
+=item image_surface_create_from_png_string (string)
+
+=item matrix_create ()
+
+=item pattern_create_for_surface (surface)
+
+=item pattern_create_linear (x1, y1, x2, y2)
+
+=item pattern_create_radial (x1, y1, r1, x2, y2, r2)
+
+=item pattern_create_rgb (r, g, b)
+
+=item pattern_create_rgba (r, g, b, a)
+
+=item pdf_surface_create (filename, width, height)
+
+=item surface_create_similar (surface, content, width, height)
+
+=item svg_get_versions ()
+
+=item svg_surface_create (filename, width, height)
+
+=back
+
+=head1 Copyright
+
+This software and documentation is Copyright E<copy> 2008 Geoff Richards
+E<lt>geoff@laxan.comE<gt>.  It is free software; you can redistribute it
+and/or modify it under the terms of the S<Lua 5.0> license.  The full terms
+are given in the file F<COPYRIGHT> supplied with the source code package,
+and are also available here: L<http://www.lua.org/license.html>
+
+=for comment
+vi:ts=4 sw=4 expandtab

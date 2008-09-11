@@ -1,0 +1,186 @@
+=head1 Name
+
+lua-oocairo-context - Drawing context objects
+
+=head1 Introduction
+
+=head1 Methods
+
+=over
+
+=item cr:append_path (path)
+
+=item cr:arc (cx, cy, radius, angle1, angle2)
+
+=item cr:arc_negative (cx, cy, radius, angle1, angle2)
+
+=item cr:clip ()
+
+=item cr:clip_extents ()
+
+=item cr:clip_preserve ()
+
+=item cr:close_path ()
+
+=item cr:copy_path ()
+
+=item cr:copy_path_flat ()
+
+=item cr:curve_to (c1x, c1y, c2x, c2y, x, y)
+
+=item cr:device_to_user (x, y)
+
+=item cr:device_to_user_distance (x, y)
+
+=item cr:fill ()
+
+=item cr:fill_extents ()
+
+=item cr:fill_preserve ()
+
+=item cr:font_extents ()
+
+=item cr:get_antialias ()
+
+=item cr:get_current_point ()
+
+=item cr:get_dash ()
+
+=item cr:get_fill_rule ()
+
+=item cr:get_font_face ()
+
+=item cr:get_font_matrix ()
+
+=item cr:get_group_target ()
+
+=item cr:get_line_cap ()
+
+=item cr:get_line_join ()
+
+=item cr:get_line_width ()
+
+=item cr:get_matrix ()
+
+=item cr:get_miter_limit ()
+
+=item cr:get_operator ()
+
+=item cr:get_source ()
+
+=item cr:get_target ()
+
+=item cr:get_tolerance ()
+
+=item cr:glyph_extents (glyphs)
+
+=item cr:glyph_path (glyphs)
+
+=item cr:has_current_point ()
+
+=item cr:identity_matrix ()
+
+=item cr:in_fill (x, y)
+
+=item cr:in_stroke (x, y)
+
+=item cr:line_to (x, y)
+
+=item cr:mask (pattern)
+=item cr:mask (surface, x, y)
+
+=item cr:move_to (x, y)
+
+=item cr:new_path ()
+
+=item cr:new_sub_path ()
+
+=item cr:paint ()
+
+=item cr:paint_with_alpha (alpha)
+
+=item cr:path_extents ()
+
+=item cr:pop_group ()
+
+=item cr:pop_group_to_source ()
+
+=item cr:push_group ([content])
+
+=item cr:rectangle (x, y, width, height)
+
+=item cr:rel_curve_to (c1x, c1y, c2x, c2y, x, y)
+
+=item cr:rel_line_to (x, y)
+
+=item cr:rel_move_to (x, y)
+
+=item cr:reset_clip ()
+
+=item cr:restore ()
+
+=item cr:rotate (angle)
+
+=item cr:save ()
+
+=item cr:scale (sx, sy)
+
+=item cr:select_font_face (familyname, slant, weight)
+
+=item cr:set_antialias (antialiastype)
+
+=item cr:set_dash (dashpattern, offset)
+
+=item cr:set_fill_rule (fillrule)
+
+=item cr:set_font_matrix (matrix)
+
+=item cr:set_font_size (size)
+
+=item cr:set_line_cap (linecaptype)
+
+=item cr:set_line_join (linejointype)
+
+=item cr:set_line_width (width)
+
+=item cr:set_matrix (matrix)
+
+=item cr:set_miter_limit (limit)
+
+=item cr:set_operator (operatorname)
+
+=item cr:set_source (pattern)
+=item cr:set_source (surface, x, y)
+
+=item cr:set_source_rgb (r, g, b)
+
+=item cr:set_source_rgba (r, g, b, a)
+
+=item cr:set_tolerance (tolerance)
+
+=item cr:show_glyphs (glyphs)
+
+=item cr:show_text (text)
+
+=item cr:stroke ()
+
+=item cr:stroke_extents ()
+
+=item cr:stroke_preserve ()
+
+=item cr:text_extents (text)
+
+=item cr:text_path (text)
+
+=item cr:transform (matrix)
+
+=item cr:translate (x, y)
+
+=item cr:user_to_device (x, y)
+
+=item cr:user_to_device_distance (x, y)
+
+=back
+
+=for comment
+vi:ts=4 sw=4 expandtab

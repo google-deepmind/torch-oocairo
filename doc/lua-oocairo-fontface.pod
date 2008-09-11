@@ -1,0 +1,20 @@
+=head1 Name
+
+lua-oocairo-fontface - Unscaled font face object
+
+=head1 Introduction
+
+Font face objects can be compared with the C<==> operator.  This will compare
+the identity of the objects, so different Lua objects which refer to the
+same Cairo objects will compare as equal.
+
+=head1 Methods
+
+=over
+
+=item fontface:get_type ()
+
+=back
+
+=for comment
+vi:ts=4 sw=4 expandtab

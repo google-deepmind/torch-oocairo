@@ -1,0 +1,16 @@
+=head1 Name
+
+lua-oocairo-path - Path object
+
+=head1 Introduction
+
+=head1 Methods
+
+=over
+
+=item path:each ()
+
+=back
+
+=for comment
+vi:ts=4 sw=4 expandtab
