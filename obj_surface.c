@@ -91,8 +91,16 @@ image_surface_create_from_png (lua_State *L) {
     return 1;
 }
 
-static int
-pdf_surface_create (lua_State *L) {
+/* This function is used for several types of surface which all have the
+ * same type of construction, and are all a bit complicated because they
+ * can write their output to a Lua file handle. */
+typedef cairo_surface_t * (*SimpleSizeCreatorFunc) (const char *,
+                                                    double, double);
+typedef cairo_surface_t * (*StreamSizeCreatorFunc) (cairo_write_func_t, void *,
+                                                    double, double);
+static void
+surface_create_with_size (lua_State *L, SimpleSizeCreatorFunc simplefunc, StreamSizeCreatorFunc streamfunc)
+{
     double width, height;
     SurfaceUserdata *surface;
     int filetype;
@@ -107,29 +115,49 @@ pdf_surface_create (lua_State *L) {
     filetype = lua_type(L, 1);
     if (filetype == LUA_TSTRING || filetype == LUA_TNUMBER) {
         const char *filename = lua_tostring(L, 1);
-        surface->surface = cairo_pdf_surface_create(filename, width, height);
+        surface->surface = simplefunc(filename, width, height);
         if (cairo_surface_status(surface->surface) != CAIRO_STATUS_SUCCESS)
-            return luaL_error(L, "error creating PDF surface");
+            luaL_error(L, "error creating surface for filename '%s'", filename);
     }
     else if (filetype == LUA_TUSERDATA || filetype == LUA_TTABLE) {
         lua_pushvalue(L, 1);
         surface->fhref = luaL_ref(L, LUA_REGISTRYINDEX);
 
-        surface->surface = cairo_pdf_surface_create_for_stream(
-                                    write_chunk_to_fh, surface, width, height);
+        surface->surface = streamfunc(write_chunk_to_fh, surface,
+                                      width, height);
         if (cairo_surface_status(surface->surface) != CAIRO_STATUS_SUCCESS) {
-            lua_pushliteral(L, "error writing PDF file to Lua file handle");
+            lua_pushliteral(L, "error writing surface output file to Lua"
+                            " file handle");
             if (surface->errmsg) {
                 lua_pushliteral(L, ": ");
                 lua_pushstring(L, surface->errmsg);
                 lua_concat(L, 3);
             }
-            return lua_error(L);
+            lua_error(L);
         }
     }
     else
-        return luaL_typerror(L, 1, "filename or file handle object");
+        luaL_typerror(L, 1, "filename or file handle object");
+}
 
+static int
+pdf_surface_create (lua_State *L) {
+    surface_create_with_size(L, cairo_pdf_surface_create,
+                             cairo_pdf_surface_create_for_stream);
+    return 1;
+}
+
+static int
+ps_surface_create (lua_State *L) {
+    surface_create_with_size(L, cairo_ps_surface_create,
+                             cairo_ps_surface_create_for_stream);
+    return 1;
+}
+
+static int
+svg_surface_create (lua_State *L) {
+    surface_create_with_size(L, cairo_svg_surface_create,
+                             cairo_svg_surface_create_for_stream);
     return 1;
 }
 
@@ -158,91 +186,6 @@ svg_get_versions (lua_State *L) {
         lua_pushstring(L, cairo_svg_version_to_string(versions[i]));
         lua_rawseti(L, -2, i + 1);
     }
-    return 1;
-}
-
-static int
-ps_surface_create (lua_State *L) {
-    double width, height;
-    SurfaceUserdata *surface;
-    int filetype;
-
-    width = luaL_checknumber(L, 2);
-    height = luaL_checknumber(L, 3);
-    luaL_argcheck(L, width >= 0, 2, "image width cannot be negative");
-    luaL_argcheck(L, height >= 0, 3, "image height cannot be negative");
-
-    surface = create_surface_userdata(L);
-
-    filetype = lua_type(L, 1);
-    if (filetype == LUA_TSTRING || filetype == LUA_TNUMBER) {
-        const char *filename = lua_tostring(L, 1);
-        surface->surface = cairo_ps_surface_create(filename, width, height);
-        if (cairo_surface_status(surface->surface) != CAIRO_STATUS_SUCCESS)
-            return luaL_error(L, "error creating PostScript surface");
-    }
-    else if (filetype == LUA_TUSERDATA || filetype == LUA_TTABLE) {
-        lua_pushvalue(L, 1);
-        surface->fhref = luaL_ref(L, LUA_REGISTRYINDEX);
-
-        surface->surface = cairo_ps_surface_create_for_stream(
-                                    write_chunk_to_fh, surface, width, height);
-        if (cairo_surface_status(surface->surface) != CAIRO_STATUS_SUCCESS) {
-            lua_pushliteral(L, "error writing PostScript file to Lua"
-                            " file handle");
-            if (surface->errmsg) {
-                lua_pushliteral(L, ": ");
-                lua_pushstring(L, surface->errmsg);
-                lua_concat(L, 3);
-            }
-            return lua_error(L);
-        }
-    }
-    else
-        return luaL_typerror(L, 1, "filename or file handle object");
-
-    return 1;
-}
-
-static int
-svg_surface_create (lua_State *L) {
-    double width, height;
-    SurfaceUserdata *surface;
-    int filetype;
-
-    width = luaL_checknumber(L, 2);
-    height = luaL_checknumber(L, 3);
-    luaL_argcheck(L, width >= 0, 2, "image width cannot be negative");
-    luaL_argcheck(L, height >= 0, 3, "image height cannot be negative");
-
-    surface = create_surface_userdata(L);
-
-    filetype = lua_type(L, 1);
-    if (filetype == LUA_TSTRING || filetype == LUA_TNUMBER) {
-        const char *filename = lua_tostring(L, 1);
-        surface->surface = cairo_svg_surface_create(filename, width, height);
-        if (cairo_surface_status(surface->surface) != CAIRO_STATUS_SUCCESS)
-            return luaL_error(L, "error creating SVG surface");
-    }
-    else if (filetype == LUA_TUSERDATA || filetype == LUA_TTABLE) {
-        lua_pushvalue(L, 1);
-        surface->fhref = luaL_ref(L, LUA_REGISTRYINDEX);
-
-        surface->surface = cairo_svg_surface_create_for_stream(
-                                    write_chunk_to_fh, surface, width, height);
-        if (cairo_surface_status(surface->surface) != CAIRO_STATUS_SUCCESS) {
-            lua_pushliteral(L, "error writing SVG file to Lua file handle");
-            if (surface->errmsg) {
-                lua_pushliteral(L, ": ");
-                lua_pushstring(L, surface->errmsg);
-                lua_concat(L, 3);
-            }
-            return lua_error(L);
-        }
-    }
-    else
-        return luaL_typerror(L, 1, "filename or file handle object");
-
     return 1;
 }
 
