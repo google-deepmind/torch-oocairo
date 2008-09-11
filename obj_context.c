@@ -609,8 +609,15 @@ cr_select_font_face (lua_State *L) {
 static int
 cr_set_antialias (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_set_antialias(*obj,
-            antialias_values[luaL_checkoption(L, 2, 0, antialias_names)]);
+    cairo_antialias_t aa;
+    if (lua_isboolean(L, 2)) {
+        /* A boolean value is interpreted as a signal to turn AA on or off. */
+        aa = lua_toboolean(L, 2) ? CAIRO_ANTIALIAS_DEFAULT
+                                 : CAIRO_ANTIALIAS_NONE;
+    }
+    else
+        aa = antialias_values[luaL_checkoption(L, 2, 0, antialias_names)];
+    cairo_set_antialias(*obj, aa);
     return 0;
 }
 

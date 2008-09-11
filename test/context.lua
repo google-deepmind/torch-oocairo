@@ -27,6 +27,12 @@ function test_antialias ()
         cr:set_antialias(v)
         assert_equal(v, cr:get_antialias())
     end
+
+    -- Boolean values also select reasonable values.
+    cr:set_antialias(false)
+    assert_equal("none", cr:get_antialias())
+    cr:set_antialias(true)
+    assert_equal("default", cr:get_antialias())
 end
 
 function test_dash ()
