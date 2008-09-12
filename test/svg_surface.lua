@@ -16,16 +16,6 @@ if Cairo.HAS_SVG_SURFACE then
         end
     end
 
-    -- Arbitrary drawing just to make sure there's something in the SVG file.
-    local function draw_stuff (surface)
-        local cr = Cairo.context_create(surface)
-        cr:move_to(50, 50)
-        cr:line_to(250, 150)
-        cr:set_line_width(5)
-        cr:set_source_rgb(1, 0, 0.5)
-        cr:stroke()
-    end
-
     local function check_svg_surface (surface)
         assert_userdata(surface)
         assert_equal("cairo surface object", surface._NAME)
@@ -43,7 +33,7 @@ if Cairo.HAS_SVG_SURFACE then
         local filename = tmpname()
         local surface = Cairo.svg_surface_create(filename, 300, 200)
         check_svg_surface(surface)
-        draw_stuff(surface)
+        draw_arbitrary_stuff(Cairo, surface)
         surface:finish()
         check_file_contains_svg(filename)
     end
@@ -53,7 +43,7 @@ if Cairo.HAS_SVG_SURFACE then
         local fh = assert(io.open(filename, "wb"))
         local surface = Cairo.svg_surface_create(fh, 300, 200)
         check_svg_surface(surface)
-        draw_stuff(surface)
+        draw_arbitrary_stuff(Cairo, surface)
         surface:finish()
         fh:close()
         check_file_contains_svg(filename)

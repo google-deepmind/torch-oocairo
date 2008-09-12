@@ -16,4 +16,14 @@ function clean_up_temp_files ()
     _tmp_filenames = {}
 end
 
+-- Arbitrary drawing just to make sure there's something in the output file.
+function draw_arbitrary_stuff (Cairo, surface)
+    local cr = Cairo.context_create(surface)
+    cr:move_to(50, 50)
+    cr:line_to(250, 150)
+    cr:set_line_width(5)
+    cr:set_source_rgb(1, 0, 0.5)
+    cr:stroke()
+end
+
 -- vi:ts=4 sw=4 expandtab

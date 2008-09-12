@@ -16,15 +16,6 @@ if Cairo.HAS_PS_SURFACE then
         end
     end
 
-    local function draw_stuff (surface)
-        local cr = Cairo.context_create(surface)
-        cr:move_to(50, 50)
-        cr:line_to(250, 150)
-        cr:set_line_width(5)
-        cr:set_source_rgb(1, 0, 0.5)
-        cr:stroke()
-    end
-
     local function check_ps_surface (surface)
         assert_userdata(surface)
         assert_equal("cairo surface object", surface._NAME)
@@ -42,7 +33,7 @@ if Cairo.HAS_PS_SURFACE then
         local filename = tmpname()
         local surface = Cairo.ps_surface_create(filename, 300, 200)
         check_ps_surface(surface)
-        draw_stuff(surface)
+        draw_arbitrary_stuff(Cairo, surface)
         surface:finish()
         check_file_contains_ps(filename)
     end
@@ -52,7 +43,7 @@ if Cairo.HAS_PS_SURFACE then
         local fh = assert(io.open(filename, "wb"))
         local surface = Cairo.ps_surface_create(fh, 300, 200)
         check_ps_surface(surface)
-        draw_stuff(surface)
+        draw_arbitrary_stuff(Cairo, surface)
         surface:finish()
         fh:close()
         check_file_contains_ps(filename)
@@ -66,9 +57,9 @@ if Cairo.HAS_PS_SURFACE then
     function test_set_size ()
         local surface = Cairo.ps_surface_create(tmpname(), 300, 200)
         surface:set_size(300, 400)
-        draw_stuff(surface)
+        draw_arbitrary_stuff(Cairo, surface)
         surface:set_size(500, 600)
-        draw_stuff(surface)
+        draw_arbitrary_stuff(Cairo, surface)
         surface:finish()
     end
 
