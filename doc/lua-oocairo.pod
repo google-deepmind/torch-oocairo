@@ -81,6 +81,38 @@ lua-oocairo - Lua API for the Cairo vector graphics library
 
 =back
 
+=head1 Feature flags
+
+When the module is compiled, it will only enable support for the features
+which were compiled into your copy of the Cairo library.  For example, if
+you built Cairo without the PDF backend, then the module will not include
+the functions for creating a PDF surface.
+
+There are flags in the module table which indicate which features are
+available.  These are all wither C<true> or C<false>:
+
+=over
+
+=item HAS_PDF_SURFACE
+
+Support for creating a surface which writes drawing instructions out to
+an SVG file.
+
+=item HAS_PNG_FUNCTIONS
+
+Support for loading a PNG bitmap and creating an image surface from it,
+or for writing the contents of an image surface out to a PNG.
+
+=item HAS_PS_SURFACE
+
+Support for creating a surface which writes to a PostScript or EPS file.
+
+=item HAS_SVG_SURFACE
+
+Support for creating a surface which writes to a PDF file.
+
+=back
+
 =head1 Copyright
 
 This software and documentation is Copyright E<copy> 2008 Geoff Richards

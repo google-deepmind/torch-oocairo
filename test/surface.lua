@@ -111,28 +111,32 @@ function test_fallback_resolution ()
     end
 end
 
-function test_not_image_surface ()
-    local surface = Cairo.svg_surface_create(tmpname(), 300, 200)
-    assert_error("get_width on non-image surface",
-                 function () surface:get_width() end)
-    assert_error("get_height on non-image surface",
-                 function () surface:get_height() end)
-    assert_error("get_format on non-image surface",
-                 function () surface:get_format() end)
+if Cairo.HAS_SVG_SURFACE then
+    function test_not_image_surface ()
+        local surface = Cairo.svg_surface_create(tmpname(), 300, 200)
+        assert_error("get_width on non-image surface",
+                     function () surface:get_width() end)
+        assert_error("get_height on non-image surface",
+                     function () surface:get_height() end)
+        assert_error("get_format on non-image surface",
+                     function () surface:get_format() end)
+    end
 end
 
-function test_not_pdf_surface ()
+function test_not_pdf_or_ps_surface ()
     local surface = Cairo.image_surface_create("rgb24", 30, 20)
-    assert_error("set_size on non-PDF surface",
+    assert_error("set_size on non-PDF or PostScript surface",
                  function () surface:set_size(40, 50) end)
 end
 
-function test_not_ps_surface ()
-    local surface = Cairo.image_surface_create("rgb24", 30, 20)
-    assert_error("get_eps on non-PS surface",
-                 function () surface:get_eps() end)
-    assert_error("set_eps on non-PS surface",
-                 function () surface:set_eps(true) end)
+if Cairo.HAS_PS_SURFACE then
+    function test_not_ps_surface ()
+        local surface = Cairo.image_surface_create("rgb24", 30, 20)
+        assert_error("get_eps on non-PS surface",
+                     function () surface:get_eps() end)
+        assert_error("set_eps on non-PS surface",
+                     function () surface:set_eps(true) end)
+    end
 end
 
 local function check_wood_image_surface (surface)
@@ -141,28 +145,30 @@ local function check_wood_image_surface (surface)
     assert_equal(WOOD_HEIGHT, surface:get_height())
 end
 
-function test_create_from_png ()
-    local surface = Cairo.image_surface_create_from_png(WOOD_FILENAME)
-    check_wood_image_surface(surface)
+if Cairo.HAS_PNG_FUNCTIONS then
+    function test_create_from_png ()
+        local surface = Cairo.image_surface_create_from_png(WOOD_FILENAME)
+        check_wood_image_surface(surface)
+    end
+
+    function test_create_from_png_error ()
+        assert_error("trying to load PNG file which doesn't exist", function ()
+            Cairo.image_surface_create_from_png("nonexistent-file.png")
+        end)
+        assert_error("wrong type instead of file/filename", function ()
+            Cairo.image_surface_create_from_png(false)
+        end)
+    end
+
+    function test_create_from_png_stream ()
+        local fh = assert(io.open(WOOD_FILENAME, "rb"))
+        local surface = Cairo.image_surface_create_from_png(fh)
+        fh:close()
+        check_wood_image_surface(surface)
+    end
 end
 
-function test_create_from_png_error ()
-    assert_error("trying to load PNG file which doesn't exist", function ()
-        Cairo.image_surface_create_from_png("nonexistent-file.png")
-    end)
-    assert_error("wrong type instead of file/filename", function ()
-        Cairo.image_surface_create_from_png(false)
-    end)
-end
-
-function test_create_from_png_stream ()
-    local fh = assert(io.open(WOOD_FILENAME, "rb"))
-    local surface = Cairo.image_surface_create_from_png(fh)
-    fh:close()
-    check_wood_image_surface(surface)
-end
-
-if MemFile then
+if MemFile and Cairo.HAS_PNG_FUNCTIONS then
     function test_create_from_png_string ()
         local fh = assert(io.open(WOOD_FILENAME, "rb"))
         local data = fh:read("*a")
@@ -184,23 +190,25 @@ local function check_file_contains_png (filename)
     check_data_is_png(data)
 end
 
-function test_write_to_png ()
-    local surface = Cairo.image_surface_create("rgb24", 23, 45)
-    local filename = tmpname()
-    surface:write_to_png(filename)
-    check_file_contains_png(filename)
+if Cairo.HAS_PNG_FUNCTIONS then
+    function test_write_to_png ()
+        local surface = Cairo.image_surface_create("rgb24", 23, 45)
+        local filename = tmpname()
+        surface:write_to_png(filename)
+        check_file_contains_png(filename)
+    end
+
+    function test_write_to_png_stream ()
+        local surface = Cairo.image_surface_create("rgb24", 23, 45)
+        local filename = tmpname()
+        local fh = assert(io.open(filename, "wb"))
+        surface:write_to_png(fh)
+        fh:close()
+        check_file_contains_png(filename)
+    end
 end
 
-function test_write_to_png_stream ()
-    local surface = Cairo.image_surface_create("rgb24", 23, 45)
-    local filename = tmpname()
-    local fh = assert(io.open(filename, "wb"))
-    surface:write_to_png(fh)
-    fh:close()
-    check_file_contains_png(filename)
-end
-
-if MemFile then
+if MemFile and Cairo.HAS_PNG_FUNCTIONS then
     function test_write_to_png_string ()
         local surface = Cairo.image_surface_create("rgb24", 23, 45)
         local fh = MemFile.open()

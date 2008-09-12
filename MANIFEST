@@ -49,6 +49,7 @@ oocairo.c
 runlocal.lua
 test/context.lua
 test/font_face.lua
+test/general.lua
 test/matrix.lua
 test/path.lua
 test/pattern.lua
