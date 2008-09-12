@@ -1,4 +1,4 @@
-require "runlocal"
+require "test-setup"
 require "lunit"
 local Cairo = require "oocairo"
 

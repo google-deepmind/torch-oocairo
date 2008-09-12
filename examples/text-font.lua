@@ -1,4 +1,5 @@
-require "runlocal"
+-- Show some different font selections.
+
 local Cairo = require "oocairo"
 
 local IMG_WD, IMG_HT = 700, 650

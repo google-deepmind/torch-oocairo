@@ -1,6 +1,5 @@
 -- This tests the 'in_fill' and 'in_stroke' methods.
 
-require "runlocal"
 local Cairo = require "oocairo"
 
 local IMG_SZ, BLOB_SEP, BLOB_RADIUS = 800, 20, 9

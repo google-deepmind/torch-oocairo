@@ -1,6 +1,6 @@
--- This demonstrates the different styles of line endings and joins.
+-- This demonstrates the different styles of line endings and joins,
+-- and some dash patterns.
 
-require "runlocal"
 local Cairo = require "oocairo"
 
 local DEMO_WD, DEMO_HT, LINE_WD, MARGIN = 140, 70, 35, 50

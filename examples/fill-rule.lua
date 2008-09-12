@@ -1,6 +1,5 @@
 -- Demonstrate the effect of different fill rules.
 
-require "runlocal"
 local Cairo = require "oocairo"
 
 local RADIUS, NUM_POINTS, MARGIN = 100, 5, 30

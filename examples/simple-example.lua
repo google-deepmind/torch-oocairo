@@ -1,4 +1,5 @@
-require "runlocal"
+-- A simple example which just draws some arbitrary shapes.
+
 local Cairo = require "oocairo"
 
 local surface = Cairo.image_surface_create("rgb24", 200, 200)

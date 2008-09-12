@@ -1,4 +1,9 @@
-require "runlocal"
+-- Draw a rectangle with different transformations to rotate and scale it.
+-- It also has a translation applied, although that's always the same.
+-- This also uses 'save' and 'restore' to push and pop the transformation
+-- matrix, so that the translation doesn't have to be applied to a fresh
+-- identity matrix each time round.
+
 local Cairo = require "oocairo"
 
 local PI = 2*math.asin(1)

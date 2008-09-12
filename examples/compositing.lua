@@ -2,7 +2,6 @@
 -- program from a Cairo tutorial here:
 --     http://zetcode.com/tutorials/cairographicstutorial/compositing/
 
-require "runlocal"
 local Cairo = require "oocairo"
 
 local IMG_WD, IMG_HT = 510, 120

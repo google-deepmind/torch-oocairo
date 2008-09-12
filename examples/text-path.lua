@@ -3,8 +3,9 @@
 -- and I can't rely on a particular font being installed on every system.
 -- The output image should show the outlines of some text, with the paths
 -- filled and then stroked in a different colour.
+--
+-- This also uses a transformation of a font to get an unusual effect.
 
-require "runlocal"
 local Cairo = require "oocairo"
 
 local FONT_NAME, FONT_SIZE = "Sans", 200

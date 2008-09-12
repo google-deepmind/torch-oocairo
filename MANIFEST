@@ -53,7 +53,7 @@ obj_pattern.c
 obj_surface.c
 oocairo.c
 oocairo.h
-runlocal.lua
+test-setup.lua
 test/context.lua
 test/font_face.lua
 test/general.lua

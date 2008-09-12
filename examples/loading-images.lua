@@ -1,4 +1,7 @@
-require "runlocal"
+-- Demonstrate loading a PNG image three different ways.  The third will
+-- be skipped unless my 'memoryfile' module is installed, so the output
+-- image will have either two or three copies of the wood pattern.
+
 local Cairo = require "oocairo"
 
 local PIC_FILENAME = "examples/images/wood1.png"

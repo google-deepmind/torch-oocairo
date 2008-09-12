@@ -1,4 +1,5 @@
-require "runlocal"
+-- Show some of the posibilities of the 'arc' and 'arc_negative' methods.
+
 local Cairo = require "oocairo"
 
 local PI = 2*math.asin(1)

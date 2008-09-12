@@ -1,19 +1,36 @@
-require "runlocal"
+-- Demonstrate some nice effects which can be achieved with the mask,
+-- using it to composite photographs onto a background.  Two of them have
+-- a linear and radial gradient as their masks, making the pictures fade
+-- out, and the third uses a mask shape created by filling a path.
+--
+-- This also demonstrates how to load JPEG images, which Cairo doesn't
+-- support directly.  It's a bit of a hack, but it works: the JPEGs are
+-- loaded with GD, and then saved into a PNG file in a string (to avoid
+-- the need for a temporary file) and then loaded back into Cairo from
+-- the string.
+
 local Cairo = require "oocairo"
 
 -- This module is required for loading images from data stored in a string.
--- It's available from LuaForge: http://luaforge.net/projects/memoryfile/
-local MemFile = require "memoryfile"
 
 local IMG_WD, IMG_HT = 400, 300
 local PI = 2 * math.asin(1)
 
--- This requires the GD library, and the Lua module for it.  We need it to
--- load the JPEG images.
+-- This requires the 'memoryfile' Lua module, the GD library, and the Lua
+-- module for GD.  We need them for loading the JPEG images.  These modules
+-- are both available from LuaForge:
+--     http://luaforge.net/projects/memoryfile/
+--     http://luaforge.net/projects/lua-gd/
+local MemFile
 do
     local ok = pcall(require, "gd")
     if not ok then
         print("The Lua 'gd' module is required for this example.")
+        os.exit(1)
+    end
+    ok, MemFile = pcall(require, "memoryfile")
+    if not ok then
+        print("The Lua 'memoryfile' module is required for this example.")
         os.exit(1)
     end
 end

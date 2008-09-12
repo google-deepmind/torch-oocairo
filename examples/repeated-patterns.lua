@@ -1,4 +1,5 @@
-require "runlocal"
+-- Demonstrate using surface sources as repeating patterns.
+
 local Cairo = require "oocairo"
 
 local PI = 2 * math.asin(1)
@@ -34,7 +35,10 @@ local function cross_hatch_pattern ()
     cr:set_line_width(HATCH_LINE_WD)
     cr:set_source_rgb(0, 0, 0)
     cr:stroke()
-    return surface
+
+    local pattern = Cairo.pattern_create_for_surface(surface)
+    pattern:set_extend("repeat")
+    return pattern
 end
 
 local surface = Cairo.image_surface_create("rgb24", IMG_WD, IMG_HT)
@@ -54,7 +58,6 @@ cr:fill_preserve()
 
 -- Stroke the outline of the big circle with a cross-hatch pattern.
 cr:set_source(cross_hatch_pattern())
-cr:get_source():set_extend("repeat")
 cr:set_line_width(CIRCLE_LINE_WD)
 cr:stroke()
 

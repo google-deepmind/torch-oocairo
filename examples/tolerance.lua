@@ -1,6 +1,5 @@
--- Draw curves using different 'tolerance' values.
+-- Draw curves using different 'tolerance' values, just to see what happens.
 
-require "runlocal"
 local Cairo = require "oocairo"
 
 local DEMO_WD, MARGIN = 140, 50

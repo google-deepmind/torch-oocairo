@@ -1,4 +1,8 @@
-require "runlocal"
+-- Example of how to use 'push_group' and 'pop_group_to_source' to composite
+-- a bunch of drawing commands onto a background with a single level of
+-- alpha blending, and also demonstrate the difference between the
+-- 'get_target' and 'get_group_target' methods.
+
 local Cairo = require "oocairo"
 
 local PI = 2*math.asin(1)

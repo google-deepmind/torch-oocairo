@@ -4,7 +4,6 @@
 -- The image should demonstrate whether the methods are producing reasonable
 -- results.
 
-require "runlocal"
 local Cairo = require "oocairo"
 
 local FONT_NAME, FONT_SIZE = "Sans", 90
