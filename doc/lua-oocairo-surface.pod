@@ -4,48 +4,135 @@ lua-oocairo-surface - Cairo surface objects
 
 =head1 Introduction
 
+All Cairo drawing operations are targeted at a B<surface>, which represents
+a backend writing drawing instructions out to a vector graphics file (SVG,
+PDF, etc.) or drawing to a bitmap image.  Surfaces are created with one of
+the top-level constructor functions listed in L<lua-oocairo(3)>.
+
 Surface objects can be compared with the C<==> operator.  This will compare
 the identity of the objects, so different Lua objects which refer to the
-same Cairo objects will compare as equal.
+same C<cairo_surface_t> will compare as equal.
 
 =head1 Methods
+
+The following methods are available on surface objects.
 
 =over
 
 =item surf:copy_page ()
 
+Same as C<surf:show_page()>, but keeps whatever has been drawn on the current
+page for additional drawing on the next page.
+
 =item surf:finish ()
+
+Finish any drawing to the surface and disconnect from any external resources
+it uses, such as closing a file handle if it's writing output to a file.
+No more drawing can be done with this surface after calling this method.
 
 =item surf:flush ()
 
+Finish any drawing work currently in progress.
+
 =item surf:get_content ()
+
+Returns a string indicating what kind of content the surface has (colours
+and/or transparency).  The return value will be one of the strings
+accepted by the C<surface_create_similar> function (see L<lua-oocairo(3)>).
 
 =item surf:get_device_offset ()
 
+Returns two numbers, whichever ones were set with C<surf:set_device_offset()>.
+
 =item surf:get_eps ()
+
+Returns a boolean value matching whatever was last set with
+C<surf:set_eps()>, or throws an exception if I<surf> is not a PostScript
+surface.
 
 =item surf:get_fallback_resolution ()
 
+Returns two numbers, the values set by C<surf:set_fallback_resolution()>.
+
 =item surf:get_format ()
+
+Return the pixel format for an image surface.  Throws an exception for
+other surface types.  The return value will be one of the strings accepted
+by the C<image_surface_create> function (see L<lua-oocairo(3)>).
 
 =item surf:get_height ()
 
+Returns the height in pixels of an image surface, or throws an exception
+for other types.
+
 =item surf:get_type ()
+
+Returns a string indicating what type of surface object I<surf> is.
+The value will be one of the following:
+
+=over
+
+=item image
+
+A bitmap image stored in a memory buffer.
+
+=item pdf
+
+Vector drawing into a AdobeE<trade> PDF file.
+
+=item ps
+
+Vector drawing into a PostScript file.
+
+=item svg
+
+Vector drawing into an SVG file.
+
+=back
+
+Other values are theoretically possible, but there isn't yet any way to
+create them with this binding of Cairo.
 
 =item surf:get_width ()
 
+Returns the width in pixels of an image surface, or throws an exception
+for other types.
+
 =item surf:set_device_offset (x, y)
+
+Set two numbers which are added to the I<x> and I<y> coordinates used for
+drawing after the current transformation matrix has been applied.
 
 =item surf:set_eps (eps)
 
+On a PostScript surface this sets whether the output should be encapsulated
+PostScript or not.  The value of I<eps> is interpreted as boolean.
+Throws an exception if I<surf> is not a PostScript surface.
+
 =item surf:set_fallback_resolution (x, y)
+
+Set the resolution at which vector graphics are rendered to bitmaps when
+drawing something on a vector-based surface type which can't be directly
+represented.  Has no effect on surfaces where the output is bitmapped
+anyway.  The values of I<x> and I<y> must be numbers.
 
 =item surf:set_size (width, height)
 
+Set the size in points of the next page of PostScript or PDF output.
+This should be called before any drawing has been done on the new page
+(probably just after creating the surface or just after the last
+C<surf:show_page()> call).  The values of I<width> and I<height> should
+be numbers.  Throws an exception if I<surf> isn't a PostScript or PDF
+surface.
+
 =item surf:show_page ()
 
-=item surf:write_to_png (filename)
-=item surf:write_to_png (file)
+Starts a new page on surfaces which support that (such as PDF and PostScript).
+
+=item surf:write_to_png (file/filename)
+
+Write the bitmap data from a surface out to the specified file in PNG
+format.  The argument can be a filename or file handle.
 
 =back
 

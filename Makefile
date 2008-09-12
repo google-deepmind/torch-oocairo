@@ -62,7 +62,7 @@ liblua-oocairo.la: oocairo.lo
 	@$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) $(DEBUG) -o $@ $< -rpath $(LIBDIR)
 
 doc/lua-%.3: doc/lua-%.pod Changes
-	sed 's/E<copy>/(c)/g' <$< | sed 's/E<ndash>/-/g' | \
+	sed 's/E<copy>/(c)/g' <$< | sed 's/E<trade>/(tm)/g' <$< | sed 's/E<ndash>/-/g' | sed 's/E<pi>/pi/g' | \
 	    pod2man --center="Lua OO Cairo binding" \
 	            --name="$(shell echo $< | sed 's/^doc\///' | sed 's/\.pod$$//' | tr a-z A-Z)" --section=3 \
 	            --release="$(VERSION)" --date="$(RELEASEDATE)" >$@
