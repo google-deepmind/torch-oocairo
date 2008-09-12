@@ -22,9 +22,9 @@ LIBTOOL := libtool --quiet
 CFLAGS := -ansi -pedantic -Wall -W -Wshadow -Wpointer-arith \
           -Wcast-align -Wwrite-strings -Wstrict-prototypes \
           -Wmissing-prototypes -Wnested-externs -Wno-long-long \
-          $(shell pkg-config --cflags lua5.1 cairo-png) \
+          $(shell pkg-config --cflags lua5.1 cairo) \
           -DVERSION=\"$(VERSION)\"
-LDFLAGS := $(shell pkg-config --libs lua5.1 cairo-png)
+LDFLAGS := $(shell pkg-config --libs lua5.1 cairo)
 
 # Uncomment this line to enable optimization.  Comment it out when running
 # the test suite because it makes the assert() errors clearer and avoids
@@ -91,6 +91,7 @@ clean:
 	rm -f *.o *.lo *.d core
 	rm -rf liblua-oocairo.la .libs
 	rm -f gmon.out *.bb *.bbg *.da *.gcov
+realclean: clean
 	rm -f $(MANPAGES)
 
-.PHONY: all checktmp dist install test clean
+.PHONY: all checktmp dist install test clean realclean

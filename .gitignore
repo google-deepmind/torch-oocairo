@@ -1,4 +1,5 @@
 .libs
+ctestfile-stamp.oocairo
 liblua-oocairo.la
 oocairo.d
 oocairo.lo

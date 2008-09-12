@@ -1,0 +1,10 @@
+files
+liblua5.1-oocairo
+liblua5.1-oocairo-dev
+liblua5.1-oocairo-dev.install
+liblua5.1-oocairo.install
+liblua5.1-oocairo0.install
+stamp-makefile-build
+stamp-makefile-check
+stamp-patched
+tmp

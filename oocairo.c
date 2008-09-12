@@ -1,6 +1,5 @@
+#include "oocairo.h"
 #include <cairo.h>
-#include <lua.h>
-#include <lauxlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,8 +18,6 @@
 #if CAIRO_VERSION < CAIRO_VERSION_ENCODE(1, 6, 0)
 #error "This Lua binding requires Cairo version 1.6 or better."
 #endif
-
-int luaopen_oocairo (lua_State *L);
 
 #define MT_NAME_CONTEXT  ("6404c570-6711-11dd-b66f-00e081225ce5")
 #define MT_NAME_FONTFACE ("ee272774-6a1e-11dd-86de-00e081225ce5")

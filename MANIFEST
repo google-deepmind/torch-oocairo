@@ -3,6 +3,12 @@ Changes
 MANIFEST
 Makefile
 TODO
+debian/Makefile.Debian.conf
+debian/changelog
+debian/compat
+debian/control
+debian/liblua5.1-oocairo-dev.manpages
+debian/rules
 doc/lua-oocairo-context.3
 doc/lua-oocairo-context.pod
 doc/lua-oocairo-fontface.3
@@ -46,6 +52,7 @@ obj_path.c
 obj_pattern.c
 obj_surface.c
 oocairo.c
+oocairo.h
 runlocal.lua
 test/context.lua
 test/font_face.lua
@@ -54,5 +61,6 @@ test/matrix.lua
 test/path.lua
 test/pattern.lua
 test/pdf_surface.lua
+test/ps_surface.lua
 test/surface.lua
 test/svg_surface.lua
