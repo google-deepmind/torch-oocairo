@@ -7,6 +7,8 @@ debian/Makefile.Debian.conf
 debian/changelog
 debian/compat
 debian/control
+debian/copyright
+debian/docs
 debian/liblua5.1-oocairo-dev.manpages
 debian/rules
 doc/lua-oocairo-context.3
