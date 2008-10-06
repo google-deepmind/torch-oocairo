@@ -303,7 +303,6 @@ surface_get_fallback_resolution (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     double x, y;
     cairo_surface_get_fallback_resolution(*obj, &x, &y);
-    cairo_surface_get_fallback_resolution
     lua_pushnumber(L, x);
     lua_pushnumber(L, y);
     return 2;
