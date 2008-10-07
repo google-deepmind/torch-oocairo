@@ -228,10 +228,7 @@ cr_get_fill_rule (lua_State *L) {
 static int
 cr_get_font_face (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_font_face_t **face = lua_newuserdata(L, sizeof(cairo_font_face_t *));
-    *face = 0;
-    luaL_getmetatable(L, MT_NAME_FONTFACE);
-    lua_setmetatable(L, -2);
+    cairo_font_face_t **face = create_fontface_userdata(L);
     *face = cairo_get_font_face(*obj);
     cairo_font_face_reference(*face);
     return 1;
@@ -664,6 +661,16 @@ cr_set_fill_rule (lua_State *L) {
 }
 
 static int
+cr_set_font_face (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_font_face_t *face = 0;
+    if (!lua_isnoneornil(L, 2))
+        face = *(cairo_font_face_t **) luaL_checkudata(L, 2, MT_NAME_FONTFACE);
+    cairo_set_font_face(*obj, face);
+    return 0;
+}
+
+static int
 cr_set_font_matrix (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_matrix_t mat;
@@ -948,6 +955,7 @@ context_methods[] = {
     { "set_antialias", cr_set_antialias },
     { "set_dash", cr_set_dash },
     { "set_fill_rule", cr_set_fill_rule },
+    { "set_font_face", cr_set_font_face },
     { "set_font_matrix", cr_set_font_matrix },
     { "set_font_size", cr_set_font_size },
     { "set_line_cap", cr_set_line_cap },

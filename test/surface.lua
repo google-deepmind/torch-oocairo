@@ -99,8 +99,8 @@ function test_device_offset ()
 end
 
 function test_fallback_resolution ()
-    if Cairo._CAIRO_VERSION > "1.8" then
-        local surface = Cairo.image_surface_create("rgb24", 23, 45)
+    local surface = Cairo.image_surface_create("rgb24", 23, 45)
+    if surface.get_fallback_resolution then
         local x, y = surface:get_fallback_resolution()
         assert_equal(300, x)
         assert_equal(300, y)
@@ -108,6 +108,8 @@ function test_fallback_resolution ()
         x, y = surface:get_fallback_resolution()
         assert_equal(123, x)
         assert_equal(456, y)
+    else
+        assert_nil(surface.get_fallback_resolution)
     end
 end
 

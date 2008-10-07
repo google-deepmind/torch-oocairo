@@ -15,14 +15,37 @@ same C<cairo_font_face_t> will compare as equal.
 
 =head1 Methods
 
-Font face objects currently only provide one method:
+Font face objects provide the following methods.  Some of these will not
+be defined if the module was compiled against a version of Cairo too old
+to support them.
 
 =over
+
+=item fontface:get_family ()
+
+Returns a string containing the name of the family selected with the
+C<select_font_face> method.  Throws an exception if called on a font face
+which wasn't created with the ‘toy’ API.
+Only available with S<Cairo 1.8> or better.
+
+=item fontface:get_slant ()
+
+Returns the slant style of the font face created with the toy API, or
+throws an exception for other font faces.  The return value will be a string,
+with one of the values accepted by the C<select_font_face> method.
+Only available with S<Cairo 1.8> or better.
 
 =item fontface:get_type ()
 
 Returns a string indicating what backend library handles this font.
 The return value will be one of the following:
+
+=item fontface:get_weight ()
+
+Returns the weight of the font face created with the toy API, or
+throws an exception for other font faces.  The return value will be a string,
+with one of the values accepted by the C<select_font_face> method.
+Only available with S<Cairo 1.8> or better.
 
 =over
 

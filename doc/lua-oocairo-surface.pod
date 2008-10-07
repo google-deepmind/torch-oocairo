@@ -53,6 +53,7 @@ surface.
 =item surf:get_fallback_resolution ()
 
 Returns two numbers, the values set by C<surf:set_fallback_resolution()>.
+Only available with S<Cairo 1.8> or better.
 
 =item surf:get_format ()
 

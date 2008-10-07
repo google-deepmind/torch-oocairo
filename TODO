@@ -35,7 +35,6 @@ cairo_scaled_font_get_font_options
 cairo_scaled_font_get_type
 cairo_scaled_font_glyph_extents
 cairo_scaled_font_text_extents
-cairo_set_font_face
 cairo_set_font_options
 cairo_set_scaled_font
 cairo_surface_get_font_options

@@ -297,19 +297,17 @@ surface_get_eps (lua_State *L) {
 }
 #endif
 
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
 static int
 surface_get_fallback_resolution (lua_State *L) {
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     double x, y;
     cairo_surface_get_fallback_resolution(*obj, &x, &y);
     lua_pushnumber(L, x);
     lua_pushnumber(L, y);
     return 2;
-#else
-    return luaL_error(L, "get_fallback_resolution requires Cairo 1.8");
-#endif
 }
+#endif
 
 static int
 surface_get_format (lua_State *L) {
@@ -486,7 +484,9 @@ surface_methods[] = {
 #if CAIRO_HAS_PS_SURFACE
     { "get_eps", surface_get_eps },
 #endif
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
     { "get_fallback_resolution", surface_get_fallback_resolution },
+#endif
     { "get_format", surface_get_format },
     { "get_height", surface_get_height },
     { "get_type", surface_get_type },

@@ -293,6 +293,15 @@ create_pattern_userdata (lua_State *L) {
     return obj;
 }
 
+static cairo_font_face_t **
+create_fontface_userdata (lua_State *L) {
+    cairo_font_face_t **obj = lua_newuserdata(L, sizeof(cairo_font_face_t *));
+    *obj = 0;
+    luaL_getmetatable(L, MT_NAME_FONTFACE);
+    lua_setmetatable(L, -2);
+    return obj;
+}
+
 static SurfaceUserdata *
 create_surface_userdata (lua_State *L) {
     SurfaceUserdata *ud = lua_newuserdata(L, sizeof(SurfaceUserdata));
@@ -388,6 +397,9 @@ constructor_funcs[] = {
 #if CAIRO_HAS_SVG_SURFACE
     { "svg_surface_create", svg_surface_create },
     { "svg_get_versions", svg_get_versions },
+#endif
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
+    { "toy_font_face_create", toy_font_face_create },
 #endif
     { 0, 0 }
 };

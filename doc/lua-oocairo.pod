@@ -234,6 +234,15 @@ PostScript are supported by Cairo.
 Return a table containing a list of strings indicating what versions of
 SVG are supported by Cairo.
 
+=item toy_font_face_create (family, slant, weight)
+
+Create and return a toy font face object (see L<ua-oocairo-fontface(3)>).
+See the context method C<select_font_face> for details of the arguments.
+This does the same, but returns the object instead of applying it to a
+context.
+Only available with S<Cairo 1.8> or better, otherwise this method won't
+exist.
+
 =back
 
 =head1 I/O through file handles

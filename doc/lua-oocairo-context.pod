@@ -433,6 +433,11 @@ strings:
 
 =back
 
+=item cr:set_font_face (font)
+
+Set the selected font to the one given, or to the default font if I<font>
+is nil.  See L<lua-oocairo-fontface(3)> for details on font face objects.
+
 =item cr:set_font_matrix (matrix)
 
 Set the transformation matrix used for fonts.  Can be used for rotating
