@@ -1,7 +1,10 @@
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
 static int
 toy_font_face_create (lua_State *L) {
-    cairo_font_face_t **face = create_fontface_userdata(L);
+    cairo_font_face_t **face;
+    if (lua_gettop(L) < 3)
+        lua_settop(L, 3);
+    face = create_fontface_userdata(L);
     *face = cairo_toy_font_face_create(luaL_checkstring(L, 1),
             font_slant_values[luaL_checkoption(L, 2, "normal",
                                                font_slant_names)],

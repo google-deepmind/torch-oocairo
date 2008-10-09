@@ -31,6 +31,14 @@ function test_toy_create_and_accessors ()
         assert_equal("serif", font:get_family())
         assert_equal("italic", font:get_slant())
         assert_equal("bold", font:get_weight())
+
+        -- Two styling options should default to 'normal'.
+        font = Cairo.toy_font_face_create("serif", "italic")
+        assert_equal("italic", font:get_slant())
+        assert_equal("normal", font:get_weight())
+        font = Cairo.toy_font_face_create("serif")
+        assert_equal("normal", font:get_slant())
+        assert_equal("normal", font:get_weight())
     else
         local surface = Cairo.image_surface_create("rgb24", 23, 45)
         local font = Cairo.context_create(surface):get_font_face()
