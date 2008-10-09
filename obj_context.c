@@ -1,11 +1,7 @@
 static int
 context_create (lua_State *L) {
     cairo_surface_t **surface = luaL_checkudata(L, 1, MT_NAME_SURFACE);
-    cairo_t **obj;
-    obj = lua_newuserdata(L, sizeof(cairo_t *));
-    *obj = 0;
-    luaL_getmetatable(L, MT_NAME_CONTEXT);
-    lua_setmetatable(L, -2);
+    cairo_t **obj = create_context_userdata(L);
     *obj = cairo_create(*surface);
     return 1;
 }

@@ -46,6 +46,10 @@ all: liblua-oocairo.la $(MANPAGES)
 
 test: all
 	echo 'lunit.main({...})' | $(VALGRIND) lua -llunit - test/*.lua
+testexamples:
+	for f in examples/*.lua; do \
+	    $(VALGRIND) LUA_CPATH='.libs/liblua-?.so;;' lua $$f; \
+	done
 
 # Dependencies.
 %.d: %.c
@@ -94,4 +98,4 @@ clean:
 realclean: clean
 	rm -f $(MANPAGES)
 
-.PHONY: all checktmp dist install test clean realclean
+.PHONY: all checktmp dist install test testexamples clean realclean

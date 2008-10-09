@@ -184,6 +184,25 @@ create_lua_font_extents (lua_State *L, cairo_font_extents_t *extents) {
     lua_rawset(L, -3);
 }
 
+#define HANDLE_FONT_EXTENTS_FIELD(name) \
+    lua_pushliteral(L, #name); \
+    lua_rawget(L, -2); \
+    if (!lua_isnumber(L, -1)) \
+        luaL_error(L, "font extents entry '" #name "' must be a number"); \
+    extents->name = lua_tonumber(L, -1); \
+    lua_pop(L, 1);
+static void
+from_lua_font_extents (lua_State *L, cairo_font_extents_t *extents) {
+    if (!lua_istable(L, -1))
+        luaL_error(L, "font extents value must be a table");
+    HANDLE_FONT_EXTENTS_FIELD(ascent)
+    HANDLE_FONT_EXTENTS_FIELD(descent)
+    HANDLE_FONT_EXTENTS_FIELD(height)
+    HANDLE_FONT_EXTENTS_FIELD(max_x_advance)
+    HANDLE_FONT_EXTENTS_FIELD(max_y_advance)
+}
+#undef HANDLE_FONT_EXTENTS_FIELD
+
 static void
 create_lua_text_extents (lua_State *L, cairo_text_extents_t *extents) {
     lua_createtable(L, 0, 6);
@@ -206,6 +225,26 @@ create_lua_text_extents (lua_State *L, cairo_text_extents_t *extents) {
     lua_pushnumber(L, extents->y_advance);
     lua_rawset(L, -3);
 }
+
+#define HANDLE_TEXT_EXTENTS_FIELD(name) \
+    lua_pushliteral(L, #name); \
+    lua_rawget(L, -2); \
+    if (!lua_isnumber(L, -1)) \
+        luaL_error(L, "text extents entry '" #name "' must be a number"); \
+    extents->name = lua_tonumber(L, -1); \
+    lua_pop(L, 1);
+static void
+from_lua_text_extents (lua_State *L, cairo_text_extents_t *extents) {
+    if (!lua_istable(L, -1))
+        luaL_error(L, "text extents value must be a table");
+    HANDLE_TEXT_EXTENTS_FIELD(x_bearing)
+    HANDLE_TEXT_EXTENTS_FIELD(y_bearing)
+    HANDLE_TEXT_EXTENTS_FIELD(width)
+    HANDLE_TEXT_EXTENTS_FIELD(height)
+    HANDLE_TEXT_EXTENTS_FIELD(x_advance)
+    HANDLE_TEXT_EXTENTS_FIELD(y_advance)
+}
+#undef HANDLE_TEXT_EXTENTS_FIELD
 
 static void
 from_lua_glyph_array (lua_State *L, cairo_glyph_t **glyphs, int *num_glyphs,
@@ -298,6 +337,15 @@ create_fontface_userdata (lua_State *L) {
     cairo_font_face_t **obj = lua_newuserdata(L, sizeof(cairo_font_face_t *));
     *obj = 0;
     luaL_getmetatable(L, MT_NAME_FONTFACE);
+    lua_setmetatable(L, -2);
+    return obj;
+}
+
+static cairo_t **
+create_context_userdata (lua_State *L) {
+    cairo_t **obj = lua_newuserdata(L, sizeof(cairo_t *));
+    *obj = 0;
+    luaL_getmetatable(L, MT_NAME_CONTEXT);
     lua_setmetatable(L, -2);
     return obj;
 }
@@ -400,6 +448,9 @@ constructor_funcs[] = {
 #endif
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
     { "toy_font_face_create", toy_font_face_create },
+#endif
+#if CAIRO_HAS_USER_FONT
+    { "user_font_face_create", user_font_face_create },
 #endif
     { 0, 0 }
 };
