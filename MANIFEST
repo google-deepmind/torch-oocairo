@@ -16,6 +16,8 @@ doc/lua-oocairo-context.3
 doc/lua-oocairo-context.pod
 doc/lua-oocairo-fontface.3
 doc/lua-oocairo-fontface.pod
+doc/lua-oocairo-fontopt.3
+doc/lua-oocairo-fontopt.pod
 doc/lua-oocairo-matrix.3
 doc/lua-oocairo-matrix.pod
 doc/lua-oocairo-path.3
@@ -51,6 +53,7 @@ lunit-console.lua
 lunit.lua
 obj_context.c
 obj_font_face.c
+obj_font_opt.c
 obj_matrix.c
 obj_path.c
 obj_pattern.c
@@ -60,6 +63,7 @@ oocairo.h
 test-setup.lua
 test/context.lua
 test/font_face.lua
+test/font_opt.lua
 test/general.lua
 test/matrix.lua
 test/path.lua

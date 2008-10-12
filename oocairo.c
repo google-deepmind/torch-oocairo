@@ -21,6 +21,7 @@
 
 #define MT_NAME_CONTEXT  ("6404c570-6711-11dd-b66f-00e081225ce5")
 #define MT_NAME_FONTFACE ("ee272774-6a1e-11dd-86de-00e081225ce5")
+#define MT_NAME_FONTOPT  ("8ae95550-9887-11dd-922a-00e081225ce5")
 #define MT_NAME_MATRIX   ("6e2f4c64-6711-11dd-acfc-00e081225ce5")
 #define MT_NAME_PATH     ("6d83bf34-6711-11dd-b4c2-00e081225ce5")
 #define MT_NAME_PATTERN  ("6dd49a26-6711-11dd-88fd-00e081225ce5")
@@ -40,6 +41,104 @@ static const cairo_antialias_t antialias_values[] = {
     CAIRO_ANTIALIAS_DEFAULT, CAIRO_ANTIALIAS_NONE, CAIRO_ANTIALIAS_GRAY,
     CAIRO_ANTIALIAS_SUBPIXEL
 };
+
+static int
+antialias_to_lua (lua_State *L, cairo_antialias_t val) {
+    int i;
+    for (i = 0; antialias_names[i]; ++i) {
+        if (val == antialias_values[i]) {
+            lua_pushstring(L, antialias_names[i]);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static cairo_antialias_t
+antialias_from_lua (lua_State *L, int pos) {
+    if (lua_isboolean(L, pos))
+        /* A boolean value is interpreted as a signal to turn AA on or off. */
+        return lua_toboolean(L, pos) ? CAIRO_ANTIALIAS_DEFAULT
+                                     : CAIRO_ANTIALIAS_NONE;
+    else
+        return antialias_values[luaL_checkoption(L, pos, 0, antialias_names)];
+}
+
+static const char * const subpixel_order_names[] = {
+    "default", "rgb", "bgr", "vrgb", "vbgr", 0
+};
+static const cairo_subpixel_order_t subpixel_order_values[] = {
+    CAIRO_SUBPIXEL_ORDER_DEFAULT,
+    CAIRO_SUBPIXEL_ORDER_RGB,  CAIRO_SUBPIXEL_ORDER_BGR,
+    CAIRO_SUBPIXEL_ORDER_VRGB, CAIRO_SUBPIXEL_ORDER_VBGR
+};
+
+static int
+subpixel_order_to_lua (lua_State *L, cairo_subpixel_order_t val) {
+    int i;
+    for (i = 0; subpixel_order_names[i]; ++i) {
+        if (val == subpixel_order_values[i]) {
+            lua_pushstring(L, subpixel_order_names[i]);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static cairo_subpixel_order_t
+subpixel_order_from_lua (lua_State *L, int pos) {
+    return subpixel_order_values[
+                    luaL_checkoption(L, pos, 0, subpixel_order_names)];
+}
+
+static const char * const hint_style_names[] = {
+    "default", "none", "slight", "medium", "full", 0
+};
+static const cairo_hint_style_t hint_style_values[] = {
+    CAIRO_HINT_STYLE_DEFAULT, CAIRO_HINT_STYLE_NONE,
+    CAIRO_HINT_STYLE_SLIGHT, CAIRO_HINT_STYLE_MEDIUM, CAIRO_HINT_STYLE_FULL
+};
+
+static int
+hint_style_to_lua (lua_State *L, cairo_hint_style_t val) {
+    int i;
+    for (i = 0; hint_style_names[i]; ++i) {
+        if (val == hint_style_values[i]) {
+            lua_pushstring(L, hint_style_names[i]);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static cairo_hint_style_t
+hint_style_from_lua (lua_State *L, int pos) {
+    return hint_style_values[luaL_checkoption(L, pos, 0, hint_style_names)];
+}
+
+static const char * const hint_metrics_names[] = {
+    "default", "off", "on", 0
+};
+static const cairo_hint_metrics_t hint_metrics_values[] = {
+    CAIRO_HINT_METRICS_DEFAULT, CAIRO_HINT_METRICS_OFF, CAIRO_HINT_METRICS_ON
+};
+
+static int
+hint_metrics_to_lua (lua_State *L, cairo_hint_metrics_t val) {
+    int i;
+    for (i = 0; hint_metrics_names[i]; ++i) {
+        if (val == hint_metrics_values[i]) {
+            lua_pushstring(L, hint_metrics_names[i]);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static cairo_hint_metrics_t
+hint_metrics_from_lua (lua_State *L, int pos) {
+    return hint_metrics_values[luaL_checkoption(L, pos, 0, hint_metrics_names)];
+}
 
 static const char * const linecap_names[] = {
     "butt", "round", "square", 0
@@ -341,6 +440,16 @@ create_fontface_userdata (lua_State *L) {
     return obj;
 }
 
+static cairo_font_options_t **
+create_fontopt_userdata (lua_State *L) {
+    cairo_font_options_t **obj
+            = lua_newuserdata(L, sizeof(cairo_font_options_t *));
+    *obj = 0;
+    luaL_getmetatable(L, MT_NAME_FONTOPT);
+    lua_setmetatable(L, -2);
+    return obj;
+}
+
 static cairo_t **
 create_context_userdata (lua_State *L) {
     cairo_t **obj = lua_newuserdata(L, sizeof(cairo_t *));
@@ -416,6 +525,7 @@ write_chunk_to_fh (void *closure, const unsigned char *buf,
 
 #include "obj_context.c"
 #include "obj_font_face.c"
+#include "obj_font_opt.c"
 #include "obj_matrix.c"
 #include "obj_path.c"
 #include "obj_pattern.c"
@@ -424,6 +534,7 @@ write_chunk_to_fh (void *closure, const unsigned char *buf,
 static const luaL_Reg
 constructor_funcs[] = {
     { "context_create", context_create },
+    { "font_options_create", font_options_create },
     { "image_surface_create", image_surface_create },
 #if CAIRO_HAS_PNG_FUNCTIONS
     { "image_surface_create_from_png", image_surface_create_from_png },
@@ -540,6 +651,8 @@ luaopen_oocairo (lua_State *L) {
                             context_methods);
     create_object_metatable(L, MT_NAME_FONTFACE, "cairo font face object",
                             fontface_methods);
+    create_object_metatable(L, MT_NAME_FONTOPT, "cairo font options object",
+                            fontopt_methods);
     create_object_metatable(L, MT_NAME_MATRIX, "cairo matrix object",
                             cairmat_methods);
     create_object_metatable(L, MT_NAME_PATH, "cairo path object",

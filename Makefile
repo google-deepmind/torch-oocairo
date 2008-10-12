@@ -15,7 +15,7 @@ LIBDIR = $(PREFIX)/lib
 
 OBJECTS = oocairo.lo
 SOURCES := $(OBJECTS:.lo=.c)
-MANPAGES = doc/lua-oocairo-context.3 doc/lua-oocairo-fontface.3 doc/lua-oocairo-matrix.3 doc/lua-oocairo-path.3 doc/lua-oocairo-pattern.3 doc/lua-oocairo-surface.3 doc/lua-oocairo.3
+MANPAGES = doc/lua-oocairo-context.3 doc/lua-oocairo-fontface.3 doc/lua-oocairo-fontopt.3 doc/lua-oocairo-matrix.3 doc/lua-oocairo-path.3 doc/lua-oocairo-pattern.3 doc/lua-oocairo-surface.3 doc/lua-oocairo.3
 
 LIBTOOL := libtool --quiet
 

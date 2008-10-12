@@ -189,6 +189,12 @@ except for C<context_create> and the gradient constructors.
 Return a new context object for drawing on I<surface>.
 See L<lua-oocairo-context(3)> for methods which can be called on this object.
 
+=item font_options_create ()
+
+Returns a new Cairo font options object, with all its options set to
+default values.  See L<lua-oocairo-fontopt(3)> for information about
+what you can do with it.
+
 =item matrix_create ()
 
 Return a new copy of the identity matrix.  All transformation matrices

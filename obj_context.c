@@ -162,14 +162,7 @@ cr_font_extents (lua_State *L) {
 static int
 cr_get_antialias (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    switch (cairo_get_antialias(*obj)) {
-        case CAIRO_ANTIALIAS_DEFAULT:  lua_pushliteral(L, "default");   break;
-        case CAIRO_ANTIALIAS_NONE:     lua_pushliteral(L, "none");      break;
-        case CAIRO_ANTIALIAS_GRAY:     lua_pushliteral(L, "gray");      break;
-        case CAIRO_ANTIALIAS_SUBPIXEL: lua_pushliteral(L, "subpixel");  break;
-        default:                       lua_pushliteral(L, "<invalid>");
-    }
-    return 1;
+    return antialias_to_lua(L, cairo_get_antialias(*obj));
 }
 
 static int
@@ -590,15 +583,7 @@ cr_select_font_face (lua_State *L) {
 static int
 cr_set_antialias (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_antialias_t aa;
-    if (lua_isboolean(L, 2)) {
-        /* A boolean value is interpreted as a signal to turn AA on or off. */
-        aa = lua_toboolean(L, 2) ? CAIRO_ANTIALIAS_DEFAULT
-                                 : CAIRO_ANTIALIAS_NONE;
-    }
-    else
-        aa = antialias_values[luaL_checkoption(L, 2, 0, antialias_names)];
-    cairo_set_antialias(*obj, aa);
+    cairo_set_antialias(*obj, antialias_from_lua(L, 2));
     return 0;
 }
 

@@ -1,18 +1,15 @@
+docs for user fonts feature
+
+check status more often, at least to check for memory allocation errors
+when creating a new object.
+
+Make sure double GC of an object isn't harmful, just in case (that is, can
+I manually call the '__gc' metamethod and then let the object get GCed without
+the library crashing?).  Probably have to check for null before calling the
+destroy function.
+
 These functions aren't bound at all yet:
 cairo_copy_clip_rectangle_list
-cairo_font_options_copy
-cairo_font_options_create
-cairo_font_options_equal
-cairo_font_options_get_antialias
-cairo_font_options_get_hint_metrics
-cairo_font_options_get_hint_style
-cairo_font_options_get_subpixel_order
-cairo_font_options_hash
-cairo_font_options_merge
-cairo_font_options_set_antialias
-cairo_font_options_set_hint_metrics
-cairo_font_options_set_hint_style
-cairo_font_options_set_subpixel_order
 cairo_format_stride_for_width
 cairo_ft_font_face_create_for_ft_face
 cairo_ft_font_face_create_for_pattern
