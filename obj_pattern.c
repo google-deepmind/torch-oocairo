@@ -115,29 +115,13 @@ pattern_get_color_stops (lua_State *L) {
 static int
 pattern_get_extend (lua_State *L) {
     cairo_pattern_t **obj = luaL_checkudata(L, 1, MT_NAME_PATTERN);
-    switch (cairo_pattern_get_extend(*obj)) {
-        case CAIRO_EXTEND_NONE:    lua_pushliteral(L, "none");      break;
-        case CAIRO_EXTEND_REPEAT:  lua_pushliteral(L, "repeat");    break;
-        case CAIRO_EXTEND_REFLECT: lua_pushliteral(L, "reflect");   break;
-        case CAIRO_EXTEND_PAD:     lua_pushliteral(L, "pad");       break;
-        default:                   lua_pushliteral(L, "<invalid>");
-    }
-    return 1;
+    return extend_to_lua(L, cairo_pattern_get_extend(*obj));
 }
 
 static int
 pattern_get_filter (lua_State *L) {
     cairo_pattern_t **obj = luaL_checkudata(L, 1, MT_NAME_PATTERN);
-    switch (cairo_pattern_get_filter(*obj)) {
-        case CAIRO_FILTER_FAST:     lua_pushliteral(L, "fast");      break;
-        case CAIRO_FILTER_GOOD:     lua_pushliteral(L, "good");      break;
-        case CAIRO_FILTER_BEST:     lua_pushliteral(L, "best");      break;
-        case CAIRO_FILTER_NEAREST:  lua_pushliteral(L, "nearest");   break;
-        case CAIRO_FILTER_BILINEAR: lua_pushliteral(L, "bilinear");  break;
-        case CAIRO_FILTER_GAUSSIAN: lua_pushliteral(L, "gaussian");  break;
-        default:                    lua_pushliteral(L, "<invalid>");
-    }
-    return 1;
+    return filter_to_lua(L, cairo_pattern_get_filter(*obj));
 }
 
 static int
@@ -223,16 +207,14 @@ pattern_get_type (lua_State *L) {
 static int
 pattern_set_extend (lua_State *L) {
     cairo_pattern_t **obj = luaL_checkudata(L, 1, MT_NAME_PATTERN);
-    cairo_pattern_set_extend(*obj,
-            extend_values[luaL_checkoption(L, 2, 0, extend_names)]);
+    cairo_pattern_set_extend(*obj, extend_from_lua(L, 2));
     return 0;
 }
 
 static int
 pattern_set_filter (lua_State *L) {
     cairo_pattern_t **obj = luaL_checkudata(L, 1, MT_NAME_PATTERN);
-    cairo_pattern_set_filter(*obj,
-            filter_values[luaL_checkoption(L, 2, 0, filter_names)]);
+    cairo_pattern_set_filter(*obj, filter_from_lua(L, 2));
     return 0;
 }
 

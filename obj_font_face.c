@@ -2,14 +2,14 @@
 static int
 toy_font_face_create (lua_State *L) {
     cairo_font_face_t **face;
-    if (lua_gettop(L) < 3)
-        lua_settop(L, 3);
+    cairo_font_slant_t slant = CAIRO_FONT_SLANT_NORMAL;
+    cairo_font_weight_t weight = CAIRO_FONT_WEIGHT_NORMAL;
+    if (!lua_isnoneornil(L, 2))
+        slant = font_slant_from_lua(L, 2);
+    if (!lua_isnoneornil(L, 3))
+        weight = font_weight_from_lua(L, 3);
     face = create_fontface_userdata(L);
-    *face = cairo_toy_font_face_create(luaL_checkstring(L, 1),
-            font_slant_values[luaL_checkoption(L, 2, "normal",
-                                               font_slant_names)],
-            font_weight_values[luaL_checkoption(L, 3, "normal",
-                                                font_weight_names)]);
+    *face = cairo_toy_font_face_create(luaL_checkstring(L, 1), slant, weight);
     return 1;
 }
 #endif
@@ -87,9 +87,10 @@ user_font_text_to_glyphs (cairo_scaled_font_t *font, const char *utf8,
     lua_rawgeti(info->L, -1, USERFONT_CALLBACK_TEXT_TO_GLYPHS);
     /* TODO - pass in scaled font object */
     lua_pushlstring(info->L, utf8, utf8_len);
-    assert(!num_clusters);      /* TODO - handle clusters */
+    assert(!clusters);      /* TODO - handle clusters */
     lua_call(info->L, 1, 1);
     if (!lua_isnil(info->L, -1))
+        /* TODO - don't I have to allocate this myself? */
         from_lua_glyph_array(info->L, glyphs, num_glyphs, lua_gettop(info->L));
     lua_pop(info->L, 2);
     return CAIRO_STATUS_SUCCESS;
@@ -203,19 +204,7 @@ fontface_gc (lua_State *L) {
 static int
 fontface_get_type (lua_State *L) {
     cairo_font_face_t **obj = luaL_checkudata(L, 1, MT_NAME_FONTFACE);
-    const char *s;
-    switch (cairo_font_face_get_type(*obj)) {
-        case CAIRO_FONT_TYPE_TOY:    s = "toy";    break;
-        case CAIRO_FONT_TYPE_FT:     s = "ft";     break;
-        case CAIRO_FONT_TYPE_WIN32:  s = "win32";  break;
-        case CAIRO_FONT_TYPE_QUARTZ: s = "quartz"; break;
-#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
-        case CAIRO_FONT_TYPE_USER:   s = "user";   break;
-#endif
-        default:                                s = "<invalid>";
-    }
-    lua_pushstring(L, s);
-    return 1;
+    return font_type_to_lua(L, cairo_font_face_get_type(*obj));
 }
 
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
@@ -233,13 +222,7 @@ fontface_get_slant (lua_State *L) {
     cairo_font_face_t **obj = luaL_checkudata(L, 1, MT_NAME_FONTFACE);
     if (cairo_font_face_get_type(*obj) != CAIRO_FONT_TYPE_TOY)
         return luaL_error(L, "'get_slant' only works on toy font faces");
-    switch (cairo_toy_font_face_get_slant(*obj)) {
-        case CAIRO_FONT_SLANT_NORMAL:  lua_pushliteral(L, "normal");    break;
-        case CAIRO_FONT_SLANT_ITALIC:  lua_pushliteral(L, "italic");    break;
-        case CAIRO_FONT_SLANT_OBLIQUE: lua_pushliteral(L, "oblique");   break;
-        default:                       lua_pushliteral(L, "<invalid>");
-    }
-    return 1;
+    return font_slant_to_lua(L, cairo_toy_font_face_get_slant(*obj));
 }
 
 static int
@@ -247,12 +230,7 @@ fontface_get_weight (lua_State *L) {
     cairo_font_face_t **obj = luaL_checkudata(L, 1, MT_NAME_FONTFACE);
     if (cairo_font_face_get_type(*obj) != CAIRO_FONT_TYPE_TOY)
         return luaL_error(L, "'get_weight' only works on toy font faces");
-    switch (cairo_toy_font_face_get_weight(*obj)) {
-        case CAIRO_FONT_WEIGHT_NORMAL: lua_pushliteral(L, "normal");    break;
-        case CAIRO_FONT_WEIGHT_BOLD:   lua_pushliteral(L, "bold");      break;
-        default:                       lua_pushliteral(L, "<invalid>");
-    }
-    return 1;
+    return font_weight_to_lua(L, cairo_toy_font_face_get_weight(*obj));
 }
 #endif
 

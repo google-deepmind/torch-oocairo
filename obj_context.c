@@ -206,12 +206,7 @@ cr_get_dash (lua_State *L) {
 static int
 cr_get_fill_rule (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    switch (cairo_get_fill_rule(*obj)) {
-        case CAIRO_FILL_RULE_WINDING:  lua_pushliteral(L, "winding");   break;
-        case CAIRO_FILL_RULE_EVEN_ODD: lua_pushliteral(L, "even-odd");  break;
-        default:                       lua_pushliteral(L, "<invalid>");
-    }
-    return 1;
+    return fill_rule_to_lua(L, cairo_get_fill_rule(*obj));
 }
 
 static int
@@ -244,25 +239,13 @@ cr_get_group_target (lua_State *L) {
 static int
 cr_get_line_cap (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    switch (cairo_get_line_cap(*obj)) {
-        case CAIRO_LINE_CAP_BUTT:   lua_pushliteral(L, "butt");      break;
-        case CAIRO_LINE_CAP_ROUND:  lua_pushliteral(L, "round");     break;
-        case CAIRO_LINE_CAP_SQUARE: lua_pushliteral(L, "square");    break;
-        default:                    lua_pushliteral(L, "<invalid>");
-    }
-    return 1;
+    return line_cap_to_lua(L, cairo_get_line_cap(*obj));
 }
 
 static int
 cr_get_line_join (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    switch (cairo_get_line_join(*obj)) {
-        case CAIRO_LINE_JOIN_MITER: lua_pushliteral(L, "miter");     break;
-        case CAIRO_LINE_JOIN_ROUND: lua_pushliteral(L, "round");     break;
-        case CAIRO_LINE_JOIN_BEVEL: lua_pushliteral(L, "bevel");     break;
-        default:                    lua_pushliteral(L, "<invalid>");
-    }
-    return 1;
+    return line_join_to_lua(L, cairo_get_line_join(*obj));
 }
 
 static int
@@ -291,24 +274,7 @@ cr_get_miter_limit (lua_State *L) {
 static int
 cr_get_operator (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    switch (cairo_get_operator(*obj)) {
-        case CAIRO_OPERATOR_CLEAR:     lua_pushliteral(L, "clear");     break;
-        case CAIRO_OPERATOR_SOURCE:    lua_pushliteral(L, "source");    break;
-        case CAIRO_OPERATOR_OVER:      lua_pushliteral(L, "over");      break;
-        case CAIRO_OPERATOR_IN:        lua_pushliteral(L, "in");        break;
-        case CAIRO_OPERATOR_OUT:       lua_pushliteral(L, "out");       break;
-        case CAIRO_OPERATOR_ATOP:      lua_pushliteral(L, "atop");      break;
-        case CAIRO_OPERATOR_DEST:      lua_pushliteral(L, "dest");      break;
-        case CAIRO_OPERATOR_DEST_OVER: lua_pushliteral(L, "dest-over"); break;
-        case CAIRO_OPERATOR_DEST_IN:   lua_pushliteral(L, "dest-in");   break;
-        case CAIRO_OPERATOR_DEST_OUT:  lua_pushliteral(L, "dest-out");  break;
-        case CAIRO_OPERATOR_DEST_ATOP: lua_pushliteral(L, "dest-atop"); break;
-        case CAIRO_OPERATOR_XOR:       lua_pushliteral(L, "xor");       break;
-        case CAIRO_OPERATOR_ADD:       lua_pushliteral(L, "add");       break;
-        case CAIRO_OPERATOR_SATURATE:  lua_pushliteral(L, "saturate");  break;
-        default:                       lua_pushliteral(L, "<invalid>");
-    }
-    return 1;
+    return operator_to_lua(L, cairo_get_operator(*obj));
 }
 
 static int
@@ -498,7 +464,7 @@ cr_push_group (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_content_t content = CAIRO_CONTENT_COLOR_ALPHA;
     if (!lua_isnoneornil(L, 2))
-        content = content_values[luaL_checkoption(L, 2, 0, content_names)];
+        content = content_from_lua(L, 2);
     cairo_push_group_with_content(*obj, content);
     return 0;
 }
@@ -572,11 +538,13 @@ cr_scale (lua_State *L) {
 static int
 cr_select_font_face (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_select_font_face(*obj, luaL_checkstring(L, 2),
-            font_slant_values[luaL_checkoption(L, 3, "normal",
-                                               font_slant_names)],
-            font_weight_values[luaL_checkoption(L, 4, "normal",
-                                                font_weight_names)]);
+    cairo_font_slant_t slant = CAIRO_FONT_SLANT_NORMAL;
+    cairo_font_weight_t weight = CAIRO_FONT_WEIGHT_NORMAL;
+    if (!lua_isnoneornil(L, 3))
+        slant = font_slant_from_lua(L, 3);
+    if (!lua_isnoneornil(L, 4))
+        weight = font_weight_from_lua(L, 4);
+    cairo_select_font_face(*obj, luaL_checkstring(L, 2), slant, weight);
     return 0;
 }
 
@@ -636,8 +604,7 @@ cr_set_dash (lua_State *L) {
 static int
 cr_set_fill_rule (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_set_fill_rule(*obj,
-            fillrule_values[luaL_checkoption(L, 2, 0, fillrule_names)]);
+    cairo_set_fill_rule(*obj, fill_rule_from_lua(L, 2));
     return 0;
 }
 
@@ -670,16 +637,14 @@ cr_set_font_size (lua_State *L) {
 static int
 cr_set_line_cap (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_set_line_cap(*obj,
-            linecap_values[luaL_checkoption(L, 2, 0, linecap_names)]);
+    cairo_set_line_cap(*obj, line_cap_from_lua(L, 2));
     return 0;
 }
 
 static int
 cr_set_line_join (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_set_line_join(*obj,
-            linejoin_values[luaL_checkoption(L, 2, 0, linejoin_names)]);
+    cairo_set_line_join(*obj, line_join_from_lua(L, 2));
     return 0;
 }
 
@@ -711,8 +676,7 @@ cr_set_miter_limit (lua_State *L) {
 static int
 cr_set_operator (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
-    cairo_set_operator(*obj,
-            operator_values[luaL_checkoption(L, 2, 0, operator_names)]);
+    cairo_set_operator(*obj, operator_from_lua(L, 2));
     return 0;
 }
 

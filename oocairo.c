@@ -27,12 +27,32 @@
 #define MT_NAME_PATTERN  ("6dd49a26-6711-11dd-88fd-00e081225ce5")
 #define MT_NAME_SURFACE  ("6d31a064-6711-11dd-bdd8-00e081225ce5")
 
-static const char * const format_option_names[] = {
+#define ENUM_VAL_TO_LUA_STRING_FUNC(type) \
+    static int \
+    type ## _to_lua (lua_State *L, cairo_ ## type ## _t val) { \
+        int i; \
+        for (i = 0; type ## _names[i]; ++i) { \
+            if (val == type ## _values[i]) { \
+                lua_pushstring(L, type ## _names[i]); \
+                return 1; \
+            } \
+        } \
+        return 0; \
+    }
+#define ENUM_VAL_FROM_LUA_STRING_FUNC(type) \
+    static cairo_ ## type ## _t \
+    type ## _from_lua (lua_State *L, int pos) { \
+        return type ## _values[luaL_checkoption(L, pos, 0, type ## _names)]; \
+    }
+
+static const char * const format_names[] = {
     "argb32", "rgb24", "a8", "a1", 0
 };
-static const cairo_format_t format_option_values[] = {
+static const cairo_format_t format_values[] = {
     CAIRO_FORMAT_ARGB32, CAIRO_FORMAT_RGB24, CAIRO_FORMAT_A8, CAIRO_FORMAT_A1
 };
+ENUM_VAL_TO_LUA_STRING_FUNC(format)
+ENUM_VAL_FROM_LUA_STRING_FUNC(format)
 
 static const char * const antialias_names[] = {
     "default", "none", "gray", "subpixel", 0
@@ -41,18 +61,7 @@ static const cairo_antialias_t antialias_values[] = {
     CAIRO_ANTIALIAS_DEFAULT, CAIRO_ANTIALIAS_NONE, CAIRO_ANTIALIAS_GRAY,
     CAIRO_ANTIALIAS_SUBPIXEL
 };
-
-static int
-antialias_to_lua (lua_State *L, cairo_antialias_t val) {
-    int i;
-    for (i = 0; antialias_names[i]; ++i) {
-        if (val == antialias_values[i]) {
-            lua_pushstring(L, antialias_names[i]);
-            return 1;
-        }
-    }
-    return 0;
-}
+ENUM_VAL_TO_LUA_STRING_FUNC(antialias)
 
 static cairo_antialias_t
 antialias_from_lua (lua_State *L, int pos) {
@@ -72,24 +81,8 @@ static const cairo_subpixel_order_t subpixel_order_values[] = {
     CAIRO_SUBPIXEL_ORDER_RGB,  CAIRO_SUBPIXEL_ORDER_BGR,
     CAIRO_SUBPIXEL_ORDER_VRGB, CAIRO_SUBPIXEL_ORDER_VBGR
 };
-
-static int
-subpixel_order_to_lua (lua_State *L, cairo_subpixel_order_t val) {
-    int i;
-    for (i = 0; subpixel_order_names[i]; ++i) {
-        if (val == subpixel_order_values[i]) {
-            lua_pushstring(L, subpixel_order_names[i]);
-            return 1;
-        }
-    }
-    return 0;
-}
-
-static cairo_subpixel_order_t
-subpixel_order_from_lua (lua_State *L, int pos) {
-    return subpixel_order_values[
-                    luaL_checkoption(L, pos, 0, subpixel_order_names)];
-}
+ENUM_VAL_TO_LUA_STRING_FUNC(subpixel_order)
+ENUM_VAL_FROM_LUA_STRING_FUNC(subpixel_order)
 
 static const char * const hint_style_names[] = {
     "default", "none", "slight", "medium", "full", 0
@@ -98,23 +91,8 @@ static const cairo_hint_style_t hint_style_values[] = {
     CAIRO_HINT_STYLE_DEFAULT, CAIRO_HINT_STYLE_NONE,
     CAIRO_HINT_STYLE_SLIGHT, CAIRO_HINT_STYLE_MEDIUM, CAIRO_HINT_STYLE_FULL
 };
-
-static int
-hint_style_to_lua (lua_State *L, cairo_hint_style_t val) {
-    int i;
-    for (i = 0; hint_style_names[i]; ++i) {
-        if (val == hint_style_values[i]) {
-            lua_pushstring(L, hint_style_names[i]);
-            return 1;
-        }
-    }
-    return 0;
-}
-
-static cairo_hint_style_t
-hint_style_from_lua (lua_State *L, int pos) {
-    return hint_style_values[luaL_checkoption(L, pos, 0, hint_style_names)];
-}
+ENUM_VAL_TO_LUA_STRING_FUNC(hint_style)
+ENUM_VAL_FROM_LUA_STRING_FUNC(hint_style)
 
 static const char * const hint_metrics_names[] = {
     "default", "off", "on", 0
@@ -122,44 +100,35 @@ static const char * const hint_metrics_names[] = {
 static const cairo_hint_metrics_t hint_metrics_values[] = {
     CAIRO_HINT_METRICS_DEFAULT, CAIRO_HINT_METRICS_OFF, CAIRO_HINT_METRICS_ON
 };
+ENUM_VAL_TO_LUA_STRING_FUNC(hint_metrics)
+ENUM_VAL_FROM_LUA_STRING_FUNC(hint_metrics)
 
-static int
-hint_metrics_to_lua (lua_State *L, cairo_hint_metrics_t val) {
-    int i;
-    for (i = 0; hint_metrics_names[i]; ++i) {
-        if (val == hint_metrics_values[i]) {
-            lua_pushstring(L, hint_metrics_names[i]);
-            return 1;
-        }
-    }
-    return 0;
-}
-
-static cairo_hint_metrics_t
-hint_metrics_from_lua (lua_State *L, int pos) {
-    return hint_metrics_values[luaL_checkoption(L, pos, 0, hint_metrics_names)];
-}
-
-static const char * const linecap_names[] = {
+static const char * const line_cap_names[] = {
     "butt", "round", "square", 0
 };
-static const cairo_line_cap_t linecap_values[] = {
+static const cairo_line_cap_t line_cap_values[] = {
     CAIRO_LINE_CAP_BUTT, CAIRO_LINE_CAP_ROUND, CAIRO_LINE_CAP_SQUARE
 };
+ENUM_VAL_TO_LUA_STRING_FUNC(line_cap)
+ENUM_VAL_FROM_LUA_STRING_FUNC(line_cap)
 
-static const char * const linejoin_names[] = {
+static const char * const line_join_names[] = {
     "miter", "round", "bevel", 0
 };
-static const cairo_line_cap_t linejoin_values[] = {
+static const cairo_line_join_t line_join_values[] = {
     CAIRO_LINE_JOIN_MITER, CAIRO_LINE_JOIN_ROUND, CAIRO_LINE_JOIN_BEVEL
 };
+ENUM_VAL_TO_LUA_STRING_FUNC(line_join)
+ENUM_VAL_FROM_LUA_STRING_FUNC(line_join)
 
-static const char * const fillrule_names[] = {
+static const char * const fill_rule_names[] = {
     "winding", "even-odd", 0
 };
-static const cairo_fill_rule_t fillrule_values[] = {
+static const cairo_fill_rule_t fill_rule_values[] = {
     CAIRO_FILL_RULE_WINDING, CAIRO_FILL_RULE_EVEN_ODD
 };
+ENUM_VAL_TO_LUA_STRING_FUNC(fill_rule)
+ENUM_VAL_FROM_LUA_STRING_FUNC(fill_rule)
 
 static const char * const operator_names[] = {
     "clear",
@@ -176,6 +145,8 @@ static const cairo_operator_t operator_values[] = {
     CAIRO_OPERATOR_DEST_OUT, CAIRO_OPERATOR_DEST_ATOP,
     CAIRO_OPERATOR_XOR, CAIRO_OPERATOR_ADD, CAIRO_OPERATOR_SATURATE
 };
+ENUM_VAL_TO_LUA_STRING_FUNC(operator)
+ENUM_VAL_FROM_LUA_STRING_FUNC(operator)
 
 static const char * const content_names[] = {
     "color", "alpha", "color-alpha", 0
@@ -183,6 +154,8 @@ static const char * const content_names[] = {
 static const cairo_content_t content_values[] = {
     CAIRO_CONTENT_COLOR, CAIRO_CONTENT_ALPHA, CAIRO_CONTENT_COLOR_ALPHA
 };
+ENUM_VAL_TO_LUA_STRING_FUNC(content)
+ENUM_VAL_FROM_LUA_STRING_FUNC(content)
 
 static const char * const extend_names[] = {
     "none", "repeat", "reflect", "pad", 0
@@ -191,6 +164,8 @@ static const cairo_extend_t extend_values[] = {
     CAIRO_EXTEND_NONE, CAIRO_EXTEND_REPEAT, CAIRO_EXTEND_REFLECT,
     CAIRO_EXTEND_PAD
 };
+ENUM_VAL_TO_LUA_STRING_FUNC(extend)
+ENUM_VAL_FROM_LUA_STRING_FUNC(extend)
 
 static const char * const filter_names[] = {
     "fast", "good", "best", "nearest", "bilinear", "gaussian", 0
@@ -199,6 +174,8 @@ static const cairo_filter_t filter_values[] = {
     CAIRO_FILTER_FAST, CAIRO_FILTER_GOOD, CAIRO_FILTER_BEST,
     CAIRO_FILTER_NEAREST, CAIRO_FILTER_BILINEAR, CAIRO_FILTER_GAUSSIAN
 };
+ENUM_VAL_TO_LUA_STRING_FUNC(filter)
+ENUM_VAL_FROM_LUA_STRING_FUNC(filter)
 
 static const char * const font_slant_names[] = {
     "normal", "italic", "oblique", 0
@@ -206,6 +183,8 @@ static const char * const font_slant_names[] = {
 static const cairo_font_slant_t font_slant_values[] = {
     CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_SLANT_ITALIC, CAIRO_FONT_SLANT_OBLIQUE
 };
+ENUM_VAL_TO_LUA_STRING_FUNC(font_slant)
+ENUM_VAL_FROM_LUA_STRING_FUNC(font_slant)
 
 static const char * const font_weight_names[] = {
     "normal", "bold", 0
@@ -213,6 +192,8 @@ static const char * const font_weight_names[] = {
 static const cairo_font_weight_t font_weight_values[] = {
   CAIRO_FONT_WEIGHT_NORMAL, CAIRO_FONT_WEIGHT_BOLD
 };
+ENUM_VAL_TO_LUA_STRING_FUNC(font_weight)
+ENUM_VAL_FROM_LUA_STRING_FUNC(font_weight)
 
 static const char * const font_type_names[] = {
     "toy", "ft", "win32", "quartz",
@@ -228,6 +209,25 @@ static const cairo_font_type_t font_type_values[] = {
     CAIRO_FONT_TYPE_USER,
 #endif
 };
+ENUM_VAL_TO_LUA_STRING_FUNC(font_type)
+
+static const char * const surface_type_names[] = {
+    "image", "pdf", "ps",
+    "xlib", "xcb", "glitz",
+    "quartz", "win32",
+    "beos", "directfb",
+    "svg", "os2",
+    "win32-printing", "quartz-image", 0
+};
+static const cairo_surface_type_t surface_type_values[] = {
+    CAIRO_SURFACE_TYPE_IMAGE, CAIRO_SURFACE_TYPE_PDF, CAIRO_SURFACE_TYPE_PS,
+    CAIRO_SURFACE_TYPE_XLIB, CAIRO_SURFACE_TYPE_XCB, CAIRO_SURFACE_TYPE_GLITZ,
+    CAIRO_SURFACE_TYPE_QUARTZ, CAIRO_SURFACE_TYPE_WIN32,
+    CAIRO_SURFACE_TYPE_BEOS, CAIRO_SURFACE_TYPE_DIRECTFB,
+    CAIRO_SURFACE_TYPE_SVG, CAIRO_SURFACE_TYPE_OS2,
+    CAIRO_SURFACE_TYPE_WIN32_PRINTING, CAIRO_SURFACE_TYPE_QUARTZ_IMAGE
+};
+ENUM_VAL_TO_LUA_STRING_FUNC(surface_type)
 
 static void
 to_lua_matrix (lua_State *L, cairo_matrix_t *mat, int pos) {

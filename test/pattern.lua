@@ -117,6 +117,7 @@ end
 function test_extend ()
     local pat = Cairo.pattern_create_linear(3, 4, 8, 9)
     assert_error("bad value", function () pat:set_extend("foo") end)
+    assert_error("missing value", function () pat:set_extend(nil) end)
     assert_equal("pad", pat:get_extend(), "default intact after error")
     for _, v in ipairs{ "none", "repeat", "reflect", "pad" } do
         pat:set_extend(v)
@@ -127,6 +128,7 @@ end
 function test_filter ()
     local pat = Cairo.pattern_create_linear(3, 4, 8, 9)
     assert_error("bad value", function () pat:set_filter("foo") end)
+    assert_error("missing value", function () pat:set_filter(nil) end)
     assert_equal("good", pat:get_filter(), "default intact after error")
     for _, v in ipairs{
         "fast", "good", "best", "nearest", "bilinear", "gaussian"

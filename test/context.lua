@@ -22,6 +22,7 @@ end
 
 function test_antialias ()
     assert_error("bad value", function () cr:set_antialias("foo") end)
+    assert_error("missing value", function () cr:set_antialias(nil) end)
     assert_equal("default", cr:get_antialias(), "default intact after error")
     for _, v in ipairs({ "default", "none", "gray", "subpixel" }) do
         cr:set_antialias(v)
@@ -51,6 +52,8 @@ function test_dash ()
 end
 
 function test_dash_bad ()
+    assert_error("missing offset type", function () cr:set_dash({}, nil) end)
+    assert_error("missing pattern", function () cr:set_dash(nil, 0) end)
     assert_error("bad offset type", function () cr:set_dash({}, "foo") end)
     assert_error("bad dash type", function () cr:set_dash({"foo"}, 1) end)
     assert_error("bad dash value", function () cr:set_dash({-1}, 1) end)
@@ -62,6 +65,7 @@ end
 
 function test_fill_rule ()
     assert_error("bad value", function () cr:set_fill_rule("foo") end)
+    assert_error("missing value", function () cr:set_fill_rule(nil) end)
     assert_equal("winding", cr:get_fill_rule(), "default intact after error")
     for _, v in ipairs({ "winding", "even-odd" }) do
         cr:set_fill_rule(v)
@@ -71,6 +75,7 @@ end
 
 function test_line_cap ()
     assert_error("bad value", function () cr:set_line_cap("foo") end)
+    assert_error("missing value", function () cr:set_line_cap(nil) end)
     assert_equal("butt", cr:get_line_cap(), "default intact after error")
     for _, v in ipairs({ "butt", "round", "square" }) do
         cr:set_line_cap(v)
@@ -80,6 +85,7 @@ end
 
 function test_line_join ()
     assert_error("bad value", function () cr:set_line_join("foo") end)
+    assert_error("missing value", function () cr:set_line_join(nil) end)
     assert_equal("miter", cr:get_line_join(), "default intact after error")
     for _, v in ipairs({ "miter", "round", "bevel" }) do
         cr:set_line_join(v)
@@ -89,6 +95,7 @@ end
 
 function test_line_width ()
     assert_error("bad type", function () cr:set_line_width("foo") end)
+    assert_error("missing value", function () cr:set_line_width(nil) end)
     assert_error("negative width", function () cr:set_line_width(-3) end)
     assert_equal(2, cr:get_line_width(), "default intact after error")
     for _, v in ipairs({ 0, 1, 2, 23.5 }) do
@@ -99,6 +106,7 @@ end
 
 function test_miter_limit ()
     assert_error("bad type", function () cr:set_miter_limit("foo") end)
+    assert_error("missing value", function () cr:set_miter_limit(nil) end)
     assert_equal(10, cr:get_miter_limit(), "default intact after error")
     for _, v in ipairs({ 0, 1, 2, 23.5 }) do
         cr:set_miter_limit(v)
@@ -108,6 +116,7 @@ end
 
 function test_operator ()
     assert_error("bad value", function () cr:set_operator("foo") end)
+    assert_error("missing value", function () cr:set_operator(nil) end)
     assert_equal("over", cr:get_operator(), "default intact after error")
     for _, v in ipairs({
         "clear",
@@ -188,6 +197,7 @@ end
 
 function test_tolerance ()
     assert_error("bad type", function () cr:set_tolerance("foo") end)
+    assert_error("missing value", function () cr:set_tolerance(nil) end)
     assert_equal(0.1, cr:get_tolerance(), "default intact after error")
     for _, v in ipairs({ 0.05, 1, 2, 23.5 }) do
         cr:set_tolerance(v)

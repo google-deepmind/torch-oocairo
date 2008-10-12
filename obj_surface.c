@@ -4,7 +4,7 @@ image_surface_create (lua_State *L) {
     int width, height;
     SurfaceUserdata *surface;
 
-    fmt = format_option_values[luaL_checkoption(L, 1, 0, format_option_names)];
+    fmt = format_from_lua(L, 1);
     width = luaL_checkint(L, 2);
     luaL_argcheck(L, width >= 0, 2, "image width cannot be negative");
     height = luaL_checkint(L, 3);
@@ -208,7 +208,7 @@ surface_create_similar (lua_State *L) {
     int width, height;
     SurfaceUserdata *surface;
 
-    content = content_values[luaL_checkoption(L, 2, 0, content_names)];
+    content = content_from_lua(L, 2);
     width = luaL_checkint(L, 3);
     luaL_argcheck(L, width >= 0, 3, "image width cannot be negative");
     height = luaL_checkint(L, 4);
@@ -259,20 +259,7 @@ surface_flush (lua_State *L) {
 static int
 surface_get_content (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
-    switch (cairo_surface_get_content(*obj)) {
-        case CAIRO_CONTENT_COLOR:
-            lua_pushliteral(L, "color");
-            break;
-        case CAIRO_CONTENT_ALPHA:
-            lua_pushliteral(L, "alpha");
-            break;
-        case CAIRO_CONTENT_COLOR_ALPHA:
-            lua_pushliteral(L, "color-alpha");
-            break;
-        default:
-            lua_pushliteral(L, "<invalid>");
-    }
-    return 1;
+    return content_to_lua(L, cairo_surface_get_content(*obj));
 }
 
 static int
@@ -314,14 +301,7 @@ surface_get_format (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     if (cairo_surface_get_type(*obj) != CAIRO_SURFACE_TYPE_IMAGE)
         return luaL_error(L, "method 'get_format' only works on image surfaces");
-    switch (cairo_image_surface_get_format(*obj)) {
-        case CAIRO_FORMAT_ARGB32: lua_pushliteral(L, "argb32"); break;
-        case CAIRO_FORMAT_RGB24:  lua_pushliteral(L, "rgb24");  break;
-        case CAIRO_FORMAT_A8:     lua_pushliteral(L, "a8");     break;
-        case CAIRO_FORMAT_A1:     lua_pushliteral(L, "a1");     break;
-        default:                  lua_pushliteral(L, "<invalid>");
-    }
-    return 1;
+    return format_to_lua(L, cairo_image_surface_get_format(*obj));
 }
 
 static int
@@ -336,32 +316,7 @@ surface_get_height (lua_State *L) {
 static int
 surface_get_type (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
-    const char *s;
-    switch (cairo_surface_get_type(*obj)) {
-        case CAIRO_SURFACE_TYPE_IMAGE:          s = "image";          break;
-#if CAIRO_HAS_PDF_SURFACE
-        case CAIRO_SURFACE_TYPE_PDF:            s = "pdf";            break;
-#endif
-#if CAIRO_HAS_PS_SURFACE
-        case CAIRO_SURFACE_TYPE_PS:             s = "ps";             break;
-#endif
-        case CAIRO_SURFACE_TYPE_XLIB:           s = "xlib";           break;
-        case CAIRO_SURFACE_TYPE_XCB:            s = "xcb";            break;
-        case CAIRO_SURFACE_TYPE_GLITZ:          s = "glitz";          break;
-        case CAIRO_SURFACE_TYPE_QUARTZ:         s = "quartz";         break;
-        case CAIRO_SURFACE_TYPE_WIN32:          s = "win32";          break;
-        case CAIRO_SURFACE_TYPE_BEOS:           s = "beos";           break;
-        case CAIRO_SURFACE_TYPE_DIRECTFB:       s = "directfb";       break;
-#if CAIRO_HAS_SVG_SURFACE
-        case CAIRO_SURFACE_TYPE_SVG:            s = "svg";            break;
-#endif
-        case CAIRO_SURFACE_TYPE_OS2:            s = "os2";            break;
-        case CAIRO_SURFACE_TYPE_WIN32_PRINTING: s = "win32-printing"; break;
-        case CAIRO_SURFACE_TYPE_QUARTZ_IMAGE:   s = "quartz-image";   break;
-        default:                                s = "<invalid>";
-    }
-    lua_pushstring(L, s);
-    return 1;
+    return surface_type_to_lua(L, cairo_surface_get_type(*obj));
 }
 
 static int

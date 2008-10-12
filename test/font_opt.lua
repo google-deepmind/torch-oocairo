@@ -13,6 +13,7 @@ end
 function test_antialias ()
     local opt = Cairo.font_options_create()
     assert_error("bad value", function () opt:set_antialias("foo") end)
+    assert_error("missing value", function () opt:set_antialias(nil) end)
     assert_equal("default", opt:get_antialias())
     for _, aa in ipairs{ "default", "none", "gray", "subpixel" } do
         opt:set_antialias(aa)
@@ -29,6 +30,7 @@ end
 function test_subpixel_order ()
     local opt = Cairo.font_options_create()
     assert_error("bad value", function () opt:set_subpixel_order("foo") end)
+    assert_error("missing value", function () opt:set_subpixel_order(nil) end)
     assert_equal("default", opt:get_subpixel_order())
     for _, aa in ipairs{ "default", "rgb", "bgr", "vrgb", "vbgr" } do
         opt:set_subpixel_order(aa)
@@ -39,6 +41,7 @@ end
 function test_hint_style ()
     local opt = Cairo.font_options_create()
     assert_error("bad value", function () opt:set_hint_style("foo") end)
+    assert_error("missing value", function () opt:set_hint_style(nil) end)
     assert_equal("default", opt:get_hint_style())
     for _, aa in ipairs{ "default", "none", "slight", "medium", "full" } do
         opt:set_hint_style(aa)
@@ -49,6 +52,7 @@ end
 function test_hint_metrics ()
     local opt = Cairo.font_options_create()
     assert_error("bad value", function () opt:set_hint_metrics("foo") end)
+    assert_error("missing value", function () opt:set_hint_metrics(nil) end)
     assert_equal("default", opt:get_hint_metrics())
     for _, aa in ipairs{ "default", "off", "on" } do
         opt:set_hint_metrics(aa)

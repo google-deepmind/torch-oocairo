@@ -22,6 +22,49 @@ function test_select_get_set_font_face ()
     assert_equal(serif, cr:get_font_face())
 end
 
+function test_select_font_face ()
+    local surface = Cairo.image_surface_create("rgb24", 23, 45)
+    local cr = Cairo.context_create(surface)
+    cr:select_font_face("sans", "italic", "bold")
+    if Cairo.toy_font_face_create then
+        local font = cr:get_font_face()
+        assert_equal("sans", font:get_family())
+        assert_equal("italic", font:get_slant())
+        assert_equal("bold", font:get_weight())
+    end
+
+    cr:select_font_face("serif", "italic")
+    if Cairo.toy_font_face_create then
+        local font = cr:get_font_face()
+        assert_equal("serif", font:get_family())
+        assert_equal("italic", font:get_slant())
+        assert_equal("normal", font:get_weight())
+    end
+
+    cr:select_font_face("serif", nil, "bold")
+    if Cairo.toy_font_face_create then
+        local font = cr:get_font_face()
+        assert_equal("serif", font:get_family())
+        assert_equal("normal", font:get_slant())
+        assert_equal("bold", font:get_weight())
+    end
+
+    cr:select_font_face("serif")
+    if Cairo.toy_font_face_create then
+        local font = cr:get_font_face()
+        assert_equal("serif", font:get_family())
+        assert_equal("normal", font:get_slant())
+        assert_equal("normal", font:get_weight())
+    end
+
+    assert_error("bad family name",
+                 function () cr:select_font_face({}, "normal", "normal") end)
+    assert_error("bad slant value",
+                 function () cr:select_font_face("sans", "foo", "normal") end)
+    assert_error("bad weight value",
+                 function () cr:select_font_face("sans", "normal", "foo") end)
+end
+
 function test_toy_create_and_accessors ()
     if Cairo.toy_font_face_create then
         local font = Cairo.toy_font_face_create("serif", "italic", "bold")
