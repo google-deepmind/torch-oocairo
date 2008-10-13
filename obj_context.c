@@ -278,6 +278,15 @@ cr_get_operator (lua_State *L) {
 }
 
 static int
+cr_get_scaled_font (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_scaled_font_t **font = create_scaledfont_userdata(L);
+    *font = cairo_get_scaled_font(*obj);
+    cairo_scaled_font_reference(*font);
+    return 1;
+}
+
+static int
 cr_get_source (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_pattern_t **pattern = create_pattern_userdata(L);
@@ -681,6 +690,14 @@ cr_set_operator (lua_State *L) {
 }
 
 static int
+cr_set_scaled_font (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_scaled_font_t **font = luaL_checkudata(L, 2, MT_NAME_SCALEDFONT);
+    cairo_set_scaled_font(*obj, *font);
+    return 0;
+}
+
+static int
 cr_set_source (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     void *p;
@@ -867,6 +884,7 @@ context_methods[] = {
     { "get_matrix", cr_get_matrix },
     { "get_miter_limit", cr_get_miter_limit },
     { "get_operator", cr_get_operator },
+    { "get_scaled_font", cr_get_scaled_font },
     { "get_source", cr_get_source },
     { "get_target", cr_get_target },
     { "get_tolerance", cr_get_tolerance },
@@ -909,6 +927,7 @@ context_methods[] = {
     { "set_matrix", cr_set_matrix },
     { "set_miter_limit", cr_set_miter_limit },
     { "set_operator", cr_set_operator },
+    { "set_scaled_font", cr_set_scaled_font },
     { "set_source", cr_set_source },
     { "set_source_rgb", cr_set_source_rgb },
     { "set_source_rgba", cr_set_source_rgba },

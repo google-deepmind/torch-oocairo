@@ -7,7 +7,9 @@ lua-oocairo-fontface - Unscaled font face object
 Cairo font face objects are returned by the C<get_font_face> method
 on context objects (see L<lua-oocairo-context(3)>).  They represent
 a font selection, but not including the scaling used to create a
-font of a particular size.
+font of a particular size.  See L<lua-oocairo-scaledfont(3)> for details
+about fonts at a particular size, which can be created by scaling one of
+these font face objects.
 
 Font face objects can be compared with the C<==> operator.  This will compare
 the identity of the objects, so different Lua objects which refer to the
@@ -40,13 +42,6 @@ Only available with S<Cairo 1.8> or better.
 Returns a string indicating what backend library handles this font.
 The return value will be one of the following:
 
-=item fontface:get_weight ()
-
-Returns the weight of the font face created with the toy API, or
-throws an exception for other font faces.  The return value will be a string,
-with one of the values accepted by the C<select_font_face> method.
-Only available with S<Cairo 1.8> or better.
-
 =over
 
 =item toy
@@ -71,6 +66,13 @@ A MacOS X native font.
 A font created with custom code.
 
 =back
+
+=item fontface:get_weight ()
+
+Returns the weight of the font face created with the toy API, or
+throws an exception for other font faces.  The return value will be a string,
+with one of the values accepted by the C<select_font_face> method.
+Only available with S<Cairo 1.8> or better.
 
 =back
 

@@ -19,13 +19,14 @@
 #error "This Lua binding requires Cairo version 1.6 or better."
 #endif
 
-#define MT_NAME_CONTEXT  ("6404c570-6711-11dd-b66f-00e081225ce5")
-#define MT_NAME_FONTFACE ("ee272774-6a1e-11dd-86de-00e081225ce5")
-#define MT_NAME_FONTOPT  ("8ae95550-9887-11dd-922a-00e081225ce5")
-#define MT_NAME_MATRIX   ("6e2f4c64-6711-11dd-acfc-00e081225ce5")
-#define MT_NAME_PATH     ("6d83bf34-6711-11dd-b4c2-00e081225ce5")
-#define MT_NAME_PATTERN  ("6dd49a26-6711-11dd-88fd-00e081225ce5")
-#define MT_NAME_SURFACE  ("6d31a064-6711-11dd-bdd8-00e081225ce5")
+#define MT_NAME_CONTEXT    ("6404c570-6711-11dd-b66f-00e081225ce5")
+#define MT_NAME_FONTFACE   ("ee272774-6a1e-11dd-86de-00e081225ce5")
+#define MT_NAME_FONTOPT    ("8ae95550-9887-11dd-922a-00e081225ce5")
+#define MT_NAME_MATRIX     ("6e2f4c64-6711-11dd-acfc-00e081225ce5")
+#define MT_NAME_PATH       ("6d83bf34-6711-11dd-b4c2-00e081225ce5")
+#define MT_NAME_PATTERN    ("6dd49a26-6711-11dd-88fd-00e081225ce5")
+#define MT_NAME_SCALEDFONT ("b8012f94-98b0-11dd-b174-00e081225ce5")
+#define MT_NAME_SURFACE    ("6d31a064-6711-11dd-bdd8-00e081225ce5")
 
 #define ENUM_VAL_TO_LUA_STRING_FUNC(type) \
     static int \
@@ -440,6 +441,16 @@ create_fontface_userdata (lua_State *L) {
     return obj;
 }
 
+static cairo_scaled_font_t **
+create_scaledfont_userdata (lua_State *L) {
+    cairo_scaled_font_t **obj
+            = lua_newuserdata(L, sizeof(cairo_scaled_font_t *));
+    *obj = 0;
+    luaL_getmetatable(L, MT_NAME_SCALEDFONT);
+    lua_setmetatable(L, -2);
+    return obj;
+}
+
 static cairo_font_options_t **
 create_fontopt_userdata (lua_State *L) {
     cairo_font_options_t **obj
@@ -529,6 +540,7 @@ write_chunk_to_fh (void *closure, const unsigned char *buf,
 #include "obj_matrix.c"
 #include "obj_path.c"
 #include "obj_pattern.c"
+#include "obj_scaled_font.c"
 #include "obj_surface.c"
 
 static const luaL_Reg
@@ -552,6 +564,7 @@ constructor_funcs[] = {
     { "ps_get_levels", ps_get_levels },
     { "ps_surface_create", ps_surface_create },
 #endif
+    { "scaled_font_create", scaled_font_create },
     { "surface_create_similar", surface_create_similar },
 #if CAIRO_HAS_SVG_SURFACE
     { "svg_surface_create", svg_surface_create },
@@ -651,6 +664,8 @@ luaopen_oocairo (lua_State *L) {
                             context_methods);
     create_object_metatable(L, MT_NAME_FONTFACE, "cairo font face object",
                             fontface_methods);
+    create_object_metatable(L, MT_NAME_SCALEDFONT, "cairo scaled font object",
+                            scaledfont_methods);
     create_object_metatable(L, MT_NAME_FONTOPT, "cairo font options object",
                             fontopt_methods);
     create_object_metatable(L, MT_NAME_MATRIX, "cairo matrix object",

@@ -4,5 +4,6 @@ lua-oocairo-fontopt.3
 lua-oocairo-matrix.3
 lua-oocairo-path.3
 lua-oocairo-pattern.3
+lua-oocairo-scaledfont.3
 lua-oocairo-surface.3
 lua-oocairo.3

@@ -24,6 +24,8 @@ doc/lua-oocairo-path.3
 doc/lua-oocairo-path.pod
 doc/lua-oocairo-pattern.3
 doc/lua-oocairo-pattern.pod
+doc/lua-oocairo-scaledfont.3
+doc/lua-oocairo-scaledfont.pod
 doc/lua-oocairo-surface.3
 doc/lua-oocairo-surface.pod
 doc/lua-oocairo.3
@@ -57,6 +59,7 @@ obj_font_opt.c
 obj_matrix.c
 obj_path.c
 obj_pattern.c
+obj_scaled_font.c
 obj_surface.c
 oocairo.c
 oocairo.h
@@ -70,5 +73,6 @@ test/path.lua
 test/pattern.lua
 test/pdf_surface.lua
 test/ps_surface.lua
+test/scaled_font.lua
 test/surface.lua
 test/svg_surface.lua

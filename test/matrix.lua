@@ -4,15 +4,6 @@ local Cairo = require "oocairo"
 
 module("test.matrix", lunit.testcase, package.seeall)
 
-local function check_matrix_elems (m)
-    assert_table(m)
-    for k, v in pairs(m) do
-        assert_number(k)
-        assert_number(v)
-        assert(k >= 1 and k <= 6, "bad value for key: " .. tostring(k))
-    end
-end
-
 function test_create ()
     local m = Cairo.matrix_create()
     check_matrix_elems(m)

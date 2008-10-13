@@ -235,6 +235,16 @@ colour can be semitransparent.
 Return a table containing a list of strings indicating what levels of
 PostScript are supported by Cairo.
 
+=item scaled_font_create (face, font_matrix, ctm, options)
+
+Creates a new scaled font object, representing a scaled version of I<face>.
+See L<lua-oocairo-scaledfont(3)> for information about these objects.
+
+The I<font_matrix> and I<ctm> values must be matrices (any table containing
+six numbers, see L<lua-oocairo-matrix(3)> for details).  The I<options>
+argument can be nil for the default options, or a font options object
+as returned by the C<font_options_create> function.
+
 =item svg_get_versions ()
 
 Return a table containing a list of strings indicating what versions of

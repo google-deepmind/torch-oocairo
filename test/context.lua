@@ -257,34 +257,17 @@ function test_transform ()
     assert_equal(100, y)
 end
 
-local function check_hash_of_numbers (got, expected)
-    assert_table(got)
-
-    -- Check that all expected keys are present with right type of value.
-    local expected_keys = {}
-    for _, k in ipairs(expected) do
-        assert_number(got[k])
-        expected_keys[k] = true
-    end
-
-    -- Check for any unexpected keys.
-    for k in pairs(got) do
-        assert_true(expected_keys[k])
-    end
+function test_text_extents ()
+    check_text_extents(cr:text_extents("foo bar quux"))
 end
 
-function test_text_extents ()
-    local extents = cr:text_extents("foo bar quux")
-    check_hash_of_numbers(extents, {
-        "x_bearing", "y_bearing", "width", "height", "x_advance", "y_advance",
-    })
+function test_glyph_extents ()
+    local glyphs = { {73,10,20}, {82,30,40}, {91,50,60} }
+    check_text_extents(cr:glyph_extents(glyphs))
 end
 
 function test_font_extents ()
-    local extents = cr:font_extents()
-    check_hash_of_numbers(extents, {
-        "ascent", "descent", "height", "max_x_advance", "max_y_advance",
-    })
+    check_font_extents(cr:font_extents())
 end
 
 -- vi:ts=4 sw=4 expandtab
