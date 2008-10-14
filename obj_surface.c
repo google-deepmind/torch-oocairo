@@ -328,6 +328,15 @@ surface_get_width (lua_State *L) {
     return 1;
 }
 
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
+static int
+surface_has_show_text_glyphs (lua_State *L) {
+    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    lua_pushboolean(L, cairo_surface_has_show_text_glyphs(*obj));
+    return 1;
+}
+#endif
+
 static int
 surface_set_device_offset (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
@@ -446,6 +455,9 @@ surface_methods[] = {
     { "get_height", surface_get_height },
     { "get_type", surface_get_type },
     { "get_width", surface_get_width },
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
+    { "has_show_text_glyphs", surface_has_show_text_glyphs },
+#endif
     { "set_device_offset", surface_set_device_offset },
 #if CAIRO_HAS_PS_SURFACE
     { "set_eps", surface_set_eps },

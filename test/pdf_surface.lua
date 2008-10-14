@@ -11,6 +11,9 @@ if Cairo.HAS_PDF_SURFACE then
         assert_userdata(surface)
         assert_equal("cairo surface object", surface._NAME)
         assert_equal("pdf", surface:get_type())
+        if surface.has_show_text_glyphs then
+            assert_true(surface:has_show_text_glyphs())
+        end
     end
 
     local function check_file_contains_pdf (filename)

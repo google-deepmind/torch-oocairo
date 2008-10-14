@@ -71,6 +71,18 @@ be rendered in this font.  The return value is in the same format as that
 of the C<text_extents> method on context objects (see
 L<lua-oocairo-context(3)>).
 
+=item font:text_to_glyphs (x, y, text)
+
+Given some UTF-8 text in the string I<text>, and starting coordinates of
+I<x> and I<y>, this works out which glyphs need to be drawn to represent
+the text, and which glyphs correspond to the bytes in I<text>.  The method
+returns two tables, the first an array of glyphs suitable for supplying to
+methods like C<show_glyphs> and C<glyph_extents>, and the second is a table
+of text clusters suitable for supplying to the C<show_text_glyphs> method
+on a context object.
+
+Only available with S<Cairo 1.8> or better.
+
 =back
 
 =for comment

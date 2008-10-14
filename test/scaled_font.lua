@@ -78,4 +78,36 @@ function test_matrix ()
     end
 end
 
+function test_text_to_glyphs ()
+    local surface, cr = mk_surface_cr()
+    local font = mk_scaled_font(cr:get_font_face(), 23)
+
+    if font.text_to_glyphs then
+        local glyphs, clusters = font:text_to_glyphs(10, 100, "foo")
+
+        assert_table(glyphs)
+        assert_equal(3, #glyphs)
+        for _, v in ipairs(glyphs) do
+            assert_table(v)
+            assert_equal(3, #v)
+            assert_number(v[1])
+            assert_number(v[2])
+            assert_number(v[3])
+            assert_equal(100, v[3])
+        end
+
+        assert_table(clusters)
+        assert_equal(3, #clusters)
+        assert_false(clusters.backward)
+        for _, v in ipairs(clusters) do
+            assert_table(v)
+            assert_equal(2, #v)
+            assert_number(v[1])
+            assert_equal(1, v[1])
+            assert_number(v[2])
+            assert_equal(1, v[2])
+        end
+    end
+end
+
 -- vi:ts=4 sw=4 expandtab

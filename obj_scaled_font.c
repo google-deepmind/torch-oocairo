@@ -116,6 +116,32 @@ scaledfont_text_extents (lua_State *L) {
     return 1;
 }
 
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
+static int
+scaledfont_text_to_glyphs (lua_State *L) {
+    cairo_scaled_font_t **obj = luaL_checkudata(L, 1, MT_NAME_SCALEDFONT);
+    double x = luaL_checknumber(L, 2), y = luaL_checknumber(L, 3);
+    size_t text_len;
+    const char *text = luaL_checklstring(L, 4, &text_len);
+    cairo_glyph_t *glyphs = 0;
+    cairo_text_cluster_t *clusters = 0;
+    cairo_text_cluster_flags_t cluster_flags = 0;
+    int num_glyphs = 0, num_clusters = 0;
+
+    if (cairo_scaled_font_text_to_glyphs(
+            *obj, x, y, text, text_len,
+            &glyphs, &num_glyphs,
+            &clusters, &num_clusters, &cluster_flags) != CAIRO_STATUS_SUCCESS)
+        return luaL_error(L, "error converting text to glyphs");
+
+    create_lua_glyph_array(L, glyphs, num_glyphs);
+    cairo_glyph_free(glyphs);
+    create_lua_text_cluster_table(L, clusters, num_clusters, cluster_flags);
+    cairo_text_cluster_free(clusters);
+    return 2;
+}
+#endif
+
 static const luaL_Reg
 scaledfont_methods[] = {
     { "__eq", scaledfont_eq },
@@ -130,6 +156,9 @@ scaledfont_methods[] = {
     { "get_type", scaledfont_get_type },
     { "glyph_extents", scaledfont_glyph_extents },
     { "text_extents", scaledfont_text_extents },
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
+    { "text_to_glyphs", scaledfont_text_to_glyphs },
+#endif
     { 0, 0 }
 };
 

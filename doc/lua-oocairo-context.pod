@@ -602,6 +602,23 @@ UTF-8), using the current font face and size, and the current source.
 This draws immediately, it doesn't leave a path for further drawing.
 See the C<cr:text_path()> method for drawing outlined text.
 
+=item cr:show_text_glyphs (text, glyphs, clusters)
+
+Draw the glyphs given by the I<glyphs> table, in the same way as the
+C<cr:show_glyphs()> method, but if the surface supports it, store the
+correspondence between the glyphs and the characters in the UTF-8
+string I<text> represented by I<clusters>.
+
+The clusters value must be a table.  It may contain a key called C<backward>,
+whose value will be a boolean value, true if the clusters are listed in
+reverse order.  It should also contain an array part containing pairs
+of values; that is, the I<clusters> entries with keys starting with the
+number one should each be a table containing two numbers, a number of bytes
+in the I<text> string and a number of glyphs in the I<glyphs> array, which
+are meant to correspond to each other.
+
+Only available with S<Cairo 1.8> or better.
+
 =item cr:stroke ()
 
 Draw a line along the current path using colour from the current source,

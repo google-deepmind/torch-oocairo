@@ -347,6 +347,23 @@ from_lua_text_extents (lua_State *L, cairo_text_extents_t *extents) {
 #undef HANDLE_TEXT_EXTENTS_FIELD
 
 static void
+create_lua_glyph_array (lua_State *L, cairo_glyph_t *glyphs, int num_glyphs) {
+    int i;
+    lua_createtable(L, num_glyphs, 0);
+
+    for (i = 0; i < num_glyphs; ++i) {
+        lua_createtable(L, 3, 0);
+        lua_pushnumber(L, glyphs[i].index);
+        lua_rawseti(L, -2, 1);
+        lua_pushnumber(L, glyphs[i].x);
+        lua_rawseti(L, -2, 2);
+        lua_pushnumber(L, glyphs[i].y);
+        lua_rawseti(L, -2, 3);
+        lua_rawseti(L, -2, i + 1);
+    }
+}
+
+static void
 from_lua_glyph_array (lua_State *L, cairo_glyph_t **glyphs, int *num_glyphs,
                       int pos)
 {
@@ -400,6 +417,96 @@ from_lua_glyph_array (lua_State *L, cairo_glyph_t **glyphs, int *num_glyphs,
         lua_pop(L, 2);
     }
 }
+
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
+static void
+create_lua_text_cluster_table (lua_State *L, cairo_text_cluster_t *clusters,
+                               int num, cairo_text_cluster_flags_t flags)
+{
+    int i;
+    lua_createtable(L, num, 1);
+
+    lua_pushliteral(L, "backward");
+    lua_pushboolean(L, flags & CAIRO_TEXT_CLUSTER_FLAG_BACKWARD);
+    lua_rawset(L, -3);
+
+    for (i = 0; i < num; ++i) {
+        lua_createtable(L, 2, 0);
+        lua_pushnumber(L, clusters[i].num_bytes);
+        lua_rawseti(L, -2, 1);
+        lua_pushnumber(L, clusters[i].num_glyphs);
+        lua_rawseti(L, -2, 2);
+        lua_rawseti(L, -2, i + 1);
+    }
+}
+
+static void
+from_lua_clusters_table (lua_State *L, cairo_text_cluster_t **clusters,
+                         int *num, cairo_text_cluster_flags_t *flags, int pos)
+{
+    int i;
+    int n;
+    luaL_checktype(L, pos, LUA_TTABLE);
+
+    *flags = 0;
+    lua_pushliteral(L, "backward");
+    lua_getfield(L, -1, "backward");
+    if (lua_toboolean(L, -1))
+        *flags |= CAIRO_TEXT_CLUSTER_FLAG_BACKWARD;
+    lua_pop(L, 1);
+
+    *num = lua_objlen(L, pos);
+    if (*num == 0) {
+        *clusters = 0;
+        return;
+    }
+    *clusters = malloc(sizeof(cairo_text_cluster_t) * *num);
+    assert(*clusters);
+
+    for (i = 0; i < *num; ++i) {
+        lua_rawgeti(L, pos, i + 1);
+        if (!lua_istable(L, -1)) {
+            free(*clusters);
+            luaL_error(L, "text cluster %d is not a table", i + 1);
+        }
+        else if (lua_objlen(L, -1) != 2) {
+            free(*clusters);
+            luaL_error(L, "text cluster %d should contain exactly 2 numbers",
+                       i + 1);
+        }
+
+        lua_rawgeti(L, -1, 1);
+        if (!lua_isnumber(L, -1)) {
+            free(*clusters);
+            luaL_error(L, "number of bytes of text cluster %d should be a"
+                       " number", i + 1);
+        }
+        n = lua_tonumber(L, -1);
+        if (n < 0) {
+            free(*clusters);
+            luaL_error(L, "number of bytes of text cluster %d is negative",
+                       i + 1);
+        }
+        (*clusters)[i].num_bytes = n;
+        lua_pop(L, 1);
+
+        lua_rawgeti(L, -1, 2);
+        if (!lua_isnumber(L, -1)) {
+            free(*clusters);
+            luaL_error(L, "number of glyphs of text cluster %d should be a"
+                       " number", i + 1);
+        }
+        n = lua_tonumber(L, -1);
+        if (n < 0) {
+            free(*clusters);
+            luaL_error(L, "number of glyphs of text cluster %d is negative",
+                       i + 1);
+        }
+        (*clusters)[i].num_glyphs = n;
+        lua_pop(L, 2);
+    }
+}
+#endif
 
 typedef struct SurfaceUserdata_ {
     /* This has to be first, because most users of this ignore the rest and

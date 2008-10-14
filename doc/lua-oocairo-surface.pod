@@ -99,6 +99,15 @@ create them with this binding of Cairo.
 Returns the width in pixels of an image surface, or throws an exception
 for other types.
 
+=item surf:has_show_text_glyphs ()
+
+Returns true if this surface can use text cluster information to improve
+the quality of text information in the output.  If true then it may be
+beneficial to use the C<show_text_glyphs> method on a context object instead
+of the C<show_glyphs> method, otherwise that will make no difference.
+
+Only available with S<Cairo 1.8> or better.
+
 =item surf:set_device_offset (x, y)
 
 Set two numbers which are added to the I<x> and I<y> coordinates used for

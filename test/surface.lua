@@ -22,6 +22,9 @@ local function check_image_surface (surface, desc)
     assert_userdata(surface, desc .. ", userdata")
     assert_equal("cairo surface object", surface._NAME, desc .. ", mt name")
     assert_equal("image", surface:get_type(), desc .. ", type")
+    if surface.has_show_text_glyphs then
+        assert_false(surface:has_show_text_glyphs())
+    end
 end
 
 function test_image_surface_create ()

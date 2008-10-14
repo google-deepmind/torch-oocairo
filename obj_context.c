@@ -774,6 +774,28 @@ cr_show_text (lua_State *L) {
     return 0;
 }
 
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
+static int
+cr_show_text_glyphs (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    size_t text_len;
+    const char *text = luaL_checklstring(L, 2, &text_len);
+    cairo_glyph_t *glyphs;
+    cairo_text_cluster_t *clusters;
+    cairo_text_cluster_flags_t cluster_flags;
+    int num_glyphs, num_clusters;
+
+    from_lua_glyph_array(L, &glyphs, &num_glyphs, 3);
+    from_lua_clusters_table(L, &clusters, &num_clusters, &cluster_flags, 4);
+
+    cairo_show_text_glyphs(*obj, text, text_len, glyphs, num_glyphs,
+                           clusters, num_clusters, cluster_flags);
+    free(glyphs);
+    free(clusters);
+    return 0;
+}
+#endif
+
 static int
 cr_stroke (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
@@ -934,6 +956,9 @@ context_methods[] = {
     { "set_tolerance", cr_set_tolerance },
     { "show_glyphs", cr_show_glyphs },
     { "show_text", cr_show_text },
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
+    { "show_text_glyphs", cr_show_text_glyphs },
+#endif
     { "stroke", cr_stroke },
     { "stroke_extents", cr_stroke_extents },
     { "stroke_preserve", cr_stroke_preserve },
