@@ -765,6 +765,13 @@ luaopen_oocairo (lua_State *L) {
     lua_pushboolean(L, 0);
 #endif
     lua_rawset(L, -3);
+    lua_pushliteral(L, "HAS_USER_FONT");
+#if CAIRO_HAS_USER_FONT
+    lua_pushboolean(L, 1);
+#else
+    lua_pushboolean(L, 0);
+#endif
+    lua_rawset(L, -3);
 
     /* Create the metatables for objects of different types. */
     create_object_metatable(L, MT_NAME_CONTEXT, "cairo context object",

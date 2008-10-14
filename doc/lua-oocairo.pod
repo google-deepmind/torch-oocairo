@@ -313,6 +313,12 @@ Support for creating a surface which writes to a PostScript or EPS file.
 
 Support for creating a surface which writes to a PDF file.
 
+=item HAS_USER_FONT
+
+Support for custom fonts defined by callback functions.  If true then
+the C<user_font_face_create> function should be available in the main
+module table.
+
 =back
 
 =head1 Copyright
