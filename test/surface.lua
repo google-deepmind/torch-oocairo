@@ -42,6 +42,12 @@ function test_image_surface_create ()
     end
 end
 
+function test_double_gc ()
+    local surface = Cairo.image_surface_create("rgb24", 23, 45)
+    surface:__gc()
+    surface:__gc()
+end
+
 function test_image_surface_create_bad ()
     assert_error("bad format", function ()
         Cairo.image_surface_create("foo", 23, 45)

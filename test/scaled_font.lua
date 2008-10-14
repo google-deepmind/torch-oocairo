@@ -17,6 +17,13 @@ local function mk_scaled_font (face, size)
     return Cairo.scaled_font_create(face, font_mat, ctm)
 end
 
+function test_double_gc ()
+    local _, cr = mk_surface_cr()
+    local font = cr:get_scaled_font()
+    font:__gc()
+    font:__gc()
+end
+
 function test_create ()
     local surface, cr = mk_surface_cr()
     cr:select_font_face("sans", "normal", "normal")

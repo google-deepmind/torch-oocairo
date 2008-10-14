@@ -3,11 +3,6 @@ docs for user fonts feature
 check status more often, at least to check for memory allocation errors
 when creating a new object.
 
-Make sure double GC of an object isn't harmful, just in case (that is, can
-I manually call the '__gc' metamethod and then let the object get GCed without
-the library crashing?).  Probably have to check for null before calling the
-destroy function.
-
 These functions aren't bound at all yet:
 cairo_copy_clip_rectangle_list
 cairo_format_stride_for_width

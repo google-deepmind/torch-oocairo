@@ -10,6 +10,12 @@ function test_create ()
     assert_equal("cairo font options object", opt._NAME)
 end
 
+function test_double_gc ()
+    local opt = Cairo.font_options_create()
+    opt:__gc()
+    opt:__gc()
+end
+
 function test_antialias ()
     local opt = Cairo.font_options_create()
     assert_error("bad value", function () opt:set_antialias("foo") end)

@@ -4,6 +4,14 @@ local Cairo = require "oocairo"
 
 module("test.font_face", lunit.testcase, package.seeall)
 
+function test_double_gc ()
+    local surface = Cairo.image_surface_create("rgb24", 23, 45)
+    local cr = Cairo.context_create(surface)
+    local face = cr:get_font_face()
+    face:__gc()
+    face:__gc()
+end
+
 function test_select_get_set_font_face ()
     local surface = Cairo.image_surface_create("rgb24", 23, 45)
     local cr = Cairo.context_create(surface)

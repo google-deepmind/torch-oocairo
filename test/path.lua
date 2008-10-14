@@ -13,6 +13,12 @@ function teardown ()
     cr = nil
 end
 
+function test_double_gc ()
+    local path = cr:copy_path()
+    path:__gc()
+    path:__gc()
+end
+
 function test_current_point ()
     assert_false(cr:has_current_point())
     local x, y = cr:get_current_point()

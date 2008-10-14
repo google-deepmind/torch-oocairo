@@ -20,6 +20,12 @@ function teardown ()
     cr = nil
 end
 
+function test_double_gc ()
+    local cr = Cairo.context_create(surface)
+    cr:__gc()
+    cr:__gc()
+end
+
 function test_antialias ()
     assert_error("bad value", function () cr:set_antialias("foo") end)
     assert_error("missing value", function () cr:set_antialias(nil) end)

@@ -160,4 +160,11 @@ function test_equality ()
     assert_false(pattern1 == pattern3)
 end
 
+function test_double_gc ()
+    local surface = Cairo.image_surface_create("rgb24", 23, 45)
+    local pattern = Cairo.pattern_create_rgb(0.25, 0.5, 0.75)
+    pattern:__gc()
+    pattern:__gc()
+end
+
 -- vi:ts=4 sw=4 expandtab
