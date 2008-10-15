@@ -172,6 +172,15 @@ L<lua-oocairo-fontface(3)> for details on font face objects.
 
 Returns the transformation matrix used for the current font.
 
+=item cr:get_font_options ()
+
+Returns a new font options object containing the options set for font
+rendering with this context.  The options won't reflect any defaults
+provided by the surface, just the options set with the
+C<cr:set_font_options()> method.
+
+See L<lua-oocairo-fontopt(3)> for more about font options objects.
+
 =item cr:get_group_target ()
 
 Returns the surface which is currently the destination of drawing
@@ -443,6 +452,12 @@ is nil.  See L<lua-oocairo-fontface(3)> for details on font face objects.
 Set the transformation matrix used for fonts.  Can be used for rotating
 text or slanting the font in unusual ways for example.  The I<matrix>
 must be a table of six numbers.
+
+=item cr:set_font_options (options)
+
+Set the options used for rendering fonts.  The value of I<options> must
+be a font options object (see L<lua-oocairo-fontopt(3)>).  The current
+options can be retrieved with the C<cr:get_font_options()> method.
 
 =item cr:set_font_size (size)
 

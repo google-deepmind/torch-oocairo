@@ -6,7 +6,12 @@ lua-oocairo-fontopt - options controlling text rendering
 
 A font options object contains options that tell Cairo how to render
 text on surfaces.  They can be created with the C<font_options_create>
-function in the main oocairo module (see L<lua-oocairo(3)>).
+function in the main oocairo module (see L<lua-oocairo(3)>), and
+retrieved from scaled fonts or context objects with C<get_font_options>
+methods.
+
+Font options objects can be compared with the C<==> operator.  Two different
+objects with the same options set will be considered equal.
 
 =head1 Methods
 

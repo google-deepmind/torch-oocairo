@@ -10,11 +10,11 @@ local function mk_surface_cr ()
     return surface, cr
 end
 
-local function mk_scaled_font (face, size)
+local function mk_scaled_font (face, size, ...)
     local font_mat = Cairo.matrix_create()
     font_mat:scale(size, size)
     local ctm = Cairo.matrix_create()
-    return Cairo.scaled_font_create(face, font_mat, ctm)
+    return Cairo.scaled_font_create(face, font_mat, ctm, ...)
 end
 
 function test_double_gc ()
@@ -115,6 +115,21 @@ function test_text_to_glyphs ()
             assert_equal(1, v[2])
         end
     end
+end
+
+function test_font_options ()
+    local origopt = Cairo.font_options_create()
+    origopt:set_antialias("gray")
+    origopt:set_subpixel_order("vbgr")
+    local _, cr = mk_surface_cr()
+    local font = mk_scaled_font(cr:get_font_face(), 23, origopt)
+
+    local gotopt = font:get_font_options()
+    assert_userdata(gotopt)
+    assert_equal("cairo font options object", gotopt._NAME)
+    assert_equal("gray", gotopt:get_antialias())
+    assert_equal("vbgr", gotopt:get_subpixel_order())
+    assert_true(gotopt == origopt)
 end
 
 -- vi:ts=4 sw=4 expandtab

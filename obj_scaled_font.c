@@ -78,6 +78,15 @@ scaledfont_get_font_matrix (lua_State *L) {
     return 1;
 }
 
+static int
+scaledfont_get_font_options (lua_State *L) {
+    cairo_scaled_font_t **obj = luaL_checkudata(L, 1, MT_NAME_SCALEDFONT);
+    cairo_font_options_t **opt = create_fontopt_userdata(L);
+    *opt = cairo_font_options_create();
+    cairo_scaled_font_get_font_options(*obj, *opt);
+    return 1;
+}
+
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
 static int
 scaledfont_get_scale_matrix (lua_State *L) {
@@ -150,6 +159,7 @@ scaledfont_methods[] = {
     { "get_ctm", scaledfont_get_ctm },
     { "get_font_face", scaledfont_get_font_face },
     { "get_font_matrix", scaledfont_get_font_matrix },
+    { "get_font_options", scaledfont_get_font_options },
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
     { "get_scale_matrix", scaledfont_get_scale_matrix },
 #endif

@@ -276,4 +276,17 @@ function test_font_extents ()
     check_font_extents(cr:font_extents())
 end
 
+function test_font_options ()
+    local origopt = cr:get_font_options()
+    assert_userdata(origopt)
+    assert_equal("cairo font options object", origopt._NAME)
+    assert_equal("default", origopt:get_antialias())
+
+    local newopt = Cairo.font_options_create()
+    newopt:set_antialias("none")
+    cr:set_font_options(newopt)
+    local adjusted = cr:get_font_options()
+    assert_equal("none", adjusted:get_antialias())
+end
+
 -- vi:ts=4 sw=4 expandtab

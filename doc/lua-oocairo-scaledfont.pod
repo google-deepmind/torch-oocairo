@@ -43,6 +43,11 @@ font.  See L<lua-oocairo-fontface(3)> for details of its methods.
 Returns the matrix representing the scaling of the font into user coordinates.
 See L<lua-oocairo-matrix(3)> for details of the return value type.
 
+=item cr:get_font_options ()
+
+Returns a font options object (see L<lua-oocairo-fontopt(3)>) containing
+the rendering options that were supplied when creating this font.
+
 =item font:get_scale_matrix ()
 
 Returns a matrix table representing the scaling of the font to the coordinate

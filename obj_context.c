@@ -228,6 +228,15 @@ cr_get_font_matrix (lua_State *L) {
 }
 
 static int
+cr_get_font_options (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_font_options_t **opt = create_fontopt_userdata(L);
+    *opt = cairo_font_options_create();
+    cairo_get_font_options(*obj, *opt);
+    return 1;
+}
+
+static int
 cr_get_group_target (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     SurfaceUserdata *surface = create_surface_userdata(L);
@@ -637,6 +646,14 @@ cr_set_font_matrix (lua_State *L) {
 }
 
 static int
+cr_set_font_options (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    cairo_font_options_t **opt = luaL_checkudata(L, 2, MT_NAME_FONTOPT);
+    cairo_set_font_options(*obj, *opt);
+    return 0;
+}
+
+static int
 cr_set_font_size (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
     cairo_set_font_size(*obj, luaL_checknumber(L, 2));
@@ -899,6 +916,7 @@ context_methods[] = {
     { "get_fill_rule", cr_get_fill_rule },
     { "get_font_face", cr_get_font_face },
     { "get_font_matrix", cr_get_font_matrix },
+    { "get_font_options", cr_get_font_options },
     { "get_group_target", cr_get_group_target },
     { "get_line_cap", cr_get_line_cap },
     { "get_line_join", cr_get_line_join },
@@ -942,6 +960,7 @@ context_methods[] = {
     { "set_fill_rule", cr_set_fill_rule },
     { "set_font_face", cr_set_font_face },
     { "set_font_matrix", cr_set_font_matrix },
+    { "set_font_options", cr_set_font_options },
     { "set_font_size", cr_set_font_size },
     { "set_line_cap", cr_set_line_cap },
     { "set_line_join", cr_set_line_join },
