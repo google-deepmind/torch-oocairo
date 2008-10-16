@@ -37,17 +37,20 @@ user_font_init (cairo_scaled_font_t *font, cairo_t *cr,
                 cairo_font_extents_t *extents)
 {
     cairo_t **crp;
+    cairo_scaled_font_t **fontp;
     UserFontInfo *info = cairo_font_face_get_user_data(
             cairo_scaled_font_get_font_face(font), &user_font_udata_key);
     lua_rawgeti(info->L, LUA_REGISTRYINDEX, info->ref);
     create_lua_font_extents(info->L, extents);
     lua_rawgeti(info->L, -2, USERFONT_CALLBACK_INIT);
-    /* TODO - pass in scaled font object */
+    fontp = create_scaledfont_userdata(info->L);
+    *fontp = font;
+    cairo_scaled_font_reference(font);
     crp = create_context_userdata(info->L);
     *crp = cr;
     cairo_reference(cr);
-    lua_pushvalue(info->L, -3);
-    lua_call(info->L, 2, 0);
+    lua_pushvalue(info->L, -4);
+    lua_call(info->L, 3, 0);
     from_lua_font_extents(info->L, extents);
     lua_pop(info->L, 2);
     return CAIRO_STATUS_SUCCESS;
@@ -58,18 +61,21 @@ user_font_render_glyph (cairo_scaled_font_t *font, unsigned long glyph,
                         cairo_t *cr, cairo_text_extents_t *extents)
 {
     cairo_t **crp;
+    cairo_scaled_font_t **fontp;
     UserFontInfo *info = cairo_font_face_get_user_data(
             cairo_scaled_font_get_font_face(font), &user_font_udata_key);
     lua_rawgeti(info->L, LUA_REGISTRYINDEX, info->ref);
     create_lua_text_extents(info->L, extents);
     lua_rawgeti(info->L, -2, USERFONT_CALLBACK_RENDER_GLYPH);
-    /* TODO - pass in scaled font object */
+    fontp = create_scaledfont_userdata(info->L);
+    *fontp = font;
+    cairo_scaled_font_reference(font);
     lua_pushnumber(info->L, glyph);
     crp = create_context_userdata(info->L);
     *crp = cr;
     cairo_reference(cr);
-    lua_pushvalue(info->L, -4);
-    lua_call(info->L, 3, 0);
+    lua_pushvalue(info->L, -5);
+    lua_call(info->L, 4, 0);
     from_lua_text_extents(info->L, extents);
     lua_pop(info->L, 2);
     return CAIRO_STATUS_SUCCESS;
@@ -81,14 +87,17 @@ user_font_text_to_glyphs (cairo_scaled_font_t *font, const char *utf8,
                           cairo_text_cluster_t **clusters, int *num_clusters,
                           cairo_text_cluster_flags_t *cluster_flags)
 {
+    cairo_scaled_font_t **fontp;
     UserFontInfo *info = cairo_font_face_get_user_data(
             cairo_scaled_font_get_font_face(font), &user_font_udata_key);
     lua_rawgeti(info->L, LUA_REGISTRYINDEX, info->ref);
     lua_rawgeti(info->L, -1, USERFONT_CALLBACK_TEXT_TO_GLYPHS);
-    /* TODO - pass in scaled font object */
+    fontp = create_scaledfont_userdata(info->L);
+    *fontp = font;
+    cairo_scaled_font_reference(font);
     lua_pushlstring(info->L, utf8, utf8_len);
     lua_pushboolean(info->L, !!clusters);   /* true if cluster info is wanted */
-    lua_call(info->L, 2, 2);
+    lua_call(info->L, 3, 2);
 
     if (lua_isnil(info->L, -2))
         *num_glyphs = -1;
@@ -118,13 +127,16 @@ static cairo_status_t
 user_font_unicode_to_glyph (cairo_scaled_font_t *font, unsigned long unicode,
                             unsigned long *glyph_index)
 {
+    cairo_scaled_font_t **fontp;
     UserFontInfo *info = cairo_font_face_get_user_data(
             cairo_scaled_font_get_font_face(font), &user_font_udata_key);
     lua_rawgeti(info->L, LUA_REGISTRYINDEX, info->ref);
     lua_rawgeti(info->L, -1, USERFONT_CALLBACK_UNICODE_TO_GLYPH);
-    /* TODO - pass in scaled font object */
+    fontp = create_scaledfont_userdata(info->L);
+    *fontp = font;
+    cairo_scaled_font_reference(font);
     lua_pushnumber(info->L, unicode);
-    lua_call(info->L, 1, 1);
+    lua_call(info->L, 2, 1);
     if (!lua_isnumber(info->L, -1))
         luaL_error(info->L, "bad glyph index returned from 'unicode_to_glyph'"
                    " callback, should be number");

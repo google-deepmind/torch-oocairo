@@ -7,7 +7,7 @@ end
 local BIT_WIDTH, BIT_HEIGHT, CHAR_GAP = 0.3, 1 / 8, 0.15
 
 function make_bit_font ()
-    local function render_glyph (glyph, cr, extents)
+    local function render_glyph (font, glyph, cr, extents)
         if glyph == 32 then return end      -- space, just default advance
 
         -- Draw a diamond shape for each bit which is set within the codepoint

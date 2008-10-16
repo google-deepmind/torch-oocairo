@@ -118,16 +118,18 @@ function test_user_font ()
 
         -- Test all callbacks are called right.
         local called_callbacks = {}
-        local init = function (cr, extents)
+        local init = function (font, cr, extents)
             if not called_callbacks.init then
+                assert_equal("cairo scaled font object", font._NAME)
                 assert_equal("cairo context object", cr._NAME)
                 assert_table(extents)
                 assert_number(extents.ascent)
             end
             called_callbacks.init = true
         end
-        local render_glyph = function (glyph, cr, extents)
+        local render_glyph = function (font, glyph, cr, extents)
             if not called_callbacks.render_glyph then
+                assert_equal("cairo scaled font object", font._NAME)
                 assert_equal(string.byte("x"), glyph)
                 assert_equal("cairo context object", cr._NAME)
                 assert_table(extents)
@@ -136,16 +138,18 @@ function test_user_font ()
             called_callbacks.render_glyph = true
             extents.x_advance = 1.5
         end
-        local text_to_glyphs = function (utf8, want_clusters)
+        local text_to_glyphs = function (font, utf8, want_clusters)
             if not called_callbacks.text_to_glyphs then
+                assert_equal("cairo scaled font object", font._NAME)
                 assert_string(utf8)
                 assert_boolean(want_clusters)
             end
             called_callbacks.text_to_glyphs = true
             return nil      -- no glyph info provided here
         end
-        local unicode_to_glyph = function (unicode)
+        local unicode_to_glyph = function (font, unicode)
             if not called_callbacks.unicode_to_glyph then
+                assert_equal("cairo scaled font object", font._NAME)
                 assert_number(unicode)
                 assert(unicode > 0)
             end
@@ -180,7 +184,7 @@ end
 
 function test_user_font_providing_text_clusters ()
     if Cairo.user_font_face_create and Cairo.HAS_PDF_SURFACE then
-        local function text_to_glyphs (text, want_clusters)
+        local function text_to_glyphs (font, text, want_clusters)
             assert_true(want_clusters)
             return { { 123, 10, 20 }, { 321, 11, 22 } },    -- glyphs
                    { { 0, 1 }, { 1, 1 } }                   -- text clusters
