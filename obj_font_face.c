@@ -87,12 +87,30 @@ user_font_text_to_glyphs (cairo_scaled_font_t *font, const char *utf8,
     lua_rawgeti(info->L, -1, USERFONT_CALLBACK_TEXT_TO_GLYPHS);
     /* TODO - pass in scaled font object */
     lua_pushlstring(info->L, utf8, utf8_len);
-    assert(!clusters);      /* TODO - handle clusters */
-    lua_call(info->L, 1, 1);
-    if (!lua_isnil(info->L, -1))
-        /* TODO - don't I have to allocate this myself? */
-        from_lua_glyph_array(info->L, glyphs, num_glyphs, lua_gettop(info->L));
-    lua_pop(info->L, 2);
+    lua_pushboolean(info->L, !!clusters);   /* true if cluster info is wanted */
+    lua_call(info->L, 2, 2);
+
+    if (lua_isnil(info->L, -2))
+        *num_glyphs = -1;
+    else {
+        if (*glyphs) {
+            GLYPHS_FREE(*glyphs);
+            *glyphs = 0;
+        }
+        from_lua_glyph_array(info->L, glyphs, num_glyphs,
+                             lua_gettop(info->L) - 1);
+    }
+
+    if (clusters && !lua_isnil(info->L, -1)) {
+        if (*clusters) {
+            cairo_text_cluster_free(*clusters);
+            *clusters = 0;
+        }
+        from_lua_clusters_table(info->L, clusters, num_clusters, cluster_flags,
+                                lua_gettop(info->L));
+    }
+
+    lua_pop(info->L, 3);
     return CAIRO_STATUS_SUCCESS;
 }
 

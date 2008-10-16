@@ -136,9 +136,10 @@ function test_user_font ()
             called_callbacks.render_glyph = true
             extents.x_advance = 1.5
         end
-        local text_to_glyphs = function (utf8)
+        local text_to_glyphs = function (utf8, want_clusters)
             if not called_callbacks.text_to_glyphs then
                 assert_string(utf8)
+                assert_boolean(want_clusters)
             end
             called_callbacks.text_to_glyphs = true
             return nil      -- no glyph info provided here
@@ -174,6 +175,25 @@ function test_user_font ()
         assert_true(called_callbacks.unicode_to_glyph)
     else
         assert_nil(Cairo.user_font_face_create)
+    end
+end
+
+function test_user_font_providing_text_clusters ()
+    if Cairo.user_font_face_create and Cairo.HAS_PDF_SURFACE then
+        local function text_to_glyphs (text, want_clusters)
+            assert_true(want_clusters)
+            return { { 123, 10, 20 }, { 321, 11, 22 } },    -- glyphs
+                   { { 0, 1 }, { 1, 1 } }                   -- text clusters
+        end
+        local filename = tmpname()
+        local surface = Cairo.pdf_surface_create(filename, 50, 50)
+        local cr = Cairo.context_create(surface)
+
+        cr:set_font_face(Cairo.user_font_face_create({
+            render_glyph = function() end,
+            text_to_glyphs = text_to_glyphs,
+        }))
+        cr:show_text("x")
     end
 end
 
