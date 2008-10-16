@@ -28,6 +28,8 @@ doc/lua-oocairo-scaledfont.3
 doc/lua-oocairo-scaledfont.pod
 doc/lua-oocairo-surface.3
 doc/lua-oocairo-surface.pod
+doc/lua-oocairo-userfont.3
+doc/lua-oocairo-userfont.pod
 doc/lua-oocairo.3
 doc/lua-oocairo.pod
 examples/arc.lua

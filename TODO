@@ -1,5 +1,3 @@
-docs for user fonts feature
-
 check status more often, at least to check for memory allocation errors
 when creating a new object.
 
