@@ -297,6 +297,15 @@ surface_get_fallback_resolution (lua_State *L) {
 #endif
 
 static int
+surface_get_font_options (lua_State *L) {
+    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    cairo_font_options_t **opt = create_fontopt_userdata(L);
+    *opt = cairo_font_options_create();
+    cairo_surface_get_font_options(*obj, *opt);
+    return 1;
+}
+
+static int
 surface_get_format (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     if (cairo_surface_get_type(*obj) != CAIRO_SURFACE_TYPE_IMAGE)
@@ -451,6 +460,7 @@ surface_methods[] = {
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
     { "get_fallback_resolution", surface_get_fallback_resolution },
 #endif
+    { "get_font_options", surface_get_font_options },
     { "get_format", surface_get_format },
     { "get_height", surface_get_height },
     { "get_type", surface_get_type },

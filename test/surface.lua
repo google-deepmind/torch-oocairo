@@ -229,6 +229,14 @@ if MemFile and Cairo.HAS_PNG_FUNCTIONS then
     end
 end
 
+function test_font_options ()
+    local surface = Cairo.image_surface_create("rgb24", 23, 45)
+    local opt = surface:get_font_options()
+    assert_userdata(opt)
+    assert_equal("cairo font options object", opt._NAME)
+    assert_equal("default", opt:get_antialias())
+end
+
 function test_equality ()
     -- Create two userdatas containing the same pointer value (different
     -- objects in Lua, but the same objects in C, so should be equal).
