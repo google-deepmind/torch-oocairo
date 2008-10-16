@@ -112,6 +112,8 @@ scaledfont_glyph_extents (lua_State *L) {
     cairo_text_extents_t extents;
     from_lua_glyph_array(L, &glyphs, &num_glyphs, 2);
     cairo_scaled_font_glyph_extents(*obj, glyphs, num_glyphs, &extents);
+    if (glyphs)
+        GLYPHS_FREE(glyphs);
     create_lua_text_extents(L, &extents);
     return 1;
 }
@@ -144,7 +146,7 @@ scaledfont_text_to_glyphs (lua_State *L) {
         return luaL_error(L, "error converting text to glyphs");
 
     create_lua_glyph_array(L, glyphs, num_glyphs);
-    cairo_glyph_free(glyphs);
+    GLYPHS_FREE(glyphs);
     create_lua_text_cluster_table(L, clusters, num_clusters, cluster_flags);
     cairo_text_cluster_free(clusters);
     return 2;

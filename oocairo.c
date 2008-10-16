@@ -346,6 +346,14 @@ from_lua_text_extents (lua_State *L, cairo_text_extents_t *extents) {
 }
 #undef HANDLE_TEXT_EXTENTS_FIELD
 
+#if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 8, 0)
+#define GLYPHS_ALLOC(num) cairo_glyph_allocate(num)
+#define GLYPHS_FREE(glyphs) cairo_glyph_free(glyphs)
+#else
+#define GLYPHS_ALLOC(num) malloc(sizeof(cairo_glyph_t) * (num))
+#define GLYPHS_FREE(glyphs) free(glyphs)
+#endif
+
 static void
 create_lua_glyph_array (lua_State *L, cairo_glyph_t *glyphs, int num_glyphs) {
     int i;
@@ -376,7 +384,7 @@ from_lua_glyph_array (lua_State *L, cairo_glyph_t **glyphs, int *num_glyphs,
         *glyphs = 0;
         return;
     }
-    *glyphs = malloc(sizeof(cairo_glyph_t) * *num_glyphs);
+    *glyphs = GLYPHS_ALLOC(*num_glyphs);
     assert(*glyphs);
 
     for (i = 0; i < *num_glyphs; ++i) {
@@ -460,7 +468,7 @@ from_lua_clusters_table (lua_State *L, cairo_text_cluster_t **clusters,
         *clusters = 0;
         return;
     }
-    *clusters = malloc(sizeof(cairo_text_cluster_t) * *num);
+    *clusters = cairo_text_cluster_allocate(*num);
     assert(*clusters);
 
     for (i = 0; i < *num; ++i) {

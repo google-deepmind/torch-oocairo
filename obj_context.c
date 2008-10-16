@@ -328,6 +328,8 @@ cr_glyph_extents (lua_State *L) {
     cairo_text_extents_t extents;
     from_lua_glyph_array(L, &glyphs, &num_glyphs, 2);
     cairo_glyph_extents(*obj, glyphs, num_glyphs, &extents);
+    if (glyphs)
+        GLYPHS_FREE(glyphs);
     create_lua_text_extents(L, &extents);
     return 1;
 }
@@ -339,6 +341,8 @@ cr_glyph_path (lua_State *L) {
     int num_glyphs;
     from_lua_glyph_array(L, &glyphs, &num_glyphs, 2);
     cairo_glyph_path(*obj, glyphs, num_glyphs);
+    if (glyphs)
+        GLYPHS_FREE(glyphs);
     return 1;
 }
 
@@ -780,7 +784,8 @@ cr_show_glyphs (lua_State *L) {
     int num_glyphs;
     from_lua_glyph_array(L, &glyphs, &num_glyphs, 2);
     cairo_show_glyphs(*obj, glyphs, num_glyphs);
-    free(glyphs);
+    if (glyphs)
+        GLYPHS_FREE(glyphs);
     return 0;
 }
 
@@ -807,8 +812,10 @@ cr_show_text_glyphs (lua_State *L) {
 
     cairo_show_text_glyphs(*obj, text, text_len, glyphs, num_glyphs,
                            clusters, num_clusters, cluster_flags);
-    free(glyphs);
-    free(clusters);
+    if (glyphs)
+        GLYPHS_FREE(glyphs);
+    if (clusters)
+        cairo_text_cluster_free(clusters);
     return 0;
 }
 #endif
