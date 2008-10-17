@@ -65,6 +65,7 @@ obj_scaled_font.c
 obj_surface.c
 oocairo.c
 oocairo.h
+test-loading.lua
 test-setup.lua
 test/context.lua
 test/font_face.lua

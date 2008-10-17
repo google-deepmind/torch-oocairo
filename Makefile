@@ -46,6 +46,7 @@ all: liblua-oocairo.la $(MANPAGES)
 
 test: all
 	echo 'lunit.main({...})' | $(VALGRIND) lua -llunit - test/*.lua
+	lua test-loading.lua
 testexamples:
 	for f in examples/*.lua; do \
 	    $(VALGRIND) LUA_CPATH='.libs/liblua-?.so;;' lua $$f; \
