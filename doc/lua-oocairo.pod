@@ -189,6 +189,16 @@ except for C<context_create> and the gradient constructors.
 Return a new context object for drawing on I<surface>.
 See L<lua-oocairo-context(3)> for methods which can be called on this object.
 
+=item context_create_for_gdk_window (window)
+
+Return a new context object for drawing on the GdkWindow object I<window>,
+which must be from the Lua-Gnome library.
+
+Fails unless the C<gtk> module has been loaded and the C<gtk> module is
+available as a global variable.
+
+See example program I<gtk-image.lua> for an example of how to use this.
+
 =item font_options_create ()
 
 Returns a new Cairo font options object, with all its options set to
@@ -252,7 +262,7 @@ SVG are supported by Cairo.
 
 =item toy_font_face_create (family, slant, weight)
 
-Create and return a toy font face object (see L<ua-oocairo-fontface(3)>).
+Create and return a toy font face object (see L<lua-oocairo-fontface(3)>).
 See the context method C<select_font_face> for details of the arguments.
 This does the same, but returns the object instead of applying it to a
 context.

@@ -566,7 +566,24 @@ This is the default.
 Set the source to a ready-made pattern object, or to a surface object with
 the given offset.  Setting a pattern object is useful for applying a gradient.
 Setting a surface is useful for drawing the contents of one surface onto
-another.
+another.  The I<x> and I<y> values indicate what position on I<surface>
+should be drawn at the origin.
+
+=item cr:set_source_pixbuf (pixbuf, x, y)
+
+=item cr:set_source_pixmap (pixmap, x, y)
+
+Set the source to an image given as a Gdk object.  The value of I<pixbuf>
+must be a GdkPixbuf object from the Lua-Gnome library, and that of I<pixmap>
+must be a GdkPixmap object.
+
+The I<x> and I<y> coordinates are the same as in C<cr:set_source()>.
+
+Usually, you'll want to use C<set_source_pixbuf>, because pixbufs can
+include transparency information.
+
+See example program I<gtk-image.lua> for an example of how to use these
+methods.
 
 =item cr:set_source_rgb (r, g, b)
 

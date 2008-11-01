@@ -36,9 +36,13 @@ examples/arc.lua
 examples/compositing.lua
 examples/fill-rule.lua
 examples/groups.lua
+examples/gtk-image.glade
+examples/gtk-image.lua
+examples/gtk-image.ui
 examples/images/README
 examples/images/bronze.jpg
 examples/images/flowers.jpg
+examples/images/smiley.xpm
 examples/images/snow.jpg
 examples/images/wood1.png
 examples/inside-tests.lua

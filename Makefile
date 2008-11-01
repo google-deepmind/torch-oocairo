@@ -16,6 +16,7 @@ LIBDIR = $(PREFIX)/lib
 OBJECTS = oocairo.lo
 SOURCES := $(OBJECTS:.lo=.c)
 MANPAGES = doc/lua-oocairo-context.3 doc/lua-oocairo-fontface.3 doc/lua-oocairo-fontopt.3 doc/lua-oocairo-matrix.3 doc/lua-oocairo-path.3 doc/lua-oocairo-pattern.3 doc/lua-oocairo-scaledfont.3 doc/lua-oocairo-surface.3 doc/lua-oocairo-userfont.3 doc/lua-oocairo.3
+GTKBUILDERFILES = examples/gtk-image.ui
 
 LIBTOOL := libtool --quiet
 
@@ -42,12 +43,12 @@ DEBUG := -g
 #DEBUG := $(DEBUG) -pg
 #DEBUG := $(DEBUG) -fprofile-arcs -ftest-coverage
 
-all: liblua-oocairo.la $(MANPAGES)
+all: liblua-oocairo.la $(MANPAGES) $(GTKBUILDERFILES)
 
 test: all
 	echo 'lunit.main({...})' | $(VALGRIND) lua -llunit - test/*.lua
 	lua test-loading.lua
-testexamples:
+testexamples: all
 	for f in examples/*.lua; do \
 	    $(VALGRIND) LUA_CPATH='.libs/liblua-?.so;;' lua $$f; \
 	done
@@ -71,6 +72,9 @@ doc/lua-%.3: doc/lua-%.pod Changes
 	    pod2man --center="Lua OO Cairo binding" \
 	            --name="$(shell echo $< | sed 's/^doc\///' | sed 's/\.pod$$//' | tr a-z A-Z)" --section=3 \
 	            --release="$(VERSION)" --date="$(RELEASEDATE)" >$@
+
+%.ui: %.glade
+	gtk-builder-convert $< $@
 
 install: all
 	mkdir -p $(LUA_CPATH)
@@ -98,5 +102,6 @@ clean:
 	rm -f gmon.out *.bb *.bbg *.da *.gcov
 realclean: clean
 	rm -f $(MANPAGES)
+	rm -f $(GTKBUILDERFILES)
 
 .PHONY: all checktmp dist install test testexamples clean realclean

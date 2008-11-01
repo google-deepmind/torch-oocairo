@@ -6,6 +6,27 @@ context_create (lua_State *L) {
     return 1;
 }
 
+/* Call the Lua function gtk.gdk_cairo_create() to create a context object.
+ * I'm not calling it from C, because that would mean the library would
+ * have to link with Gtk+ at compile time.  Much more flexible to go through
+ * the Lua 'gtk' binding and just convert the return value into our own kind
+ * of object. */
+static int
+context_create_for_gdk_window (lua_State *L) {
+    luaL_argcheck(L, !lua_isnoneornil(L, 1), 1, "expected GdkWindow object");
+    get_gtk_module_function(L, "gdk_cairo_create");
+    lua_pushvalue(L, 1);
+    lua_call(L, 1, 1);
+    if (!lua_isuserdata(L, 1))
+        return luaL_error(L, "return value from gtk.gdk_cairo_create() is not"
+                          " a userdata");
+    /* Switch to using my metatable for the object.  This of course relies
+     * on Lua-Gnome using the same format for storing the pointer. */
+    luaL_getmetatable(L, MT_NAME_CONTEXT);
+    lua_setmetatable(L, -2);
+    return 1;
+}
+
 static int
 cr_gc (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
@@ -754,6 +775,41 @@ cr_set_source (lua_State *L) {
     return luaL_typerror(L, 2, "Cairo pattern or surface object");
 }
 
+/* Use a function provided in the 'gtk' library (which must already be loaded)
+ * to set the source to a GdkPixbuf or GdkPixmap (next function).  We trick
+ * that library into thinking that our Cairo userdata is really one of its
+ * own objects, to avoid calling the C functions directly and therefore
+ * having another compile-time dependency. */
+static int
+cr_set_source_pixbuf (lua_State *L) {
+    luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    luaL_argcheck(L, !lua_isnoneornil(L, 2), 2, "expected GdkPixbuf object");
+    luaL_argcheck(L, lua_isnumber(L, 3), 3, "expected number for x");
+    luaL_argcheck(L, lua_isnumber(L, 4), 4, "expected number for y");
+    get_gtk_module_function(L, "gdk_cairo_set_source_pixbuf");
+    lua_pushvalue(L, 1);
+    lua_pushvalue(L, 2);
+    lua_pushvalue(L, 3);
+    lua_pushvalue(L, 4);
+    lua_call(L, 4, 0);
+    return 0;
+}
+
+static int
+cr_set_source_pixmap (lua_State *L) {
+    luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    luaL_argcheck(L, !lua_isnoneornil(L, 2), 2, "expected GdkPixmap object");
+    luaL_argcheck(L, lua_isnumber(L, 3), 3, "expected number for x");
+    luaL_argcheck(L, lua_isnumber(L, 4), 4, "expected number for y");
+    get_gtk_module_function(L, "gdk_cairo_set_source_pixmap");
+    lua_pushvalue(L, 1);
+    lua_pushvalue(L, 2);
+    lua_pushvalue(L, 3);
+    lua_pushvalue(L, 4);
+    lua_call(L, 4, 0);
+    return 0;
+}
+
 static int
 cr_set_source_rgb (lua_State *L) {
     cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
@@ -977,6 +1033,8 @@ context_methods[] = {
     { "set_operator", cr_set_operator },
     { "set_scaled_font", cr_set_scaled_font },
     { "set_source", cr_set_source },
+    { "set_source_pixbuf", cr_set_source_pixbuf },
+    { "set_source_pixmap", cr_set_source_pixmap },
     { "set_source_rgb", cr_set_source_rgb },
     { "set_source_rgba", cr_set_source_rgba },
     { "set_tolerance", cr_set_tolerance },

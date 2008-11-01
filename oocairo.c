@@ -649,6 +649,18 @@ write_chunk_to_fh (void *closure, const unsigned char *buf,
     return CAIRO_STATUS_SUCCESS;
 }
 
+static void
+get_gtk_module_function (lua_State *L, const char *name) {
+    lua_getfield(L, LUA_GLOBALSINDEX, "gtk");
+    if (lua_isnil(L, -1))
+        luaL_error(L, "no global variable 'gtk', you need to load the module"
+                   " with require'gtk' before using this function");
+    lua_getfield(L, -1, name);
+    if (lua_isnil(L, -1))
+        luaL_error(L, "could not find gdk_cairo_create() function in 'gtk'"
+                   " module table");
+}
+
 #include "obj_context.c"
 #include "obj_font_face.c"
 #include "obj_font_opt.c"
@@ -661,6 +673,7 @@ write_chunk_to_fh (void *closure, const unsigned char *buf,
 static const luaL_Reg
 constructor_funcs[] = {
     { "context_create", context_create },
+    { "context_create_for_gdk_window", context_create_for_gdk_window },
     { "font_options_create", font_options_create },
     { "image_surface_create", image_surface_create },
 #if CAIRO_HAS_PNG_FUNCTIONS
@@ -716,7 +729,17 @@ create_object_metatable (lua_State *L, const char *mt_name,
         lua_pushliteral(L, "__index");
         lua_pushvalue(L, -2);
         lua_rawset(L, -3);
+
+        if (strcmp(mt_name, MT_NAME_CONTEXT) == 0) {
+            /* The MT for context objects has an extra field which we don't
+             * use, but which allows the Lua-Gnome binding to recognize
+             * the objects. */
+            lua_pushliteral(L, "_classname");
+            lua_pushstring(L, "cairo");
+            lua_rawset(L, -3);
+        }
     }
+
     lua_pop(L, 1);
 }
 

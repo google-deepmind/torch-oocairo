@@ -19,7 +19,6 @@ cairo_surface_mark_dirty_rectangle
 cairo_svg_surface_restrict_to_version
 
 Interact with bindings for:
-Gtk+
 FontConfig
 FreeType
 Pango
