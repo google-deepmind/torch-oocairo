@@ -50,6 +50,7 @@ examples/loading-images.lua
 examples/masking.lua
 examples/repeated-patterns.lua
 examples/simple-example.lua
+examples/simple-svg.lua
 examples/stroke-style.lua
 examples/text-extents.lua
 examples/text-font.lua
