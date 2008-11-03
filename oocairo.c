@@ -230,11 +230,6 @@ static const cairo_surface_type_t surface_type_values[] = {
 };
 ENUM_VAL_TO_LUA_STRING_FUNC(surface_type)
 
-/* This is needed to test the byte order which Cairo will use for storing
- * pixel components. */
-static const int ENDIANNESS_TEST_VAL = 1;
-#define IS_BIG_ENDIAN (!(*(const char *) &ENDIANNESS_TEST_VAL))
-
 static void
 to_lua_matrix (lua_State *L, cairo_matrix_t *mat, int pos) {
     double *matnums;
@@ -532,6 +527,10 @@ typedef struct SurfaceUserdata_ {
     int fhref;
     const char *errmsg;
     int errmsg_free;        /* true if errmsg must be freed */
+    /* This is only used for image surfaces initialized from data.  A copy
+     * is made and referenced here, and only freed when the surface object
+     * is GCed. */
+    unsigned char *image_buffer;
 } SurfaceUserdata;
 
 static void
@@ -541,6 +540,7 @@ init_surface_userdata (lua_State *L, SurfaceUserdata *ud) {
     ud->fhref = LUA_NOREF;
     ud->errmsg = 0;
     ud->errmsg_free = 0;
+    ud->image_buffer = 0;
 }
 
 static cairo_pattern_t **
@@ -615,6 +615,10 @@ free_surface_userdata (SurfaceUserdata *ud) {
         ud->errmsg = 0;
         ud->errmsg_free = 0;
     }
+    if (ud->image_buffer) {
+        free(ud->image_buffer);
+        ud->image_buffer = 0;
+    }
 }
 
 static char *
@@ -675,12 +679,22 @@ get_gtk_module_function (lua_State *L, const char *name) {
 #include "obj_scaled_font.c"
 #include "obj_surface.c"
 
+static int
+format_stride_for_width (lua_State *L) {
+    cairo_format_t fmt = format_from_lua(L, 1);
+    int width = luaL_checknumber(L, 2);
+    lua_pushnumber(L, cairo_format_stride_for_width(fmt, width));
+    return 1;
+}
+
 static const luaL_Reg
 constructor_funcs[] = {
     { "context_create", context_create },
     { "context_create_for_gdk_window", context_create_for_gdk_window },
     { "font_options_create", font_options_create },
+    { "format_stride_for_width", format_stride_for_width },
     { "image_surface_create", image_surface_create },
+    { "image_surface_create_for_data", image_surface_create_for_data },
 #if CAIRO_HAS_PNG_FUNCTIONS
     { "image_surface_create_from_png", image_surface_create_from_png },
 #endif
@@ -750,6 +764,9 @@ create_object_metatable (lua_State *L, const char *mt_name,
 
 int
 luaopen_oocairo (lua_State *L) {
+    static const int ENDIANNESS_TEST_VAL = 1;
+    int is_big_endian = !(*(const char *) &ENDIANNESS_TEST_VAL);
+
 #ifdef VALGRIND_LUA_MODULE_HACK
     /* Hack to allow Valgrind to access debugging info for the module. */
     luaL_getmetatable(L, "_LOADLIB");
@@ -807,6 +824,12 @@ luaopen_oocairo (lua_State *L) {
 #else
     lua_pushboolean(L, 0);
 #endif
+    lua_rawset(L, -3);
+
+    /* This is needed to test the byte order which Cairo will use for storing
+    * pixel components. */
+    lua_pushliteral(L, "BYTE_ORDER");
+    lua_pushlstring(L, is_big_endian ? "argb" : "bgra", 4);
     lua_rawset(L, -3);
 
     /* Create the metatables for objects of different types. */

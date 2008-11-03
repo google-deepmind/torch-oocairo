@@ -12,7 +12,7 @@ local IMAGE_WD, IMAGE_HT = 432, 234
 -- the PNM class of formats.  We're using the binary version of PPM here,
 -- which has three bytes per pixel, rather than three ascii numbers per
 -- pixel.  This function assumes the data is for an RGB24 or ARGB32 image.
-local function write_ppm (filename, width, data, stride, ordering)
+local function write_ppm (filename, width, data, stride)
     local fh = assert(io.open(filename, "wb"))
     local height = data:len() / stride
     fh:write("P6\n", width, " ", height, "\n", "255\n")     -- header
@@ -25,9 +25,9 @@ local function write_ppm (filename, width, data, stride, ordering)
             -- to reverse the bytes on little-endian platforms.  This is why
             -- the 'get_data' method returns an endianness indicator.
             local a, r, g, b
-            if ordering == "argb" then      -- big endian
+            if Cairo.BYTE_ORDER == "argb" then  -- big endian
                 a, r, g, b = data:byte(offset + 1, offset + 4)
-            else                            -- little endian
+            else                                -- little endian
                 b, g, r, a = data:byte(offset + 1, offset + 4)
             end
             fh:write(string.char(r, g, b))

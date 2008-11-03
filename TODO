@@ -1,13 +1,15 @@
 check status more often, at least to check for memory allocation errors
 when creating a new object.
 
+Provide README and/or INSTALL files.
+
+Probably should use Lua allocator instead of malloc.
+
 These functions aren't bound at all yet:
 cairo_copy_clip_rectangle_list
-cairo_format_stride_for_width
 cairo_ft_font_face_create_for_ft_face
 cairo_ft_font_face_create_for_pattern
 cairo_ft_font_options_substitute
-cairo_image_surface_create_for_data
 cairo_ps_surface_dsc_begin_page_setup
 cairo_ps_surface_dsc_begin_setup
 cairo_ps_surface_dsc_comment

@@ -238,12 +238,26 @@ function test_font_options ()
     assert_equal("default", opt:get_antialias())
 end
 
-local function check_pixel_in_data(data, stride, ordering, x, y, a, r, g, b)
+function test_format_stride_for_width ()
+    -- Check the minimum values, because depending on platform there might
+    -- be extra bytes for alignment.
+    assert(Cairo.format_stride_for_width("a1", 10) >= 4)
+    assert(Cairo.format_stride_for_width("a8", 10) >= 10)
+    assert(Cairo.format_stride_for_width("rgb24", 10) >= 40)
+    assert(Cairo.format_stride_for_width("argb32", 10) >= 40)
+end
+
+function test_byte_order ()
+    assert_string(Cairo.BYTE_ORDER)
+    assert("argb" == Cairo.BYTE_ORDER or "bgra" == Cairo.BYTE_ORDER)
+end
+
+local function check_pixel_in_data(data, stride, x, y, a, r, g, b)
     local offset = y * stride + x * 4
     local got_a, got_r, got_g, got_b
-    if ordering == "argb" then      -- big endian
+    if Cairo.BYTE_ORDER == "argb" then  -- big endian
         got_a, got_r, got_g, got_b = data:byte(offset + 1, offset + 4)
-    else                            -- little endian
+    else                                -- little endian
         got_b, got_g, got_r, got_a = data:byte(offset + 1, offset + 4)
     end
 
@@ -268,18 +282,17 @@ function test_get_data ()
     cr:set_source_rgb(0, 1, 0); cr:rectangle(1, 0, 1, 1); cr:fill()
     cr:set_source_rgb(0, 0, 1); cr:rectangle(2, 0, 1, 2); cr:fill()
 
-    local data, stride, ordering = surface:get_data()
+    local data, stride = surface:get_data()
     assert(12 == stride or 16 == stride)        -- might be 16 on 64 bit, maybe
-    assert("argb" == ordering or "bgra" == ordering)
     assert_string(data)
     assert_equal(stride * 2, data:len())
 
-    check_pixel_in_data(data, stride, ordering, 0, 0, 255, 255, 0, 0)
-    check_pixel_in_data(data, stride, ordering, 1, 0, 255, 0, 255, 0)
-    check_pixel_in_data(data, stride, ordering, 2, 0, 255, 0, 0, 255)
-    check_pixel_in_data(data, stride, ordering, 0, 1, 0, 0, 0, 0)
-    check_pixel_in_data(data, stride, ordering, 1, 1, 0, 0, 0, 0)
-    check_pixel_in_data(data, stride, ordering, 2, 1, 255, 0, 0, 255)
+    check_pixel_in_data(data, stride, 0, 0, 255, 255, 0, 0)
+    check_pixel_in_data(data, stride, 1, 0, 255, 0, 255, 0)
+    check_pixel_in_data(data, stride, 2, 0, 255, 0, 0, 255)
+    check_pixel_in_data(data, stride, 0, 1, 0, 0, 0, 0)
+    check_pixel_in_data(data, stride, 1, 1, 0, 0, 0, 0)
+    check_pixel_in_data(data, stride, 2, 1, 255, 0, 0, 255)
 end
 
 function test_equality ()

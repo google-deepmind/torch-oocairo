@@ -34,6 +34,7 @@ doc/lua-oocairo.3
 doc/lua-oocairo.pod
 examples/arc.lua
 examples/compositing.lua
+examples/create-from-data.lua
 examples/fill-rule.lua
 examples/get-data.lua
 examples/groups.lua

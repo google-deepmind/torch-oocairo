@@ -49,33 +49,14 @@ Returns nothing for surfaces which aren't image surfaces.
 See the example program I<get-data.lua> included with the distribution
 for some code to extract the colour values from pixels in the image data.
 
-There are actually three values returned from this method, which between
-them are enough to decode the data:
-
-=over
-
-=item 1
-
-The data itself as a Lua string, which is potentially quite large.
-
-=item 2
-
-The I<stride>, which is the number of bytes of the string used for each
+There are actually two values returned from this method, the data itself
+and the I<stride> for it.
+The stride is the number of bytes of the string used for each
 line of the image.  This is at least the width of the image multiplied by
 the number of bytes needed for each pixel, although it might be larger
 (in which case the extra bytes at the end of each line of pixels should
 be ignored).  The length of the data will always be equal to the stride
 multipled by the image's height.
-
-=item 3
-
-A string indicating which order the pixels are stored in.  This will be
-C<argb> on big-endian systems and C<bgra> on little-endian ones.  This
-is the order in which the bytes for each pixel are stored on C<rgb24> and
-C<argb32> image surfaces.  For C<a1> it indicates the order the pixels are
-encoded as bits.  It can be ignored when the image format is C<a8>.
-
-=back
 
 The data string will contain rows of pixels starting with the top row.
 Each row contains the pixels one after another, with no padding in between,
@@ -85,7 +66,7 @@ The way individual pixels are stored depends on the image format, which
 can be queried with the C<surf:get_format()> method.  For colour images,
 that is ones with a format of C<rgb24> or C<argb32>, each pixel will be
 four bytes in size.  The alpha, red, green, and blue components will be
-in the order given by the last value returned from the method.  On C<rgb24>
+in the order given by the string C<Cairo.BYTE_ORDER>.  On C<rgb24>
 images the alpha value should be ignored, although it will still be present
 (that is, the pixels will still be stored in S<32 bits> each, not S<24 bits>).
 
@@ -153,6 +134,10 @@ Vector drawing into a PostScript file.
 =item svg
 
 Vector drawing into an SVG file.
+
+=item xlib
+
+An X window in a graphical user interface such as Gtk+.
 
 =back
 

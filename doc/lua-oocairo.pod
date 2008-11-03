@@ -128,6 +128,20 @@ with no colour information.
 The image created will be black by default, and fully transparent if
 the pixels have an alpha component.
 
+=item image_surface_create_for_data (data, format, width, height, stride)
+
+Creates a new image surface with the size I<width> by I<height> pixels,
+using I<format> just as the C<image_surface_create> function does, but
+the image is initialized using pixel data from the string I<data>.
+The I<stride> value should be whatever is returned from the
+C<format_stride_for_width> function for the given width and pixel format.
+The data should be encoded in the format described for the C<surf:get_data()>
+method in L<lua-oocairo-surface(3)>.
+
+Note that since Lua strings are immutable, a copy of the data is made and
+used as the live buffer.  There is currently no support for sharing an image
+surface buffer between Cairo and something else.
+
 =item image_surface_create_from_png (file/filename)
 
 Creates a new image surface containing the image in a PNG file.  The
@@ -184,6 +198,16 @@ except for C<context_create> and the gradient constructors.
 
 =over
 
+=item BYTE_ORDER
+
+Not actually a function, this is a string indicating which order colour
+components are stored in pixels in raw image data on this platform.
+This will be C<argb> on big-endian systems and C<bgra> on little-endian
+ones.  This is the order in which the bytes for each pixel are stored
+on C<rgb24> and C<argb32> image surfaces.  For C<a1> it indicates the
+order the pixels are encoded as bits.  It can be ignored when the image
+format is C<a8>.
+
 =item context_create (surface)
 
 Return a new context object for drawing on I<surface>.
@@ -204,6 +228,15 @@ See example program I<gtk-image.lua> for an example of how to use this.
 Returns a new Cairo font options object, with all its options set to
 default values.  See L<lua-oocairo-fontopt(3)> for information about
 what you can do with it.
+
+=item format_stride_for_width (format, width)
+
+Returns the number of bytes Cairo will used for storing a single row of
+pixels in the raw data of an image surface.  This can be used as the
+I<stride> value for the C<image_surface_create_for_data()> function
+and the image surface method C<get_data()>.  The I<format> value should
+be one of the pixel format strings such as C<rgb24>, and the width should
+be a number.
 
 =item matrix_create ()
 
