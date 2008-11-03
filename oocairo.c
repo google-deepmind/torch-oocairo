@@ -230,6 +230,11 @@ static const cairo_surface_type_t surface_type_values[] = {
 };
 ENUM_VAL_TO_LUA_STRING_FUNC(surface_type)
 
+/* This is needed to test the byte order which Cairo will use for storing
+ * pixel components. */
+static const int ENDIANNESS_TEST_VAL = 1;
+#define IS_BIG_ENDIAN (!(*(const char *) &ENDIANNESS_TEST_VAL))
+
 static void
 to_lua_matrix (lua_State *L, cairo_matrix_t *mat, int pos) {
     double *matnums;

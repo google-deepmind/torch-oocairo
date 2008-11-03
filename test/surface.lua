@@ -131,6 +131,7 @@ if Cairo.HAS_SVG_SURFACE then
                      function () surface:get_height() end)
         assert_error("get_format on non-image surface",
                      function () surface:get_format() end)
+        assert_nil(surface:get_data(), "get_data on non-image surface")
     end
 end
 
@@ -235,6 +236,50 @@ function test_font_options ()
     assert_userdata(opt)
     assert_equal("cairo font options object", opt._NAME)
     assert_equal("default", opt:get_antialias())
+end
+
+local function check_pixel_in_data(data, stride, ordering, x, y, a, r, g, b)
+    local offset = y * stride + x * 4
+    local got_a, got_r, got_g, got_b
+    if ordering == "argb" then      -- big endian
+        got_a, got_r, got_g, got_b = data:byte(offset + 1, offset + 4)
+    else                            -- little endian
+        got_b, got_g, got_r, got_a = data:byte(offset + 1, offset + 4)
+    end
+
+    local msg = "pixel " .. x .. ", " .. y
+    assert_equal(a, got_a, msg)
+    assert_equal(r, got_r, msg)
+    assert_equal(g, got_g, msg)
+    assert_equal(b, got_b, msg)
+end
+
+function test_get_data ()
+    -- Test with a very small image surface, so that we can predict what
+    -- each pixel will be.
+    local surface = Cairo.image_surface_create("argb32", 3, 2)
+    local cr = Cairo.context_create(surface)
+
+    -- These drawing instructions should produce a pattern like this:
+    --      R G B   (primary red, green, and blue, all completely opaque)
+    --      T T B   (T meaning transparent black)
+    cr:set_line_width(1)
+    cr:set_source_rgb(1, 0, 0); cr:rectangle(0, 0, 1, 1); cr:fill()
+    cr:set_source_rgb(0, 1, 0); cr:rectangle(1, 0, 1, 1); cr:fill()
+    cr:set_source_rgb(0, 0, 1); cr:rectangle(2, 0, 1, 2); cr:fill()
+
+    local data, stride, ordering = surface:get_data()
+    assert(12 == stride or 16 == stride)        -- might be 16 on 64 bit, maybe
+    assert("argb" == ordering or "bgra" == ordering)
+    assert_string(data)
+    assert_equal(stride * 2, data:len())
+
+    check_pixel_in_data(data, stride, ordering, 0, 0, 255, 255, 0, 0)
+    check_pixel_in_data(data, stride, ordering, 1, 0, 255, 0, 255, 0)
+    check_pixel_in_data(data, stride, ordering, 2, 0, 255, 0, 0, 255)
+    check_pixel_in_data(data, stride, ordering, 0, 1, 0, 0, 0, 0)
+    check_pixel_in_data(data, stride, ordering, 1, 1, 0, 0, 0, 0)
+    check_pixel_in_data(data, stride, ordering, 2, 1, 255, 0, 0, 255)
 end
 
 function test_equality ()

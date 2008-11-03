@@ -35,6 +35,7 @@ doc/lua-oocairo.pod
 examples/arc.lua
 examples/compositing.lua
 examples/fill-rule.lua
+examples/get-data.lua
 examples/groups.lua
 examples/gtk-image.glade
 examples/gtk-image.lua

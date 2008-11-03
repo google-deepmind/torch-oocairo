@@ -263,6 +263,20 @@ surface_get_content (lua_State *L) {
 }
 
 static int
+surface_get_data (lua_State *L) {
+    cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    int height = cairo_image_surface_get_height(*obj);
+    int stride = cairo_image_surface_get_stride(*obj);
+    const char *data = (const char *) cairo_image_surface_get_data(*obj);
+    if (!data)
+        return 0;   /* not an image surface */
+    lua_pushlstring(L, data, height * stride);
+    lua_pushnumber(L, stride);
+    lua_pushstring(L, IS_BIG_ENDIAN ? "argb" : "bgra");
+    return 3;
+}
+
+static int
 surface_get_device_offset (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     double x, y;
@@ -453,6 +467,7 @@ surface_methods[] = {
     { "finish", surface_finish },
     { "flush", surface_flush },
     { "get_content", surface_get_content },
+    { "get_data", surface_get_data },
     { "get_device_offset", surface_get_device_offset },
 #if CAIRO_HAS_PS_SURFACE
     { "get_eps", surface_get_eps },
