@@ -58,6 +58,7 @@ examples/text-extents.lua
 examples/text-font.lua
 examples/text-path.lua
 examples/text-userfont.lua
+examples/text-userfont2.lua
 examples/tolerance.lua
 examples/transform.lua
 lunit-console.lua
