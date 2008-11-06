@@ -365,6 +365,105 @@ surface_get_format (lua_State *L) {
 }
 
 static int
+surface_get_gdk_pixbuf (lua_State *L) {
+    static const int ENDIANNESS_TEST_VAL = 1;
+    int is_big_endian = !(*(const char *) &ENDIANNESS_TEST_VAL);
+    cairo_surface_t **surface;
+    cairo_format_t format;
+    int width, height, stridei, strideo;
+    unsigned char *buffer, *rowpo, *po;
+    const char *rowpi, *pi;
+    size_t buffer_len;
+    int x, y;
+    int has_alpha;
+
+    surface = luaL_checkudata(L, 1, MT_NAME_SURFACE);
+    if (cairo_surface_get_type(*surface) != CAIRO_SURFACE_TYPE_IMAGE)
+        return luaL_error(L, "pixbufs can only be made from image surfaces");
+
+    format = cairo_image_surface_get_format(*surface);
+    if (format != CAIRO_FORMAT_ARGB32 && format != CAIRO_FORMAT_RGB24)
+        return luaL_error(L, "can't make pixbuf from this image format");
+    has_alpha = (format == CAIRO_FORMAT_ARGB32);
+
+    width = cairo_image_surface_get_width(*surface);
+    height = cairo_image_surface_get_height(*surface);
+    stridei = cairo_image_surface_get_stride(*surface);
+    if (has_alpha)
+        strideo = stridei;  /* might as well keep Cairo stride */
+    else
+        strideo = ((3 * width) + 7) & ~7;   /* align to 8 bytes */
+    buffer_len = strideo * height;
+    buffer = malloc(buffer_len);
+    assert(buffer);
+
+    rowpi = (const char *) cairo_image_surface_get_data(*surface);
+    rowpo = buffer;
+
+    /* Copy pixels from Cairo's pixel format to GdkPixbuf's, which is slightly
+     * different. */
+    if (is_big_endian) {
+        for (y = 0; y < height; ++y) {
+            pi = rowpi;
+            po = rowpo;
+            for (x = 0; x < width; ++x) {
+                *po++ = pi[1];
+                *po++ = pi[2];
+                *po++ = pi[3];
+                if (has_alpha)
+                    *po++ = pi[0];
+                pi += 4;
+            }
+            rowpi += stridei;
+            rowpo += strideo;
+        }
+    }
+    else {
+        for (y = 0; y < height; ++y) {
+            pi = rowpi;
+            po = rowpo;
+            for (x = 0; x < width; ++x) {
+                *po++ = pi[2];
+                *po++ = pi[1];
+                *po++ = pi[0];
+                if (has_alpha)
+                    *po++ = pi[3];
+                pi += 4;
+            }
+            rowpi += stridei;
+            rowpo += strideo;
+        }
+    }
+
+    /* The buffer needs to be copied in to a Lua string so that it can
+     * be passed to Lua-Gnome. */
+    lua_pushlstring(L, (const char *) buffer, buffer_len);
+    free(buffer);
+
+    /* Use Lua-Gnome function to construct the GdkPixbuf object, so that we
+     * don't have to link directly with GDK, and so that the resulting object
+     * can be used with the rest of Lua-Gnome. */
+    get_gtk_module_function(L, "gdk_pixbuf_new_from_data");
+    lua_pushvalue(L, -2);
+    get_gtk_module_function(L, "GDK_COLORSPACE_RGB");
+    lua_pushboolean(L, has_alpha);
+    lua_pushnumber(L, 8);
+    lua_pushnumber(L, width);
+    lua_pushnumber(L, height);
+    lua_pushnumber(L, strideo);
+    lua_pushnil(L);
+    lua_pushnil(L);
+    lua_call(L, 9, 1);
+
+    /* Keep a reference to the Lua string used to store the data, since
+     * it needs to be kept around for as long as the object is in use. */
+    lua_pushvalue(L, -2);
+    lua_setfield(L, -2, "_pixbuf_buffer_string");
+
+    return 1;
+}
+
+static int
 surface_get_height (lua_State *L) {
     cairo_surface_t **obj = luaL_checkudata(L, 1, MT_NAME_SURFACE);
     if (cairo_surface_get_type(*obj) != CAIRO_SURFACE_TYPE_IMAGE)
@@ -514,6 +613,7 @@ surface_methods[] = {
 #endif
     { "get_font_options", surface_get_font_options },
     { "get_format", surface_get_format },
+    { "get_gdk_pixbuf", surface_get_gdk_pixbuf },
     { "get_height", surface_get_height },
     { "get_type", surface_get_type },
     { "get_width", surface_get_width },

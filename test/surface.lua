@@ -295,6 +295,36 @@ function test_get_data ()
     check_pixel_in_data(data, stride, 2, 1, 255, 0, 0, 255)
 end
 
+if pcall(require, "gtk") then
+    function test_get_gdk_pixbuf_argb32 ()
+        local surface = Cairo.image_surface_create("argb32", 23, 14)
+        local pixbuf = surface:get_gdk_pixbuf()
+        assert_equal(gtk.GDK_COLORSPACE_RGB, pixbuf:get_colorspace())
+        assert_equal(4, pixbuf:get_n_channels())
+        assert_equal(true, pixbuf:get_has_alpha())
+        assert_equal(8, pixbuf:get_bits_per_sample())
+        assert_equal(23, pixbuf:get_width())
+        assert_equal(14, pixbuf:get_height())
+    end
+
+    function test_get_gdk_pixbuf_rgb24 ()
+        local surface = Cairo.image_surface_create("rgb24", 23, 14)
+        local pixbuf = surface:get_gdk_pixbuf()
+        assert_equal(gtk.GDK_COLORSPACE_RGB, pixbuf:get_colorspace())
+        assert_equal(3, pixbuf:get_n_channels())
+        assert_equal(false, pixbuf:get_has_alpha())
+        assert_equal(8, pixbuf:get_bits_per_sample())
+        assert_equal(23, pixbuf:get_width())
+        assert_equal(14, pixbuf:get_height())
+    end
+
+    function test_get_gdk_pixbuf_a8 ()
+        local surface = Cairo.image_surface_create("a8", 23, 14)
+        assert_error("GdkPixbuf from A8 image not supported",
+                     function () surface:get_gdk_pixbuf() end)
+    end
+end
+
 function test_equality ()
     -- Create two userdatas containing the same pointer value (different
     -- objects in Lua, but the same objects in C, so should be equal).

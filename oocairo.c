@@ -666,8 +666,9 @@ get_gtk_module_function (lua_State *L, const char *name) {
                    " with require'gtk' before using this function");
     lua_getfield(L, -1, name);
     if (lua_isnil(L, -1))
-        luaL_error(L, "could not find gdk_cairo_create() function in 'gtk'"
-                   " module table");
+        luaL_error(L, "could not find '%s' function in 'gtk' module table",
+                   name);
+    lua_remove(L, -2);
 }
 
 #include "obj_context.c"

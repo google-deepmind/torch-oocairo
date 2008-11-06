@@ -1,6 +1,6 @@
 <glade-interface>
   <widget class="GtkWindow" id="appwindow">
-    <property name="title" translatable="yes">GdkPixbuf rendered with Cairo</property>
+    <property name="title" translatable="yes">Line drawing and GdkPixbufs created with Cairo</property>
     <child>
       <widget class="GtkHBox" id="hbox1">
         <property name="visible">True</property>
@@ -14,66 +14,9 @@
             <property name="column_spacing">12</property>
             <property name="row_spacing">6</property>
             <child>
-              <widget class="GtkHScale" id="x_scale">
-                <property name="width_request">200</property>
+              <widget class="GtkComboBox" id="line_cap">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="adjustment">10 0 20 0.10000000000000001 1 0</property>
-                <property name="value_pos">GTK_POS_RIGHT</property>
-                <signal name="value_changed" handler="x_scaling_changed"/>
-              </widget>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="right_attach">2</property>
-                <property name="x_options">GTK_FILL</property>
-                <property name="y_options"></property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkHScale" id="y_scale">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="adjustment">10 0 20 0.10000000000000001 1 0</property>
-                <property name="value_pos">GTK_POS_RIGHT</property>
-                <signal name="value_changed" handler="y_scaling_changed"/>
-              </widget>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="right_attach">2</property>
-                <property name="top_attach">1</property>
-                <property name="bottom_attach">2</property>
-                <property name="x_options">GTK_FILL</property>
-                <property name="y_options"></property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkHScale" id="opacity">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="adjustment">1 0 1 0.01 0.10000000000000001 0</property>
-                <property name="digits">2</property>
-                <property name="value_pos">GTK_POS_RIGHT</property>
-                <signal name="value_changed" handler="opacity_changed"/>
-              </widget>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="right_attach">2</property>
-                <property name="top_attach">2</property>
-                <property name="bottom_attach">3</property>
-                <property name="x_options">GTK_FILL</property>
-                <property name="y_options"></property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkComboBox" id="filter_choice">
-                <property name="visible">True</property>
-                <property name="items" translatable="yes">fast
-good
-best
-nearest
-bilinear
-gaussian</property>
-                <signal name="changed" handler="filter_changed"/>
+                <signal name="changed" handler="line_cap_changed"/>
               </widget>
               <packing>
                 <property name="left_attach">1</property>
@@ -81,18 +24,20 @@ gaussian</property>
                 <property name="top_attach">3</property>
                 <property name="bottom_attach">4</property>
                 <property name="x_options">GTK_FILL</property>
-                <property name="y_options"></property>
+                <property name="y_options">GTK_FILL</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkLabel" id="label1">
+              <widget class="GtkLabel" id="label3">
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">_X scaling:</property>
+                <property name="label" translatable="yes">Line _cap:</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">x_scale</property>
+                <property name="mnemonic_widget">line_cap</property>
               </widget>
               <packing>
+                <property name="top_attach">3</property>
+                <property name="bottom_attach">4</property>
                 <property name="x_options">GTK_FILL</property>
                 <property name="y_options"></property>
               </packing>
@@ -101,9 +46,40 @@ gaussian</property>
               <widget class="GtkLabel" id="label2">
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">_Y scaling:</property>
+                <property name="label" translatable="yes">_Fill colour:</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">y_scale</property>
+                <property name="mnemonic_widget">fill_color</property>
+              </widget>
+              <packing>
+                <property name="x_options">GTK_FILL</property>
+                <property name="y_options"></property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkColorButton" id="fill_color">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="response_id">0</property>
+                <property name="use_alpha">True</property>
+                <property name="title" translatable="yes">Select Fill Color</property>
+                <property name="color">#ffff00000000</property>
+                <signal name="color_set" handler="fill_color_changed"/>
+              </widget>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+                <property name="x_options">GTK_FILL</property>
+                <property name="y_options">GTK_FILL</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkLabel" id="label5">
+                <property name="visible">True</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">_Stroke colour:</property>
+                <property name="use_underline">True</property>
+                <property name="mnemonic_widget">stroke_color</property>
               </widget>
               <packing>
                 <property name="top_attach">1</property>
@@ -113,12 +89,32 @@ gaussian</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkLabel" id="label3">
+              <widget class="GtkColorButton" id="stroke_color">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="response_id">0</property>
+                <property name="use_alpha">True</property>
+                <property name="title" translatable="yes">Select Stroke Color</property>
+                <property name="color">#0000ffff0000</property>
+                <signal name="color_set" handler="stroke_color_changed"/>
+              </widget>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
+                <property name="x_options">GTK_FILL</property>
+                <property name="y_options">GTK_FILL</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkLabel" id="label1">
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">_Opacity:</property>
+                <property name="label" translatable="yes">Line _width:</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">opacity</property>
+                <property name="mnemonic_widget">line_width</property>
               </widget>
               <packing>
                 <property name="top_attach">2</property>
@@ -128,27 +124,29 @@ gaussian</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkLabel" id="label4">
+              <widget class="GtkSpinButton" id="line_width">
                 <property name="visible">True</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">_Filter:</property>
-                <property name="use_underline">True</property>
-                <property name="mnemonic_widget">filter_choice</property>
+                <property name="can_focus">True</property>
+                <property name="adjustment">2 0 100 1 10 10</property>
+                <property name="digits">1</property>
+                <signal name="value_changed" handler="line_width_changed"/>
               </widget>
               <packing>
-                <property name="top_attach">3</property>
-                <property name="bottom_attach">4</property>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+                <property name="top_attach">2</property>
+                <property name="bottom_attach">3</property>
                 <property name="x_options">GTK_FILL</property>
-                <property name="y_options"></property>
+                <property name="y_options">GTK_FILL</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkLabel" id="label5">
+              <widget class="GtkLabel" id="label4">
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">_Extend:</property>
+                <property name="label" translatable="yes">Line _join:</property>
                 <property name="use_underline">True</property>
-                <property name="mnemonic_widget">extend_choice</property>
+                <property name="mnemonic_widget">line_join</property>
               </widget>
               <packing>
                 <property name="top_attach">4</property>
@@ -158,13 +156,9 @@ gaussian</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkComboBox" id="extend_choice">
+              <widget class="GtkComboBox" id="line_join">
                 <property name="visible">True</property>
-                <property name="items" translatable="yes">none
-repeat
-reflect
-pad</property>
-                <signal name="changed" handler="extend_changed"/>
+                <signal name="changed" handler="line_join_changed"/>
               </widget>
               <packing>
                 <property name="left_attach">1</property>
@@ -172,7 +166,7 @@ pad</property>
                 <property name="top_attach">4</property>
                 <property name="bottom_attach">5</property>
                 <property name="x_options">GTK_FILL</property>
-                <property name="y_options"></property>
+                <property name="y_options">GTK_FILL</property>
               </packing>
             </child>
           </widget>
@@ -187,7 +181,6 @@ pad</property>
             <property name="height_request">300</property>
             <property name="visible">True</property>
             <property name="events">GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK</property>
-            <signal name="button_press_event" handler="canvas_clicked"/>
             <signal name="size_allocate" handler="canvas_size_set"/>
           </widget>
           <packing>

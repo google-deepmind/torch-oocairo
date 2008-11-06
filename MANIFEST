@@ -38,6 +38,9 @@ examples/create-from-data.lua
 examples/fill-rule.lua
 examples/get-data.lua
 examples/groups.lua
+examples/gtk-drawing.glade
+examples/gtk-drawing.lua
+examples/gtk-drawing.ui
 examples/gtk-image.glade
 examples/gtk-image.lua
 examples/gtk-image.ui

@@ -81,7 +81,7 @@ local function initialize_canvas_widget ()
         cr:set_source(bg_grad)
         cr:paint()
 
-        -- Position ans scale image.
+        -- Position and scale image.
         cr:translate(image_x, image_y)
         cr:scale(scale_x, scale_y)
 
@@ -107,10 +107,14 @@ local function initialize_canvas_widget ()
         return false
     end
 
+    -- Tell Gtk+ not to bother clearing the background of the drawing area,
+    -- because we're going to draw everything ourselves.  Don't do this if
+    -- you're only drawing on part of the GdkWindow, and want the normal
+    -- Gtk+ background to show through.
+    canvas:set_app_paintable(true)
+
     event_handlers.canvas_size_set(canvas, {width=canvas_wd, height=canvas_ht})
     canvas:connect("expose-event", handle_expose)
-
-    return canvas
 end
 
 local function create_app_window ()
