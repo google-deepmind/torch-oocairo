@@ -484,8 +484,14 @@ function lunit.run()
   clearstats()
   report("begin")
   for testcasename in lunit.testcases() do
-    -- Run tests in the testcases
+    -- Run tests in the testcases.  Have to collect the names first in case
+    -- one of the test functions creates a new global and throws off the
+    -- iteration.
+    local tests = {}
     for testname in lunit.tests(testcasename) do
+      tests[#tests + 1] = testname
+    end
+    for _, testname in ipairs(tests) do
       runtest(testcasename, testname)
     end
   end
