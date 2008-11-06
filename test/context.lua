@@ -168,6 +168,32 @@ function test_source_rgba ()
                  function () cr:set_source_rgba(0, 0, 0, "x") end)
 end
 
+function test_source_gdk_color ()
+    local c = {}
+    if pcall(require, "gtk") then c = gtk.new"GdkColor" end
+    c.red = 0
+    c.green = 0x7FFF
+    c.blue = 0xFFFF
+
+    -- no alpha
+    cr:set_source_rgba(.3, .3, .3, .3)
+    cr:set_source_gdk_color(c)
+    local r, g, b, a = cr:get_source():get_rgba()
+    assert_equal(0, r)
+    assert(g > 0.499 and g < 0.501)
+    assert_equal(1, b)
+    assert_equal(1, a)
+
+    -- include alpha
+    cr:set_source_rgba(.3, .3, .3, .3)
+    cr:set_source_gdk_color(c, 0x3FFF)
+    r, g, b, a = cr:get_source():get_rgba()
+    assert_equal(0, r)
+    assert(g > 0.499 and g < 0.501)
+    assert_equal(1, b)
+    assert(a > 0.249 and a < 0.251)
+end
+
 function test_source ()
     local src = Cairo.pattern_create_rgb(0.25, 0.5, 0.75)
     cr:set_source(src)

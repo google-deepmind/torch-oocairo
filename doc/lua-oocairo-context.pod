@@ -569,6 +569,23 @@ Setting a surface is useful for drawing the contents of one surface onto
 another.  The I<x> and I<y> values indicate what position on I<surface>
 should be drawn at the origin.
 
+=item cr:set_source_gdk_color (c, [alpha])
+
+Set the source to a solid colour given by a GdkColor value from the
+Lua-Gnome library, and optionally an alpha value using the same range
+of numbers.  This method is exactly the same as calling C<set_source_rgb>
+(or C<set_source_rgba> if I<alpha> is present), except that the red,
+green, and blue components are retrieved from I<c> by treating it as a
+table, and all the numbers are treated as S<16 bit> unsigned integers
+and scaled to the range used by Cairo.
+
+If present and not nil, the opacity value I<alpha> must be a number and
+is expected to range from 0 for fully transparent to 0xFFFF (65535) for
+completely opaque.
+
+See the example program I<gtk-drawing.lua> for one use of this method
+in setting a source colour and opacity from a GtkColorButton widget.
+
 =item cr:set_source_pixbuf (pixbuf, x, y)
 
 =item cr:set_source_pixmap (pixmap, x, y)

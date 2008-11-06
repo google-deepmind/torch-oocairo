@@ -775,6 +775,38 @@ cr_set_source (lua_State *L) {
     return luaL_typerror(L, 2, "Cairo pattern or surface object");
 }
 
+static double
+get_color_component_from_lua (lua_State *L, int pos, const char *field) {
+    double color;
+    lua_getfield(L, pos, field);
+    if (!lua_isnumber(L, -1))
+        luaL_error(L, "couldn't retrieve colour '%s' from GdkColor", field);
+    color = lua_tonumber(L, -1) / 0xFFFF;
+    lua_pop(L, 1);
+    return color;
+}
+
+/* This doesn't bind the native C function 'gdk_cairo_set_source_color',
+ * because the GdkColor is a Lua value from the Lua-Gnome library, so we
+ * just pull out the three colour components as Lua code would.  Also,
+ * we accept an optional alpha value in Gdk format, because otherwise
+ * you wouldn't be able to use this for setting a colour from a
+ * GtkColorButton for example. */
+static int
+cr_set_source_gdk_color (lua_State *L) {
+    cairo_t **obj = luaL_checkudata(L, 1, MT_NAME_CONTEXT);
+    double red   = get_color_component_from_lua(L, 2, "red");
+    double green = get_color_component_from_lua(L, 2, "green");
+    double blue  = get_color_component_from_lua(L, 2, "blue");
+    if (lua_isnoneornil(L, 3))
+        cairo_set_source_rgb(*obj, red, green, blue);
+    else {
+        cairo_set_source_rgba(*obj, red, green, blue,
+                              luaL_checknumber(L, 3) / 0xFFFF);
+    }
+    return 0;
+}
+
 /* Use a function provided in the 'gtk' library (which must already be loaded)
  * to set the source to a GdkPixbuf or GdkPixmap (next function).  We trick
  * that library into thinking that our Cairo userdata is really one of its
@@ -1033,6 +1065,7 @@ context_methods[] = {
     { "set_operator", cr_set_operator },
     { "set_scaled_font", cr_set_scaled_font },
     { "set_source", cr_set_source },
+    { "set_source_gdk_color", cr_set_source_gdk_color },
     { "set_source_pixbuf", cr_set_source_pixbuf },
     { "set_source_pixmap", cr_set_source_pixmap },
     { "set_source_rgb", cr_set_source_rgb },

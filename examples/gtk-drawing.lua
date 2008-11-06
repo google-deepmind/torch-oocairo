@@ -56,14 +56,11 @@ local function initialize_canvas_widget (canvas)
 
         local c = gtk.new"GdkColor"
         ui.fill_color:get_color(c)
-        -- TODO would be nice to have set_source_gdk_color
-        cr:set_source_rgba(c.red / 0xFFFF, c.green / 0xFFFF, c.blue / 0xFFFF,
-                           ui.fill_color:get_alpha() / 0xFFFF)
+        cr:set_source_gdk_color(c, ui.fill_color:get_alpha())
         cr:fill_preserve()
 
         ui.stroke_color:get_color(c)
-        cr:set_source_rgba(c.red / 0xFFFF, c.green / 0xFFFF, c.blue / 0xFFFF,
-                           ui.stroke_color:get_alpha() / 0xFFFF)
+        cr:set_source_gdk_color(c, ui.stroke_color:get_alpha())
         cr:set_line_width(ui.line_width:get_value())
         cr:set_line_cap(LINE_CAP[ui.line_cap:get_active() + 1])
         cr:set_line_join(LINE_JOIN[ui.line_join:get_active() + 1])
