@@ -40,7 +40,7 @@ local event_handlers = {
 local function initialize_canvas_widget (canvas)
     local function handle_expose (widget, event)
         local window = widget.window
-        local cr = Cairo.context_create_for_gdk_window(window)
+        local cr = Cairo.context_create_gdk(window)
 
         -- It's easier to define the path with a different scaling, so that
         -- the positions don't depend on the size or aspect ratio of the

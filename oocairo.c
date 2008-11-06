@@ -691,7 +691,7 @@ format_stride_for_width (lua_State *L) {
 static const luaL_Reg
 constructor_funcs[] = {
     { "context_create", context_create },
-    { "context_create_for_gdk_window", context_create_for_gdk_window },
+    { "context_create_gdk", context_create_gdk },
     { "font_options_create", font_options_create },
     { "format_stride_for_width", format_stride_for_width },
     { "image_surface_create", image_surface_create },

@@ -12,8 +12,8 @@ context_create (lua_State *L) {
  * the Lua 'gtk' binding and just convert the return value into our own kind
  * of object. */
 static int
-context_create_for_gdk_window (lua_State *L) {
-    luaL_argcheck(L, !lua_isnoneornil(L, 1), 1, "expected GdkWindow object");
+context_create_gdk (lua_State *L) {
+    luaL_argcheck(L, !lua_isnoneornil(L, 1), 1, "expected GdkDrawable object");
     get_gtk_module_function(L, "gdk_cairo_create");
     lua_pushvalue(L, 1);
     lua_call(L, 1, 1);

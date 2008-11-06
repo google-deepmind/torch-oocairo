@@ -74,7 +74,7 @@ local function initialize_canvas_widget ()
     local imgpattern
     local function handle_expose (widget, event)
         local window = widget.window
-        local cr = Cairo.context_create_for_gdk_window(window)
+        local cr = Cairo.context_create_gdk(window)
 
         -- Draw gradient background (without this we get whatever the Gtk+
         -- theme says the background should be).
