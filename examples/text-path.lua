@@ -1,15 +1,18 @@
--- This tests the 'text_path' and 'glyph_path' methods.  It can't be
--- an automatic test, because the exact results depend on which font is used,
--- and I can't rely on a particular font being installed on every system.
--- The output image should show the outlines of some text, with the paths
--- filled and then stroked in a different colour.
+-- This tests the 'text_path' and 'glyph_path' methods.  The output image
+-- shows the outlines of some text, with the paths filled and then stroked
+-- in a different colour.
 --
--- This also uses a transformation of a font to get an unusual effect.
+-- The first line of text uses 'text_path' to get a path for a string, but
+-- also uses a custom matrix transformation to get an unusual backwards
+-- oblique effect.
+--
+-- The second line of text uses 'glyph_path', so each glyph is individually
+-- positioned and selected by glyph ID instead of Unicode character.
 
 local Cairo = require "oocairo"
 
 local FONT_NAME, FONT_SIZE = "Sans", 200
-local IMG_WD, IMG_HT = 500, 500
+local IMG_WD, IMG_HT = 350, 370
 
 local function draw_outline_of_path (cr)
     -- Draw actual path, with curves in tact, in black.
@@ -37,7 +40,7 @@ local mat = cr:get_font_matrix()
 mat[3] = 60
 cr:set_font_matrix(mat)
 
-local x, y = 110, 200
+local x, y = 45, 165
 cr:move_to(x, y)
 cr:text_path("foo")
 draw_outline_of_path(cr)
@@ -45,8 +48,8 @@ cr:restore()        -- restore normal font matrix, disabling shearing
 
 -- The exact glyph numbers will depend on the font.  This is intended to
 -- spell out 'bar', but the actual glyphs you get might be different.
-x, y = 50, 400
-cr:glyph_path({ {69,x,y}, {68,x+150,y+20}, {85,x+300,y+40} })
+x, y = 5, 335
+cr:glyph_path({ {69,x,y}, {68,x+150,y+20}, {85,x+245,y-20} })
 draw_outline_of_path(cr)
 
 surface:write_to_png("text-path.png")

@@ -16,7 +16,7 @@ end
 local FONT_SIZE = 70
 local PI = math.asin(1) * 2
 
-function make_chopped_font (basefont)
+local function make_chopped_font (basefont)
     local function render_glyph (font, glyph_index, cr, extents)
         -- Use a temporary context to select the base font and copy the
         -- appropriate glyph extents into the 'extents' argument.  That is,
@@ -98,25 +98,25 @@ function make_chopped_font (basefont)
     })
 end
 
-local surface = Cairo.image_surface_create("rgb24", 1024, 400)
+local surface = Cairo.image_surface_create("rgb24", 525, 300)
 local cr = Cairo.context_create(surface)
 
 -- White background.
 cr:set_source_rgb(1, 1, 1)
 cr:paint()
 
-local x, y = 30, 30 + FONT_SIZE
+local x, y = 15, 5 + FONT_SIZE
 
 -- Draw lines of text, each in a different colour and font.
 for _, info in ipairs{
-    { "The quick brown fox", { .3, 0, 0 },
+    { "Quick brown", { .3, 0, 0 },
       { "sans", "normal", "bold" } },
-    { "jumped over the lazy dog…", { 0, .3, 0 },
+    { "fox jumped…", { 0, .3, 0 },
       { "serif", "italic" } },
     -- The last row won't show up unless you have a font with cuneiform
     -- characters in.  They're just random characters, not meaningful text,
     -- but a bit more interesting to look at than boring old Latin letters.
-    { "𒀽𒍬𒍭𒍅𒌡𒌤", { 0, 0, .3 },
+    { "𒀽𒍬𒍅𒌤", { 0, 0, .3 },
       { "akkadian" } },
 } do
     -- Create a normal Cairo 'toy' font to use as the base.  The glyphs from
@@ -135,7 +135,7 @@ for _, info in ipairs{
     cr:set_source_rgb(unpack(color))
     cr:show_text(line)
 
-    y = y + basefont:extents().height * 1.4
+    y = y + basefont:extents().height * 1.2
 end
 
 surface:write_to_png("text-userfont2.png")

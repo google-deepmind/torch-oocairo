@@ -1,9 +1,10 @@
 -- Draw curves using different 'tolerance' values, just to see what happens.
+-- The tolerance value decreases down the image.
 
 local Cairo = require "oocairo"
 
-local DEMO_WD, MARGIN = 140, 50
-local IMG_WD, IMG_HT = DEMO_WD * 3 + MARGIN * 4, 300
+local CURVE_HT, MARGIN = 165, 10
+local IMG_WD, IMG_HT = 270, CURVE_HT * 3 + MARGIN * 4
 
 local surface = Cairo.image_surface_create("rgb24", IMG_WD, IMG_HT)
 local cr = Cairo.context_create(surface)
@@ -12,16 +13,16 @@ local cr = Cairo.context_create(surface)
 cr:set_source_rgb(1, 1, 1)
 cr:paint()
 
-local x, y = MARGIN, IMG_HT - MARGIN
+local x, y = MARGIN, MARGIN
 for _, tolerance in ipairs{ 0.1, 2.5, 10 } do
     cr:set_tolerance(tolerance)
     cr:move_to(x, y)
-    cr:curve_to(x + 0.1*DEMO_WD, y - 2.5*DEMO_WD,
-                x + 0.7*DEMO_WD, y - 1.5*DEMO_WD,
-                x + DEMO_WD, y)
+    cr:curve_to(x + 2.5*CURVE_HT, y + 0.1*CURVE_HT,
+                x + 1.5*CURVE_HT, y + 0.7*CURVE_HT,
+                x, y + CURVE_HT)
     cr:set_source_rgb(0, 0, 0)
     cr:stroke()
-    x = x + DEMO_WD + MARGIN
+    y = y + CURVE_HT + MARGIN
 end
 
 surface:write_to_png("tolerance.png")

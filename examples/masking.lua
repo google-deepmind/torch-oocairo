@@ -35,7 +35,7 @@ do
     end
 end
 
-function load_jpeg (filename)
+local function load_jpeg (filename)
     local img = assert(gd.createFromJpeg(filename),
                        "error loading JPEG: " .. filename)
     local fh = MemFile.open(img:pngStr())
@@ -44,7 +44,7 @@ function load_jpeg (filename)
     return surface
 end
 
-function make_snow_gradient ()
+local function make_snow_gradient ()
     -- Fade from full opacity at the bottom of to full transparency at the top.
     local gradient = Cairo.pattern_create_linear(0, 0, 0, IMG_HT)
     gradient:add_color_stop_rgba(0, 0, 0, 0, 0)
@@ -53,7 +53,7 @@ function make_snow_gradient ()
     return gradient
 end
 
-function make_flower_gradient (size)
+local function make_flower_gradient (size)
     -- Fade from full opacity in top left corner to more transparent in all
     -- directions.
     local gradient = Cairo.pattern_create_radial(size, size, 0,
@@ -64,7 +64,7 @@ function make_flower_gradient (size)
     return gradient
 end
 
-function make_statue_mask (size)
+local function make_statue_mask (size)
     -- Set up a new image surface on which to drawn the mask shape.
     local surface = Cairo.image_surface_create("argb32", size, size)
     local cr = Cairo.context_create(surface)
@@ -101,7 +101,7 @@ cr:set_source(snowpic, 0, IMG_HT - snowpic:get_height())
 cr:mask(make_snow_gradient())
 
 -- Show the flowers in a faded circle, with the image scaled to half size,
--- by maskign with a radial gradient.
+-- by masking with a radial gradient.
 cr:scale(0.5, 0.5)
 cr:set_source(flowerpic, 0, 0)
 cr:identity_matrix()

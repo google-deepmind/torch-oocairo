@@ -1,8 +1,14 @@
--- This tests the 'in_fill' and 'in_stroke' methods.
+-- This tests the 'in_fill' and 'in_stroke' methods.  Both are used to
+-- draw circles at regular intervals whenever they return true, as a way
+-- of rendering a fill and stroke with an interesting effect.  The circles
+-- are drawn partly transparent, so you can see a different colour in
+-- positions inside both the strode and the fill.  The normal fill and
+-- stroke operations are also used to provide a light grey background where
+-- the real shapes are, to prove that the dots are in the right places.
 
 local Cairo = require "oocairo"
 
-local IMG_SZ, BLOB_SEP, BLOB_RADIUS = 800, 20, 9
+local IMG_SZ, BLOB_SEP, BLOB_RADIUS = 560, 14, 6
 
 local surface = Cairo.image_surface_create("rgb24", IMG_SZ, IMG_SZ)
 local cr = Cairo.context_create(surface)
@@ -12,12 +18,19 @@ cr:set_source_rgb(1, 1, 1)
 cr:paint()
 
 -- Set up a path, but don't draw with it directly.
-cr:move_to(0.05*IMG_SZ, 0.05*IMG_SZ)
+cr:move_to(0.03*IMG_SZ, 0.05*IMG_SZ)
 cr:line_to(0.95*IMG_SZ, 0.3*IMG_SZ)
-cr:curve_to(0.65*IMG_SZ, 1.3*IMG_SZ,
+cr:curve_to(0.65*IMG_SZ, 1.35*IMG_SZ,
             0.25*IMG_SZ, 0.85*IMG_SZ,
             0.15*IMG_SZ, 0.6*IMG_SZ)
 cr:set_line_width(30)
+
+-- Draw the fill and stroke very lightly in grey so that we can see where
+-- they really are.
+cr:set_source_rgba(0, 0, 0, .1)
+cr:fill_preserve()
+cr:set_source_rgba(0, 0, 0, .2)
+cr:stroke_preserve()
 
 -- Collect lists of points which are inside the fill and/or the stroke areas.
 -- They're stored for drawing later, because that's probably more efficient

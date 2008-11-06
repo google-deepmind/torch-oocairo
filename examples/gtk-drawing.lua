@@ -1,6 +1,6 @@
 -- This example was intended to show some simple Cairo drawing in a
 -- GtkDrawingArea widget, but it ended up being more of a demonstration
--- of some Gtk+ techniques.  Searh for 'Cairo' in the code to find the
+-- of some Gtk+ techniques.  Search for 'Cairo' in the code to find the
 -- bits which directly use the Lua-oocairo library.
 --
 -- Quite accidentally this program also demonstrates how to create a

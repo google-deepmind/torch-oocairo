@@ -15,11 +15,11 @@ local IMG_WD, IMG_HT = PIC_WD * 3 + MARGIN * 4, PIC_HT + MARGIN * 2
 -- a filename is convenient, but using a file handle is more flexible.
 -- Loading from a string allows images from other libraries like GD to be
 -- converted into Cairo objects without going through a temporary file.
-function load_pic_from_filename ()
+local function load_pic_from_filename ()
     return Cairo.image_surface_create_from_png(PIC_FILENAME)
 end
 
-function load_pic_from_file_handle ()
+local function load_pic_from_file_handle ()
     local fh = assert(io.open(PIC_FILENAME, "rb"))
     local surface = Cairo.image_surface_create_from_png(fh)
     fh:close()
@@ -27,7 +27,7 @@ function load_pic_from_file_handle ()
 end
 
 -- This one only works if the 'memoryfile' module is installed.
-function load_pic_from_string ()
+local function load_pic_from_string ()
     local ok, MemFile = pcall(require, "memoryfile")
     if ok then
         local fh = assert(io.open(PIC_FILENAME, "rb"))

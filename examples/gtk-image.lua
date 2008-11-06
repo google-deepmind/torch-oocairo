@@ -85,7 +85,7 @@ local function initialize_canvas_widget ()
         cr:translate(image_x, image_y)
         cr:scale(scale_x, scale_y)
 
-        -- Use the GtkPixbuf object as the source image.
+        -- Use the GdkPixbuf object as the source image.
         if not imgpattern then
             local img = gtk.gdk_pixbuf_new_from_file(IMAGE_FILENAME, nil)
             assert(img, "error loading image file")

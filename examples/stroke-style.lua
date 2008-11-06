@@ -3,8 +3,8 @@
 
 local Cairo = require "oocairo"
 
-local DEMO_WD, DEMO_HT, LINE_WD, MARGIN = 140, 70, 35, 50
-local IMG_WD, IMG_HT = DEMO_WD * 3 + MARGIN * 4, 355
+local DEMO_WD, DEMO_HT, LINE_WD, MARGIN = 120, 50, 35, 50
+local IMG_WD, IMG_HT = 515, 250
 
 local surface = Cairo.image_surface_create("rgb24", IMG_WD, IMG_HT)
 local cr = Cairo.context_create(surface)
@@ -14,7 +14,7 @@ cr:set_source_rgb(1, 1, 1)
 cr:paint()
 
 -- Line join style.
-local x, y = MARGIN, IMG_HT - MARGIN
+local x, y = MARGIN/2, IMG_HT - MARGIN/2
 for _, joinstyle in ipairs{ "miter", "round", "bevel" } do
     cr:move_to(x, y)
     cr:line_to(x + DEMO_WD / 2, y - DEMO_HT)
@@ -31,7 +31,7 @@ for _, joinstyle in ipairs{ "miter", "round", "bevel" } do
 end
 
 -- Line cap style.
-x = MARGIN
+x = MARGIN/2
 y = y - DEMO_HT - MARGIN - LINE_WD/2
 for _, capstyle in ipairs{ "butt", "round", "square" } do
     cr:move_to(x, y)
@@ -48,8 +48,8 @@ for _, capstyle in ipairs{ "butt", "round", "square" } do
 end
 
 -- Dash patterns.
-x = MARGIN
-y = y - MARGIN - LINE_WD/2
+x = MARGIN/2
+y = y - MARGIN/2 - LINE_WD/2
 cr:set_line_width(2)
 cr:set_source_rgb(0, 0, 0);
 for _, dashpat in ipairs{ {}, {3}, {3,6,9} } do

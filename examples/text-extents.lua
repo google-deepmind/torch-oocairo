@@ -1,13 +1,19 @@
--- This tests the 'text_extents' and 'glyph_extents' methods.  It can't be
--- an automatic test, because the exact results depend on which font is used,
--- and I can't rely on a particular font being installed on every system.
--- The image should demonstrate whether the methods are producing reasonable
--- results.
+-- This tests the 'text_extents' and 'glyph_extents' methods, by drawing
+-- shapes to describe the numbers returned.
+--
+-- The blue box shows the extent of the drawing caused by the text.  The
+-- red line shows the advance from the current point before the text
+-- was drawn to the place where the current point will be left afterwards.
+-- The green line is the distance from the current point to the place where
+-- the image of the text will be drawn.  A small blue circle shows the
+-- current point before the text is drawn (the place you 'move_to').
+--
+-- The first line of text uses 'text_extents' and the second 'glyph_extents'.
 
 local Cairo = require "oocairo"
 
 local FONT_NAME, FONT_SIZE = "Sans", 90
-local IMG_WD, IMG_HT = 640, 400
+local IMG_WD, IMG_HT = 390, 235
 
 local function draw_extents (cr, x, y, ext)
     cr:save()
@@ -24,10 +30,15 @@ local function draw_extents (cr, x, y, ext)
     cr:stroke()
 
     -- Show x_bearing and y_bearing with a green line
-    cr:set_source_rgb(0, 0.8, 0)
+    cr:set_source_rgb(0, 0.7, 0)
     cr:move_to(x, y)
     cr:rel_line_to(ext.x_bearing, ext.y_bearing)
     cr:stroke()
+
+    -- A small circle where the origin is.
+    cr:set_source_rgb(0, 0, .8)
+    cr:arc(x, y, 4, 0, math.asin(1) * 4)
+    cr:fill()
 
     cr:restore()
 end
@@ -43,15 +54,15 @@ cr:set_source_rgb(0, 0, 0)
 cr:select_font_face(FONT_NAME, "italic")
 cr:set_font_size(FONT_SIZE)
 
-local x, y = 50, 150
-local text = "The quick…"
+local x, y = 20, 80
+local text = "Xyzzy…"
 draw_extents(cr, x, y, cr:text_extents(text))
 cr:move_to(x, y)
 cr:show_text(text)
 
 -- The exact glyph numbers will depend on the font.  This is intended to
 -- spell out 'fox', but the actual glyphs you get might be different.
-x, y = 50, 300
+x, y = 20, 180
 local glyphs = { {73,x,y}, {82,x+100,y+20}, {91,x+200,y+40} }
 draw_extents(cr, x, y, cr:glyph_extents(glyphs))
 cr:show_glyphs(glyphs)

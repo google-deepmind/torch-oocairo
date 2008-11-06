@@ -1,8 +1,9 @@
--- Demonstrate the effect of different fill rules.
+-- Demonstrate the effect of different fill rules.  Two stars are filled,
+-- both with exactly the same path commands but a different fill rule.
 
 local Cairo = require "oocairo"
 
-local RADIUS, NUM_POINTS, MARGIN = 100, 5, 30
+local RADIUS, NUM_POINTS, MARGIN = 100, 5, 5
 local IMG_WD, IMG_HT = RADIUS * 4 + MARGIN * 3, RADIUS * 2 + MARGIN * 2
 local PI = math.asin(1) * 2
 
@@ -22,8 +23,11 @@ local function draw_star (x, y)
         ang = ang + 2 * ang_step
     end
     cr:close_path()
-    cr:set_source_rgb(0, 0, 0)
-    cr:fill()
+
+    cr:set_source_rgb(.5, .5, .5)
+    cr:fill_preserve()
+    cr:set_source_rgb(.3, 0, 0)
+    cr:stroke()
 end
 
 cr:set_fill_rule("winding")     -- this is the default anyway

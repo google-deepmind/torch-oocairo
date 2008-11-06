@@ -10,7 +10,7 @@ local IMAGE_WD, IMAGE_HT = 432, 234
 
 -- Write out image data as a PPM file.  PPM is the true-colour variant of
 -- the PNM class of formats.  We're using the binary version of PPM here,
--- which has three bytes per pixel, rather than three ascii numbers per
+-- which has three bytes per pixel, rather than three ASCII numbers per
 -- pixel.  This function assumes the data is for an RGB24 or ARGB32 image.
 local function write_ppm (filename, width, data, stride)
     local fh = assert(io.open(filename, "wb"))
