@@ -3,6 +3,7 @@ Changes
 MANIFEST
 Makefile
 Makefile.osx
+README
 TODO
 debian/Makefile.Debian.conf
 debian/changelog

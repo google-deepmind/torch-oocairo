@@ -27,9 +27,7 @@ CFLAGS := -ansi -pedantic -Wall -W -Wshadow -Wpointer-arith \
           -DVERSION=\"$(VERSION)\"
 LDFLAGS := $(shell pkg-config --libs lua5.1 cairo)
 
-# Uncomment this line to enable optimization.  Comment it out when running
-# the test suite because it makes the assert() errors clearer and avoids
-# warnings about ridiculously long string constants with some versions of gcc.
+# Uncomment this line to enable optimization.
 #CFLAGS := $(CFLAGS) -O3 -fomit-frame-pointer
 
 # Uncomment this line to enable debugging.
@@ -54,9 +52,10 @@ testexamples: all
 	done
 
 # Dependencies.
-oocairo.lo: oocairo.c oocairo.h \
-	obj_context.c obj_font_face.c obj_font_opt.c obj_matrix.c \
-	obj_path.c obj_pattern.c obj_scaled_font.c obj_surface.c
+SOURCE_FILES := oocairo.c oocairo.h \
+	        obj_context.c obj_font_face.c obj_font_opt.c obj_matrix.c \
+	        obj_path.c obj_pattern.c obj_scaled_font.c obj_surface.c
+oocairo.lo: $(SOURCE_FILES)
 
 # Compiling the module into a library
 %.lo: %.c
@@ -65,6 +64,22 @@ oocairo.lo: oocairo.c oocairo.h \
 liblua-oocairo.la: oocairo.lo
 	@echo 'LD>' $@
 	@$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) $(DEBUG) -o $@ $< -rpath $(LIBDIR)
+
+# This is for building the Windows DLL for the module.  You might have to
+# tweak the location of the MingW32 compiler and the Lua library and include
+# files to get it to work.  The defaults here are set up for the Lua libraries
+# to be unpacked in the current directory, and to compile on Debian Linux
+# with the Windows cross compiler from the 'mingw32' package.
+WIN32CC = /usr/bin/i586-mingw32msvc-cc
+WIN32CFLAGS := -O2 -I/usr/i586-mingw32msvc/include -Iinclude \
+               -DVERSION=\"$(VERSION)\"
+WIN32LDFLAGS := -L. -llua5.1 -L/usr/i586-mingw32msvc/lib \
+                --no-undefined --enable-runtime-pseudo-reloc
+win32bin: oocairo.dll
+oocairo.win32.o: $(SOURCE_FILES)
+	$(WIN32CC) $(DEBUG) $(WIN32CFLAGS) -c -o $@ $<
+oocairo.dll: oocairo.win32.o
+	$(WIN32CC) $(DEBUG) -O -Wl,-S -shared -o $@ $< $(WIN32LDFLAGS)
 
 # Compiling the POD documentation into man pages.
 doc/lua-%.3: doc/lua-%.pod Changes
@@ -106,4 +121,4 @@ realclean: clean
 	rm -f $(MANPAGES)
 	rm -f $(GTKBUILDERFILES)
 
-.PHONY: all checktmp dist install test testexamples clean realclean
+.PHONY: all test testexamples win32bin install checktmp dist clean realclean
