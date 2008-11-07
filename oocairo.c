@@ -698,7 +698,7 @@ constructor_funcs[] = {
     { "font_options_create", font_options_create },
     { "format_stride_for_width", format_stride_for_width },
     { "image_surface_create", image_surface_create },
-    { "image_surface_create_for_data", image_surface_create_for_data },
+    { "image_surface_create_from_data", image_surface_create_from_data },
 #if CAIRO_HAS_PNG_FUNCTIONS
     { "image_surface_create_from_png", image_surface_create_from_png },
 #endif

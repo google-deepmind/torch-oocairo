@@ -128,7 +128,7 @@ with no colour information.
 The image created will be black by default, and fully transparent if
 the pixels have an alpha component.
 
-=item image_surface_create_for_data (data, format, width, height, stride)
+=item image_surface_create_from_data (data, format, width, height, stride)
 
 Creates a new image surface with the size I<width> by I<height> pixels,
 using I<format> just as the C<image_surface_create> function does, but
@@ -141,6 +141,10 @@ method in L<lua-oocairo-surface(3)>.
 Note that since Lua strings are immutable, a copy of the data is made and
 used as the live buffer.  There is currently no support for sharing an image
 surface buffer between Cairo and something else.
+
+This binds the native Cairo function C<cairo_image_surface_create_for_data>,
+but has a slightly different name because the data you provide is only used
+at construction time, not kept around for drawing.
 
 =item image_surface_create_from_png (file/filename)
 
@@ -234,7 +238,7 @@ what you can do with it.
 
 Returns the number of bytes Cairo will used for storing a single row of
 pixels in the raw data of an image surface.  This can be used as the
-I<stride> value for the C<image_surface_create_for_data()> function
+I<stride> value for the C<image_surface_create_from_data()> function
 and the image surface method C<get_data()>.  The I<format> value should
 be one of the pixel format strings such as C<rgb24>, and the width should
 be a number.

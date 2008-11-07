@@ -1,7 +1,7 @@
 -- This example creates a small image by building up an array of pixels
 -- into a string in the format Cairo uses internally, then creates a
 -- Cairo surface from it.  In real use you'd probably be more likely to
--- use the 'image_surface_create_for_data' function to import data from
+-- use the 'image_surface_create_from_data' function to import data from
 -- some other Lua library or C code.
 --
 -- The actual image created here isn't of much interest.  It just fades
@@ -48,8 +48,8 @@ local data = table.concat(rows)
 -- Use the data to create a Cairo surface.  In this case we're just doing
 -- it to use Cairo's PNG support to write it out, but we could use it as
 -- a pattern or do drawing on top of it.
-local surface = Cairo.image_surface_create_for_data(data, "rgb24", SIZE, SIZE,
-                                                    stride)
+local surface = Cairo.image_surface_create_from_data(data, "rgb24", SIZE, SIZE,
+                                                     stride)
 surface:write_to_png("create-from-data.png")
 
 -- vi:ts=4 sw=4 expandtab

@@ -16,7 +16,7 @@ image_surface_create (lua_State *L) {
 }
 
 static int
-image_surface_create_for_data (lua_State *L) {
+image_surface_create_from_data (lua_State *L) {
     cairo_format_t fmt;
     int width, height, stride, min_stride;
     const char *data;
