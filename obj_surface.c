@@ -366,8 +366,6 @@ surface_get_format (lua_State *L) {
 
 static int
 surface_get_gdk_pixbuf (lua_State *L) {
-    static const int ENDIANNESS_TEST_VAL = 1;
-    int is_big_endian = !(*(const char *) &ENDIANNESS_TEST_VAL);
     cairo_surface_t **surface;
     cairo_format_t format;
     int width, height, stridei, strideo;
@@ -402,7 +400,7 @@ surface_get_gdk_pixbuf (lua_State *L) {
 
     /* Copy pixels from Cairo's pixel format to GdkPixbuf's, which is slightly
      * different. */
-    if (is_big_endian) {
+    if (IS_BIG_ENDIAN) {
         for (y = 0; y < height; ++y) {
             pi = rowpi;
             po = rowpo;

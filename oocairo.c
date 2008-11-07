@@ -28,6 +28,9 @@
 #define MT_NAME_SCALEDFONT ("b8012f94-98b0-11dd-b174-00e081225ce5")
 #define MT_NAME_SURFACE    ("6d31a064-6711-11dd-bdd8-00e081225ce5")
 
+static const int ENDIANNESS_TEST_VAL = 1;
+#define IS_BIG_ENDIAN (!(*(const char *) &ENDIANNESS_TEST_VAL))
+
 #define ENUM_VAL_TO_LUA_STRING_FUNC(type) \
     static int \
     type ## _to_lua (lua_State *L, cairo_ ## type ## _t val) { \
@@ -765,8 +768,6 @@ create_object_metatable (lua_State *L, const char *mt_name,
 
 int
 luaopen_oocairo (lua_State *L) {
-    static const int ENDIANNESS_TEST_VAL = 1;
-    int is_big_endian = !(*(const char *) &ENDIANNESS_TEST_VAL);
 
 #ifdef VALGRIND_LUA_MODULE_HACK
     /* Hack to allow Valgrind to access debugging info for the module. */
@@ -830,7 +831,7 @@ luaopen_oocairo (lua_State *L) {
     /* This is needed to test the byte order which Cairo will use for storing
     * pixel components. */
     lua_pushliteral(L, "BYTE_ORDER");
-    lua_pushlstring(L, is_big_endian ? "argb" : "bgra", 4);
+    lua_pushlstring(L, IS_BIG_ENDIAN ? "argb" : "bgra", 4);
     lua_rawset(L, -3);
 
     /* Create the metatables for objects of different types. */
