@@ -107,6 +107,19 @@ Return the pixel format for an image surface.  Throws an exception for
 other surface types.  The return value will be one of the strings accepted
 by the C<image_surface_create> function (see L<lua-oocairo(3)>).
 
+=item surf:get_gdk_pixbuf ()
+
+Creates a GdkPixbuf object containing the image currently held on an image
+surface.  The return value is suitable for use with the Lua-Gnome library,
+for example as an icon.  See the example program I<gtk-drawing.lua> for
+an example showing that use.
+
+Must be called on an image surface, otherwise it throws an exception.  Also,
+it currently only supports the C<rgb24> adn C<argb32> formats.
+
+Requires the Lua-Gnome package to have been installed and the C<gtk> module
+to be loaded.
+
 =item surf:get_height ()
 
 Returns the height in pixels of an image surface, or throws an exception

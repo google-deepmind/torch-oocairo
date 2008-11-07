@@ -1,3 +1,18 @@
+1.2     2008-11-07
+
+ * Integration with Lua-Gnome for drawing in GUIs:
+    + New constructor: context_create_gdk
+    + New methods on contexts to set source based on Gdk object:
+      set_source_gdk_color, set_source_pixbuf, set_source_pixmap
+    + New method on image surfaces: get_gdk_pixbuf
+    + Examples which show Cairo drawing in GUI applications.
+ * Translate between image surfaces and raw pixel data:
+    + New constructor: image_surface_create_from_data
+    + New method on image surfaces: get_data
+      (based on a patch by Julien Danjou)
+    + New top-level function 'format_stride_for_width' and constant
+      'BYTE_ORDER' to allow creating suitable data for constructor
+
 1.1     2008-10-17
 
  * Include MacOS X makefile, and fix compilation bug with Cairo 1.8,
