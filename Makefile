@@ -20,6 +20,7 @@ GTKBUILDERFILES = examples/gtk-drawing.ui examples/gtk-image.ui
 
 LIBTOOL := libtool --quiet
 
+CC := gcc
 CFLAGS := -ansi -pedantic -Wall -W -Wshadow -Wpointer-arith \
           -Wcast-align -Wwrite-strings -Wstrict-prototypes \
           -Wmissing-prototypes -Wnested-externs -Wno-long-long \
