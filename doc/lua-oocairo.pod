@@ -259,13 +259,13 @@ objects.
 
 Return a new pattern object representing a linear gradient, where the
 offset numbers go from zero at the point specified by the two numbers
-S<(I<x1>, I<y1>)> to the point S<(I<x2>, I<y2>)>.
+(I<x1>,E<nbsp>I<y1>) to the point (I<x2>,E<nbsp>I<y2>).
 
 =item pattern_create_radial (x1, y1, r1, x2, y2, r2)
 
 Return a new pattern object representing a radial gradient, where offsets
-move from the circle defined by the three numbers S<(I<x1>, I<y1>, I<r1>)>,
-where I<r1> is the radius, to the circle S<(I<x2>, I<y2>, I<r2>)>.
+move from the circle defined by the three numbers (I<x1>,E<nbsp>I<y1>,E<nbsp>I<r1>),
+where I<r1> is the radius, to the circle (I<x2>,E<nbsp>I<y2>,E<nbsp>I<r2>).
 
 =item pattern_create_rgb (r, g, b)
 
@@ -384,7 +384,7 @@ module table.
 =head1 Copyright
 
 This software and documentation is Copyright E<copy> 2008 Geoff Richards
-E<lt>geoff@laxan.comE<gt>.  It is free software; you can redistribute it
+E<lt>geoff@geoffrichards.co.ukE<gt>.  It is free software; you can redistribute it
 and/or modify it under the terms of the S<Lua 5.0> license.  The full terms
 are given in the file F<COPYRIGHT> supplied with the source code package,
 and are also available here: L<http://www.lua.org/license.html>

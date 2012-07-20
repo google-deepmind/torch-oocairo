@@ -74,11 +74,17 @@ following strings:
 
 =over
 
-=item default
+=item *
 
-=item off
+C<default>
 
-=item on
+=item *
+
+C<off>
+
+=item *
+
+C<on>
 
 =back
 
@@ -89,15 +95,25 @@ value must be one of the following strings:
 
 =over
 
-=item default
+=item *
 
-=item none
+C<default>
 
-=item slight
+=item *
 
-=item medium
+C<none>
 
-=item full
+=item *
+
+C<slight>
+
+=item *
+
+C<medium>
+
+=item *
+
+C<full>
 
 =back
 
@@ -109,15 +125,25 @@ is used.  The I<order> value must be one of the following strings:
 
 =over
 
-=item default
+=item *
 
-=item rgb
+C<default>
 
-=item bgr
+=item *
 
-=item vrgb
+C<rgb>
 
-=item vbgr
+=item *
+
+C<bgr>
+
+=item *
+
+C<vrgb>
+
+=item *
+
+C<vbgr>
 
 =back
 

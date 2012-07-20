@@ -10,7 +10,7 @@ Full reference documentation for all the functions and methods supported
 by this module are provided in the 'doc' directory in the source code in
 POD and Unix manpage format, and on the website as web pages:
 
-    http://www.daizucms.org/lua/library/oocairo/doc/
+    http://www.geoffrichards.co.uk/lua/oocairo/doc/
 
 
 == Examples ==
@@ -30,7 +30,7 @@ module:
 If you just want to see what output is produced from the different examples
 but aren't in a position to run them yet, the output files are shown here:
 
-    http://www.daizucms.org/lua/library/oocairo/example/
+    http://www.geoffrichards.co.uk/lua/oocairo/example/
 
 
 == Using with Gtk+ ==

@@ -24,7 +24,7 @@ or C<cr:copy_path_flat()> method.
 =item cr:arc (cx, cy, radius, angle1, angle2)
 
 Add a curved segment to the current path which approximates a section
-of a circle centered at point S<(I<cx>, I<cy>)> with a radius of I<radius>.
+of a circle centered at point (I<cx>,E<nbsp>I<cy>) with a radius of I<radius>.
 The two angles determine which part of the circle to draw.  They are both
 measured in radians.  For a complete circle I<angle1> should be zero, and
 I<angle2> should be 2E<pi>.
@@ -85,8 +85,8 @@ converted into a series of straight lines.
 =item cr:curve_to (c1x, c1y, c2x, c2y, x, y)
 
 Add a curved segment to the current path, from the current point to
-S<(I<x>, I<y>)>, with the control points S<(I<c1x>, I<c1y>)> and
-S<(I<c2x>, I<c2y>)>.  All six arguments must be numbers.
+(I<x>,E<nbsp>I<y>), with the control points (I<c1x>,E<nbsp>I<c1y>) and
+(I<c2x>,E<nbsp>I<c2y>).  All six arguments must be numbers.
 
 =item cr:device_to_user (x, y)
 
@@ -215,7 +215,7 @@ by the C<cr:set_operator()> method.
 =item cr:get_source ()
 
 Return the pattern object current being used as the source.  See
-C<lua-oocairo-pattern(3)> for methods available on pattern objects.
+L<lua-oocairo-pattern(3)> for methods available on pattern objects.
 
 =item cr:get_target ()
 
@@ -238,7 +238,7 @@ like C<cr:show_glyphs()>.
 =item cr:has_current_point ()
 
 Returns a boolean value, true if there is a current point (as defined with
-C<cr:move_to()>.
+C<cr:move_to()>).
 
 =item cr:identity_matrix ()
 
@@ -375,13 +375,17 @@ If specified, I<slant> must be one of the following strings:
 
 =over
 
-=item normal
+=item *
 
-The default.
+C<normal> (the default)
 
-=item italic
+=item *
 
-=item oblique
+C<italic>
+
+=item *
+
+C<oblique>
 
 =back
 
@@ -389,11 +393,13 @@ If specified, I<weight> must be one of the following strings:
 
 =over
 
-=item normal
+=item *
 
-The default.
+C<normal> (the default)
 
-=item bold
+=item *
+
+C<bold>
 
 =back
 
@@ -404,13 +410,21 @@ of the following strings:
 
 =over
 
-=item default
+=item *
 
-=item none
+C<default>
 
-=item gray
+=item *
 
-=item subpixel
+C<none>
+
+=item *
+
+C<gray>
+
+=item *
+
+C<subpixel>
 
 =back
 
@@ -436,9 +450,13 @@ strings:
 
 =over
 
-=item winding
+=item *
 
-=item even-odd
+C<winding>
+
+=item *
+
+C<even-odd>
 
 =back
 
@@ -527,35 +545,61 @@ been drawn.  The value must be one of the following strings:
 
 =over
 
-=item add
+=item *
 
-=item atop
+C<add>
 
-=item clear
+=item *
 
-=item dest
+C<atop>
 
-=item dest-atop
+=item *
 
-=item dest-in
+C<clear>
 
-=item dest-out
+=item *
 
-=item dest-over
+C<dest>
 
-=item in
+=item *
 
-=item out
+C<dest-atop>
 
-=item over
+=item *
 
-This is the default.
+C<dest-in>
 
-=item saturate
+=item *
 
-=item source
+C<dest-out>
 
-=item xor
+=item *
+
+C<dest-over>
+
+=item *
+
+C<in>
+
+=item *
+
+C<out>
+
+=item *
+
+C<over> (this is the default)
+
+=item *
+
+C<saturate>
+
+=item *
+
+C<source>
+
+=item *
+
+C<xor>
 
 =back
 

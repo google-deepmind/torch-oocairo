@@ -1,7 +1,7 @@
 Source: lua-oocairo
 Section: interpreters
 Priority: optional
-Maintainer: Geoff Richards <geoff@laxan.com>
+Maintainer: Geoff Richards <geoff@geoffrichards.co.uk>
 Build-Depends: cdbs (>= 0.4.23-1.1), debhelper (>= 5), dpatch, lua5.1-policy-dev (>= 22), libcairo2-dev
 Standards-Version: 3.7.2
 
@@ -13,7 +13,7 @@ Description: Cairo binding for Lua
  from Lua code, using a somewhat object-oriented API.
  .
  The latest source code and documentation is always available from the
- module's website: <http://www.daizucms.org/lua/library/oocairo/>
+ module's website: <http://www.geoffrichards.co.uk/lua/oocairo/>
 
 Package: liblua5.1-oocairo-dev
 Architecture: any
@@ -23,4 +23,4 @@ Description: documentation for the Lua oocairo module
  in the lua-oocairo(3) man page and others.  This describes the complete
  API of the Lua module.  A more attractive version of the same thing is
  available on the module's website:
- <http://www.daizucms.org/lua/library/oocairo/doc/>
+ <http://www.geoffrichards.co.uk/lua/oocairo/doc/>

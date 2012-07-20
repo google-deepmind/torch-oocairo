@@ -13,7 +13,7 @@ lua-oocairo (1.2-1) unstable; urgency=low
     - New top-level function 'format_stride_for_width' and constant
       'BYTE_ORDER' to allow creating suitable data for constructor
 
- -- Geoff Richards <geoff@laxan.com>  Fri, 07 Nov 2008 16:12:33 +0000
+ -- Geoff Richards <geoff@geoffrichards.co.uk>  Fri, 07 Nov 2008 16:12:33 +0000
 
 lua-oocairo (1.1-1) unstable; urgency=low
 
@@ -36,10 +36,10 @@ lua-oocairo (1.1-1) unstable; urgency=low
     - New feature flag: HAS_USER_FONT'
   * Plugged memory leaks in some functions which accept a table of glyphs.
 
- -- Geoff Richards <geoff@laxan.com>  Fri, 17 Oct 2008 01:54:53 +0100
+ -- Geoff Richards <geoff@geoffrichards.co.uk>  Fri, 17 Oct 2008 01:54:53 +0100
 
 lua-oocairo (1.0-1) unstable; urgency=low
 
   * Initial release.
 
- -- Geoff Richards <geoff@laxan.com>  Fri, 12 Sep 2008 08:28:04 +0100
+ -- Geoff Richards <geoff@geoffrichards.co.uk>  Fri, 12 Sep 2008 08:28:04 +0100

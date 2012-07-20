@@ -88,13 +88,21 @@ The return value will be one of the following:
 
 =over
 
-=item linear
+=item *
 
-=item radial
+C<linear>
 
-=item solid
+=item *
 
-=item surface
+C<radial>
+
+=item *
+
+C<solid>
+
+=item *
+
+C<surface>
 
 =back
 

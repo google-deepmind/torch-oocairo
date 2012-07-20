@@ -115,7 +115,7 @@ for example as an icon.  See the example program I<gtk-drawing.lua> for
 an example showing that use.
 
 Must be called on an image surface, otherwise it throws an exception.  Also,
-it currently only supports the C<rgb24> adn C<argb32> formats.
+it currently only supports the C<rgb24> and C<argb32> formats.
 
 Requires the Lua-Gnome package to have been installed and the C<gtk> module
 to be loaded.
