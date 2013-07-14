@@ -2,13 +2,13 @@ package = 'oocairo'
 version = '1-2'
 
 source = {
-	url = 'git+file://git@github.com:akfidjeland/torch-oocairo.git,
+	url = 'git+file://git@github.com:akfidjeland/torch-oocairo.git',
 	branch = 'torch'
 }
 
 description = {
     summary = 'Lua bindings for Cairo, with extensions for Torch',
-	homepage = 'git+file://git@github.com:akfidjeland/torch-oocairo.git
+	homepage = 'git+file://git@github.com:akfidjeland/torch-oocairo.git'
 }
 
 dependencies = {
