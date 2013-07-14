@@ -4,7 +4,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-int luaopen_oocairo (lua_State *L);
+int luaopen_liboocairo (lua_State *L);
 
 #endif  /* INC_LUA_OOCAIRO_H */
 /* vi:set ts=4 sw=4 expandtab: */

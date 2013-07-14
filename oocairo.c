@@ -767,7 +767,7 @@ create_object_metatable (lua_State *L, const char *mt_name,
 }
 
 int
-luaopen_oocairo (lua_State *L) {
+luaopen_liboocairo (lua_State *L) {
 
 #ifdef VALGRIND_LUA_MODULE_HACK
     /* Hack to allow Valgrind to access debugging info for the module. */
