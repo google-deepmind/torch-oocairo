@@ -46,7 +46,10 @@ with lua-gtk-0.9.
 Surfaces can be exported as tensors using the function rgb2tensor with the
 following prototype:
 
-    rbg2tensor(outputTensor, surface)
+    rbg2tensor(surface, [useAlpha])
+
+This returns either a 3xNxM or 4xNxM ByteTensor with values in the range [0,
+255].
 
 == Compiling ==
 
