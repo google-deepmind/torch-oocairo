@@ -41,6 +41,12 @@ programs examples/gtk-drawing.lua and examples/gtk-image.lua for code which
 uses most of the new features.  This new stuff has so far only been tested
 with lua-gtk-0.9.
 
+== Using with Torch ==
+
+Surfaces can be exported as tensors using the function rgb2tensor with the
+following prototype:
+
+    rbg2tensor(outputTensor, surface)
 
 == Compiling ==
 
