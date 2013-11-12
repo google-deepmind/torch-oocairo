@@ -53,6 +53,46 @@ image_surface_create_from_data (lua_State *L) {
     return 1;
 }
 
+static void *luaL_checkcdata(lua_State *L, int narg)
+{
+  if (lua_type(L, narg) != 10)
+    luaL_typerror(L, narg, "cdata");
+  return (void*)lua_topointer(L, narg);
+}
+
+static int
+image_surface_create_for_data (lua_State *L) {
+    cairo_format_t fmt;
+    int width, height, stride, min_stride;
+    unsigned char **data;
+    SurfaceUserdata *surface;
+
+    data = (unsigned char **)luaL_checkcdata(L, 1);
+    fmt = format_from_lua(L, 2);
+    width = luaL_checkint(L, 3);
+    luaL_argcheck(L, width >= 0, 3, "image width cannot be negative");
+    height = luaL_checkint(L, 4);
+    luaL_argcheck(L, height >= 0, 4, "image height cannot be negative");
+    stride = luaL_checkint(L, 5);
+
+    /* Check that the stride is big enough for one row of pixels. */
+    if (fmt == CAIRO_FORMAT_ARGB32 || fmt == CAIRO_FORMAT_RGB24)
+        min_stride = width * 4;
+    else if (fmt == CAIRO_FORMAT_A1)
+        min_stride = (width + 31) / 32;
+    else
+        min_stride = width;
+    luaL_argcheck(L, stride >= min_stride, 5,
+                  "stride value too small for this width and pixel format");
+
+    surface = create_surface_userdata(L);
+    surface->image_buffer = *data;
+    surface->image_buffer_free = 0;
+    surface->surface = cairo_image_surface_create_for_data(
+                            surface->image_buffer, fmt, width, height, stride);
+    return 1;
+}
+
 struct ReadInfoLuaStream {
     lua_State *L;
     int fhpos;

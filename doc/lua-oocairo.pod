@@ -139,12 +139,18 @@ The data should be encoded in the format described for the C<surf:get_data()>
 method in L<lua-oocairo-surface(3)>.
 
 Note that since Lua strings are immutable, a copy of the data is made and
-used as the live buffer.  There is currently no support for sharing an image
-surface buffer between Cairo and something else.
+used as the live buffer. Use C<image_surface_create_for_data> to avoid this
+behaviour.
 
 This binds the native Cairo function C<cairo_image_surface_create_for_data>,
 but has a slightly different name because the data you provide is only used
 at construction time, not kept around for drawing.
+
+=item image_surface_create_for_data (data, format, width, height, stride)
+
+Same as C<image_surface_create_from_data> but using the memory pointed by data
+as the buffer instead of making a copy of it, replicating the original
+behaviour of the native Cairo function C<cairo_image_surface_create_for_data>.
 
 =item image_surface_create_from_png (file/filename)
 

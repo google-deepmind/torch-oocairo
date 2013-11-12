@@ -534,6 +534,7 @@ typedef struct SurfaceUserdata_ {
      * is made and referenced here, and only freed when the surface object
      * is GCed. */
     unsigned char *image_buffer;
+    int image_buffer_free;
 } SurfaceUserdata;
 
 static void
@@ -544,6 +545,7 @@ init_surface_userdata (lua_State *L, SurfaceUserdata *ud) {
     ud->errmsg = 0;
     ud->errmsg_free = 0;
     ud->image_buffer = 0;
+    ud->image_buffer_free = 1;
 }
 
 static cairo_pattern_t **
@@ -618,9 +620,10 @@ free_surface_userdata (SurfaceUserdata *ud) {
         ud->errmsg = 0;
         ud->errmsg_free = 0;
     }
-    if (ud->image_buffer) {
+    if ( (ud->image_buffer) && (ud->image_buffer_free==1) ) {
         free(ud->image_buffer);
         ud->image_buffer = 0;
+        ud->image_buffer_free = 0;
     }
 }
 
@@ -699,6 +702,7 @@ constructor_funcs[] = {
     { "format_stride_for_width", format_stride_for_width },
     { "image_surface_create", image_surface_create },
     { "image_surface_create_from_data", image_surface_create_from_data },
+    { "image_surface_create_for_data", image_surface_create_for_data },
 #if CAIRO_HAS_PNG_FUNCTIONS
     { "image_surface_create_from_png", image_surface_create_from_png },
 #endif
