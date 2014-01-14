@@ -8,7 +8,18 @@ for i = 1,#pkg.BYTE_ORDER do
 end
 
 
+--[[ Convert an rgb surface to a tensor
 
+Parameters:
+
+- `surface` (cairo surface)
+- `alpha` (optional boolean) use the alpha channel
+
+Returns:
+
+either a 3xNxM or 4xNxM ByteTensor with values in the range [0, 255]
+
+--]]
 function pkg.rgb2tensor(surface, alpha)
 
     surface:flush()
@@ -41,7 +52,7 @@ Parameters:
 
 - `img` (tensor) either 3xHxW or 1xHxW or HxW. If the input has colour channels the
         order is assumed to be RGB. The image is assumed to be in the range [0,1].
-- `opt` (table) options for transforming input image (see image.display)
+- `opt` (table) options for transforming input image (see image.display), see below.
 
 Optional parameters:
 
