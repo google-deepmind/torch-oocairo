@@ -51,7 +51,7 @@ following prototype:
 This returns either a 3xNxM or 4xNxM ByteTensor with values in the range [0,
 255].
 
-The inverse operation can be achieved with the function tensor2rgb2.
+The inverse operation can be achieved with the function tensor2rgb24.
 
 ## Compiling
 
